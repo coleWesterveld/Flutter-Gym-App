@@ -1,6 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'workout_page.dart';
+import 'schedule_page.dart';
+import 'program_page.dart';
+import 'analytics_page.dart';
 //import 'package:google_fonts/google_fonts.dart';//
 
 /// Flutter code sample for [NavigationBar].
@@ -80,239 +84,16 @@ class _NavigationExampleState extends State<NavigationExample> {
         ],
       ),
       body: <Widget>[
-        /// Notifications page
-        
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: <Widget>[
-              // Card(
-              //   child: Padding(
-              //   padding: EdgeInsets.only(
-              //       top: 36.0, left: 6.0, right: 6.0, bottom: 6.0),
-              //       child: ExpansionTile(
-              //       title: Text('Excercise 1'),
-              //         children: <TextBox>[
-              //         TextBox.fromLTRBD(
-              //           100,
-              //           100,
-              //           100,
-              //           100,
-              //           TextDirection.ltr,
-              //         ),
-              //         //Text('Birth of the Sun'),
-              //         Text('Earth is Born'),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 2'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-              Card(
-                color: const Color.fromARGB(179, 86, 86, 86),
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: const Text(
-                          textAlign: TextAlign.left,
-                          'Squats',
-                          style: TextStyle(height: 1.5, fontSize : 20, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                      for (int z = 0; z < 4; z++)
-                      Row(
-                        //verticalDirection: VerticalDirection,
-                        children: [
-                          Expanded(
-                            child: ListTile(
-                        title: const Text('Weight'),
-                        subtitle: TextFormField(
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                hintText: '80kg', //This should be made to be whateever this value was last workout
-                              ),
-                            ),),
-                          ),
-                          // SizedBox(
-                          //   width: 1,
-                          // ),
-                          const Icon(
-                            Icons.close,
-                          ),
-                          Expanded(
-                            child:ListTile(
-                        title: const Text('Reps'),
-                        subtitle:  TextFormField(
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                hintText: '7',
-                              ),
-                            ),),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                            width: double.infinity,
-                            child:ListTile(
-                              title: const Text('Notes'),
-                              subtitle:  SizedBox(
-                                height: 100,
-                                child: TextFormField(
-                                  //expands: true,
-                                  maxLines: null,
-                                  textInputAction: TextInputAction.done,
-                                  keyboardType: TextInputType.text,
-                                  //keyboardType: TextInputType.multiline,
-                                  decoration: const InputDecoration(
-                                    //filled: true, 
-                                    hintText: 'Comments',
-                                    border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                  ),
-                            ),
-                          ),
-                        )
-                        ),
-                      
-
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //   children: [
-                      //     TextField(
-                      //       decoration: InputDecoration(
-                      //         border: OutlineInputBorder(),
-                      //         hintText: 'Weight'
-                      //       ),
-                      //     ),
-
-                      //     TextField(
-                      //       decoration: InputDecoration(
-                      //         border: OutlineInputBorder(),
-                      //         hintText: 'Reps'
-                      //       ),
-                      //     ),
-
-                      //   ],
-                      // ),
-                    ]
-                  ),
-                ),
-              ),
-              
-            ],
-          ),
-        ),
-
-        /// Home page
-        Card(
-          shadowColor: Colors.transparent,
-          margin: const EdgeInsets.all(8.0),
-          child: SizedBox.expand(
-            child: Center(
-              child: Text(
-                'Home page',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-          ),
-        ),
-
-        
-
+        /// Workout page
+        WorkoutPage(),
+        /// Schedule page
+        SchedulePage(theme: theme),
         /// Program page
-        Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 68, left: 8, right: 8),
-              child: Text(
-                "PPL Split",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                  ),
-                textScaler: TextScaler.linear(2),
-              ),
-            ),
-            for (int n =0; n < list.length; n++)
-            Padding(
-              padding: EdgeInsets.only(top: 8, left: 8, right: 8),
-              child: Card(
-                child: Padding(
-                padding: EdgeInsets.only(
-                    top: 8, left: 8.0, right: 8.0, bottom: 8.0),
-                    child: ExpansionTile(
-                    title: Text(list[n]),
-                      children: [
-                        for (int exc = 0; exc < excercises.length; exc++)ExpansionTile(
-                        title: Text(excercises[exc]),
-                      children: <Widget>[
-                      
-                      Text('No belt, 0 RIR all sets. no safeties, thats for babies'),
-                      
-                    ],
-                  ),]
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        ListView.builder(
-          reverse: true,
-          itemCount: 2,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 1) {
-              return Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  margin: const EdgeInsets.all(8.0),
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Text(
-                    'Hello',
-                    style: theme.textTheme.bodyLarge!
-                        .copyWith(color: theme.colorScheme.onPrimary),
-                  ),
-                ),
-              );
-            }
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                margin: const EdgeInsets.all(8.0),
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  'Hi!',
-                  style: theme.textTheme.bodyLarge!
-                      .copyWith(color: theme.colorScheme.onPrimary),
-                ),
-              ),
-            );
-          },
-        ),
+        ProgramPage(list: list, excercises: excercises),
+        ///Analyitcs page
+        AnalyticsPage(theme: theme),
       ][currentPageIndex],
     );
   }
 }
+
