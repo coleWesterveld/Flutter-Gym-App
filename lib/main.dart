@@ -89,7 +89,7 @@ class _NavigationExampleState extends State<NavigationExample> {
         /// Schedule page
         SchedulePage(theme: theme),
         /// Program page
-        ProgramPage(list: list, excercises: excercises),
+        ProgramPage(),
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],

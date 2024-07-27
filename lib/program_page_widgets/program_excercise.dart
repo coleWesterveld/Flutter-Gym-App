@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 
 
-class ProgramExcercise extends StatelessWidget {
+class ProgramExcercise extends StatefulWidget {
   
-  const ProgramExcercise({
+  ProgramExcercise({
     super.key,
     required this.name,
     //required this.n,
@@ -13,9 +13,16 @@ class ProgramExcercise extends StatelessWidget {
   });
 
   final String name;
-  //final int n;
-  final List<String> excercises;
+  List<String> excercises;
 
+  @override
+  State<ProgramExcercise> createState() => _ProgramExcerciseState();
+}
+
+class _ProgramExcerciseState extends State<ProgramExcercise> {
+  //final int n;
+  TextEditingController yourController = TextEditingController();
+  List<String> excercises = [];
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -25,18 +32,29 @@ class ProgramExcercise extends StatelessWidget {
         padding: EdgeInsets.only(
             top: 8, left: 8.0, right: 8.0, bottom: 8.0),
             child: ExpansionTile(
-            title: Text(
-              name,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                decoration: TextDecoration.underline,
-                fontSize: 18,
-              )
+            title: TextFormField(
+              controller: yourController,
+              onChanged: (text) {
+                excercises.add(yourController.text);
+              },
+            
+            style: TextStyle(
+              fontSize: 15,
             ),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(4))),
+              hintStyle: TextStyle(
+                fontSize: 15,
+              ),
+              hintText: 'Day 1',
+              
+            ),
+          ),
               children: [
-                for (int exc = 0; exc < excercises.length; exc++)ExpansionTile(
+                for (int exc = 0; exc < widget.excercises.length; exc++)ExpansionTile(
                 title: Text(
-                  excercises[exc],
+                  widget.excercises[exc],
                   style: TextStyle(
                     fontSize: 14
                   ),
@@ -57,9 +75,9 @@ class ProgramExcercise extends StatelessWidget {
 
 class ExcerciseListView extends StatelessWidget {
   final List<ProgramExcercise> excercise_list = [
-    ProgramExcercise(name: 'day1', excercises: ['squat', 'bench']),
-    ProgramExcercise(name: 'day2', excercises: ['sumo', 'deadlift']),
-    ProgramExcercise(name: 'day3', excercises: ['run', 'walk']),
+    ProgramExcercise(name: 'Legs', excercises: ['squat', 'bench']),
+    ProgramExcercise(name: 'Push', excercises: ['sumo', 'deadlift']),
+    ProgramExcercise(name: 'Pull', excercises: ['run', 'walk']),
   ];
   
 
@@ -67,6 +85,7 @@ class ExcerciseListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: excercise_list,
+      
 
     );
   }
