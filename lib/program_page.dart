@@ -1,6 +1,8 @@
 // program page
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
-import 'program_page_widgets/program_excercise.dart';
+//import 'program_page_widgets/program_excercise.dart';
 
 
 // import 'package:flutter/material.dart';
@@ -13,23 +15,26 @@ class ProgramPage extends StatefulWidget {
 }
 
 class _MyListState extends State<ProgramPage> {
-  int value = 2;
-
+  int value = 0;
+  List<TextEditingController> splitDaysTEC = [TextEditingController(), TextEditingController(), TextEditingController()];//TextEditingController();
+  List<String> split = ["Push", "Pull", "Legs"];
   _addItem() {
     setState(() {
       value = value + 1;
+      splitDaysTEC.add(TextEditingController());
+      split.add("New Day");
+      print(split.toString());
+      //print(splitDaysTEC.toString());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: TextFormField(
-              //controller: yourController,
-              //onChanged: (text) {
-                //excercises.add(yourController.text);
-              //},
+              //controller: splitDaysTEC,
+  
             
             style: TextStyle(
               fontSize: 20,
@@ -46,59 +51,77 @@ class _MyListState extends State<ProgramPage> {
           ),
       ),
       body: ListView.builder(
-          itemCount: this.value,
-          itemBuilder: (context, index) => this._buildRow(index)),
+          itemCount: split.length,
+          itemBuilder: (context, index) {
+    //print(index.toString());
+    //print(splitDaysTEC.length);
+        return Card(
+            child: Padding(
+            padding: EdgeInsets.only(
+                top: 8, left: 8.0, right: 8.0, bottom: 8.0),
+                child: ExpansionTile(
+                title: 
+                Row(
+                        //verticalDirection: VerticalDirection,
+                        children: [
+                          Expanded(
+                            child: ListTile(
+                        title: TextFormField(
+                              controller: splitDaysTEC[index],
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(8))),
+                                hintText: split[index],
+                              ),
+                            ),),
+                          ),
+                          // SizedBox(
+                          //   width: 1,
+                          // ),
+                          IconButton(onPressed: () {
+                            setState( () {
+                              split[index] = (splitDaysTEC[index].text);
+                              FocusManager.instance.primaryFocus?.unfocus();
+                          });
+                          }, icon: Icon(Icons.check)),
+
+                          IconButton(onPressed: () {
+                            setState( () {
+                              value = value - 1;
+                              split.removeAt(index);
+                              splitDaysTEC.removeAt(index);
+                          });
+                          }, icon: Icon(Icons.delete)),
+                        ],
+                      ),
+
+                  children: [
+                    for (int exc = 0; exc < 3; exc++)ExpansionTile(
+                    title: Text(
+                      "runnerok",
+                      style: TextStyle(
+                        fontSize: 14
+                      ),
+                      ),
+                  children: <Widget>[
+                  
+                  Text('No belt, 0 RIR all sets. no safeties, thats for babies'),
+                  
+                ],
+              ),]
+              ),
+            ),
+          );
+    },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addItem,
         child: Icon(Icons.add),
       ),
     );
   }
-//Text("Item " + index.toString())
-  _buildRow(int index) {
-    return Card(
-        child: Padding(
-        padding: EdgeInsets.only(
-            top: 8, left: 8.0, right: 8.0, bottom: 8.0),
-            child: ExpansionTile(
-            title: TextFormField(
-              //controller: yourController,
-              //onChanged: (text) {
-                //excercises.add(yourController.text);
-              //},
-            
-            style: TextStyle(
-              fontSize: 15,
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(4))),
-              hintStyle: TextStyle(
-                fontSize: 15,
-              ),
-              hintText: "Day " + index.toString(),
-              
-            ),
-          ),
-              children: [
-                for (int exc = 0; exc < 3; exc++)ExpansionTile(
-                title: Text(
-                  "runnerok",
-                  style: TextStyle(
-                    fontSize: 14
-                  ),
-                  ),
-              children: <Widget>[
-              
-              Text('No belt, 0 RIR all sets. no safeties, thats for babies'),
-              
-            ],
-          ),]
-          ),
-        ),
-      );
-  }
 }
+//Text("Item " + index.toString())
 
 
 
