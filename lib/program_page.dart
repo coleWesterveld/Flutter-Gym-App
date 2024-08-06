@@ -25,6 +25,7 @@ class _MyListState extends State<ProgramPage> {
 
   // list of excercises at a given day
   List<List<String>> excercises = [[], [], []];
+  List<List<TextEditingController>> excercisesTEC = [[], [], []];
 
   // adds day to split
   _addItem() {
@@ -33,6 +34,7 @@ class _MyListState extends State<ProgramPage> {
       splitDaysTEC.add(TextEditingController());
       split.add("New Day");
       excercises.add([]);
+      excercisesTEC.add([]);
       //print(split.toString());
       //print(splitDaysTEC.toString());
     });
@@ -63,6 +65,7 @@ class _MyListState extends State<ProgramPage> {
 
       //list of day cards
       body: ListView.builder(
+        //shrinkWrap: true,
           itemCount: split.length + 1,
           itemBuilder: (context, index) {
             //print(index.toString());
@@ -130,6 +133,7 @@ class _MyListState extends State<ProgramPage> {
                             split.removeAt(index);
                             excercises.removeAt(index);
                             splitDaysTEC.removeAt(index);
+                            excercisesTEC.removeAt(index);
                           });
                           }, icon: Icon(Icons.delete)
                         ),
@@ -139,71 +143,93 @@ class _MyListState extends State<ProgramPage> {
                   // excercises for each day
                   //this part is viewed after tile is expanded
                     children: [
-                      // this needs to be done using listtiles
-                      for (int exc = 0; exc < excercises[index].length; exc++) 
-                      ExpansionTile(
-                        title: 
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ListTile(
-                                title: TextFormField(
-                              //controller: splitDaysTEC[index],
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                    hintText: split[index][exc],
-                                  ),
+                      ListView.builder(
+                        itemCount: excercises[index].length + 1,
+                        shrinkWrap: true,
+                        itemBuilder: (context, excerciseIndex) {
+                          //print(index.toString());
+                          //print(splitDaysTEC.length);
+                          // defines what each card will look like
+                          if (excerciseIndex == excercises[index].length){
+                            return Card(
+                              
+                              color: Colors.deepPurple,
+                              child: InkWell(
+                  
+                                splashColor: Colors.purple,
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  setState(() {
+                                    value = value + 1;
+                                    excercisesTEC[index].add(TextEditingController());
+                                    excercises[index].add("New Excercise");
+                                    
+                                    //print(split.toString());
+                                    //print(splitDaysTEC.toString());
+                                  });
+                                },
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 50.0,
+                                  child: Icon(Icons.add),
                                 ),
                               ),
-                            ),
-                          // SizedBox(
-                          //   width: 1,
-                          // ),
-                            IconButton(onPressed: () {
-                              setState( () {
-                                split[index] = (splitDaysTEC[index].text);
-                                FocusManager.instance.primaryFocus?.unfocus();
-                              });
-                              }, icon: Icon(Icons.check)
-                            ),
-
-                            IconButton(onPressed: () {
-                              setState( () {
-                                value = value - 1;
-                                split.removeAt(index);
-                                excercises.removeAt(index);
-                                splitDaysTEC.removeAt(index);
-                              });
-                              }, icon: Icon(Icons.delete)
-                            ),
+                            );
+                          }
+                          else{
+                            return Card(
                             
-                          ],
-                        ),
-                      children: <Widget>[
-                  
-                      Text('No belt, 0 RIR all sets. no safeties, thats for babies'),
-                  
-                      ],
-                    ),
-                    Card(
-                
-                color: Colors.deepPurple,
-                child: InkWell(
-     
-                  splashColor: Colors.purple,
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    //this needs to be done using listtiles
-                    excercises[index].add("new");
-                  },
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50.0,
-                    child: Icon(Icons.add),
-                  ),
-                ),
-              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  top: 8, left: 8.0, right: 8.0, bottom: 8.0),
+                                  // expansion tile allows to add notes for each excercise
+                                child: ExpansionTile(
+                                title: 
+                              // row has day title, confirm update button, delete button
+                              // and excercise dropdown button
+                                  Row(
+                                  //verticalDirection: VerticalDirection,
+                                    children: [
+                                      Expanded(
+                                        child: ListTile(
+                                          title: TextFormField(
+                                            controller: excercisesTEC[index][excerciseIndex],
+                                            decoration: InputDecoration(
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.all(Radius.circular(8))),
+                                            hintText: excercises[index][excerciseIndex],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      //confirm update exceercisesbutton
+                                      IconButton(onPressed: () {
+                                        setState( () {
+                                          excercises[index][excerciseIndex] = (excercisesTEC[index][excerciseIndex].text);
+                                        //closes keyboard
+                                          FocusManager.instance.primaryFocus?.unfocus();
+                                          });
+                                      }, icon: Icon(Icons.check)
+                                      ),
+
+                                      // detete excercises button
+                                      IconButton(onPressed: () {
+                                        setState( () {
+                                          value = value - 1;
+                                          excercises[index].removeAt(excerciseIndex);
+                                          excercisesTEC[index].removeAt(excerciseIndex);
+                                        });
+                                        }, icon: Icon(Icons.delete)
+                                      ),
+                                    ],//row children
+                                  ),//row
+                                ),//Expandsion tile
+                              ),//Padding
+                            );//card
+                          }//else
+                        },//item builder
+                      ),
                     ]
                   
                   ),
@@ -215,53 +241,9 @@ class _MyListState extends State<ProgramPage> {
     );
   }
 }
-//Text("Item " + index.toString())
 
 
 
 
-// class ProgramPage extends StatelessWidget {
-//   const ProgramPage({
-//     super.key,
-//     required this.list,
-//     required this.excercises,
-//   });
 
-//   final List<String> list;
-//   final List<String> excercises;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Padding(
-//           padding: EdgeInsets.only(top: 68, left: 8, right: 8),
-//           child: TextFormField(
-//             style: TextStyle(
-//               fontSize: 25,
-//             ),
-//             decoration: const InputDecoration(
-//               border: OutlineInputBorder(
-//                   borderRadius: BorderRadius.all(Radius.circular(8))),
-//               hintStyle: TextStyle(
-//                 fontSize: 25,
-//               ),
-//               hintText: 'Program Title',
-              
-//             ),
-//           ),
-//         ),
-//         Expanded(
-//           child: SizedBox(
-//             height: 200.0,
-//             child: ExcerciseListView(),
-//             ),
-//         ),
-//         //FloatingActionButton(onPressed: onPressed)
-        
-//       ],
-//     );
-    
-//   }
-// }
 
