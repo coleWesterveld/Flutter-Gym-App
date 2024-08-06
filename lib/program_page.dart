@@ -46,21 +46,24 @@ class _MyListState extends State<ProgramPage> {
     return Scaffold(
       appBar: AppBar(
         // program title
-        title: TextFormField(
-              //controller: splitDaysTEC,
-            style: TextStyle(
-              fontSize: 20,
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(4))),
-              hintStyle: TextStyle(
-                fontSize: 15,
+        title: SizedBox(
+          height: 40,
+          child: TextFormField(
+                //controller: splitDaysTEC,
+              style: TextStyle(
+                fontSize: 20,
               ),
-              hintText: "Program Title",
-              
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(4))),
+                hintStyle: TextStyle(
+                  fontSize: 15,
+                ),
+                hintText: "Program Title",
+                
+              ),
             ),
-          ),
+        ),
       ),
 
       //list of day cards
@@ -105,12 +108,19 @@ class _MyListState extends State<ProgramPage> {
                       children: [
                         Expanded(
                           child: ListTile(
-                            title: TextFormField(
-                              controller: splitDaysTEC[index],
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                hintText: split[index],
+                            title: SizedBox(
+                              height: 40,
+                              child: TextFormField(
+                                style: TextStyle(
+                                  fontSize: 18,
+                                ),
+                                controller: splitDaysTEC[index],
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                                  hintText: split[index],
+                                ),
                               ),
                             ),
                           ),
