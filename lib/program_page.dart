@@ -19,7 +19,7 @@ class ProgramPage extends StatefulWidget {
 // this class contains the list view of expandable card tiles 
 // title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
 class _MyListState extends State<ProgramPage> {
-  int value = 0;
+  //int value = 0;
   List<TextEditingController> splitDaysTEC = [TextEditingController(), TextEditingController(), TextEditingController()];//TextEditingController();
   List<String> split = ["Push", "Pull", "Legs"];
 
@@ -30,7 +30,7 @@ class _MyListState extends State<ProgramPage> {
   // adds day to split
   _addItem() {
     setState(() {
-      value = value + 1;
+      //value = value + 1;
       splitDaysTEC.add(TextEditingController());
       split.add("New Day");
       excercises.add([]);
@@ -68,6 +68,7 @@ class _MyListState extends State<ProgramPage> {
 
       //list of day cards
       body: ListView.builder(
+        
         //shrinkWrap: true,
           itemCount: split.length + 1,
           itemBuilder: (context, index) {
@@ -139,7 +140,7 @@ class _MyListState extends State<ProgramPage> {
                         // detete day button
                         IconButton(onPressed: () {
                           setState( () {
-                            value = value - 1;
+                            //value = value - 1;
                             split.removeAt(index);
                             excercises.removeAt(index);
                             splitDaysTEC.removeAt(index);
@@ -154,6 +155,7 @@ class _MyListState extends State<ProgramPage> {
                   //this part is viewed after tile is expanded
                     children: [
                       ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: excercises[index].length + 1,
                         shrinkWrap: true,
                         itemBuilder: (context, excerciseIndex) {
@@ -161,39 +163,42 @@ class _MyListState extends State<ProgramPage> {
                           //print(splitDaysTEC.length);
                           // defines what each card will look like
                           if (excerciseIndex == excercises[index].length){
-                            return Card(
-                              
-                              color: Colors.deepPurple,
-                              child: InkWell(
-                  
-                                splashColor: Colors.purple,
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  setState(() {
-                                    value = value + 1;
-                                    excercisesTEC[index].add(TextEditingController());
-                                    excercises[index].add("New Excercise");
-                                    
-                                    //print(split.toString());
-                                    //print(splitDaysTEC.toString());
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 50.0,
-                                  child: Icon(Icons.add),
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 8, bottom: 8),
+                              child: SizedBox(
+                                // width: 50,
+                                // height: 50,
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ButtonTheme(
+                                    minWidth: 100,
+                                    height: 100,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                            excercisesTEC[index].add(TextEditingController());
+                                            excercises[index].add("New Excercise");
+                                          });  
+                                      },
+                                      
+                                      style: ButtonStyle(
+                                        shape: WidgetStateProperty.all(CircleBorder()),
+                                        //padding: WidgetStateProperty.all(EdgeInsets.all(20)),
+                                        backgroundColor: WidgetStateProperty.all(Colors.deepPurple), // <-- Button color
+                                        overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                                          if (states.contains(WidgetState.pressed)) return Colors.deepPurpleAccent; // <-- Splash color
+                                        }),
+                                      ),
+                                      child: Icon(Icons.add)
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
                           }
                           else{
-                            return Card(
-                            
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  top: 8, left: 8.0, right: 8.0, bottom: 8.0),
-                                  // expansion tile allows to add notes for each excercise
-                                child: ExpansionTile(
+                            //todo: centre text boxes, add notes option on dropdown
+                            return ExpansionTile(
                                 title: 
                               // row has day title, confirm update button, delete button
                               // and excercise dropdown button
@@ -201,13 +206,16 @@ class _MyListState extends State<ProgramPage> {
                                   //verticalDirection: VerticalDirection,
                                     children: [
                                       Expanded(
-                                        child: ListTile(
-                                          title: TextFormField(
-                                            controller: excercisesTEC[index][excerciseIndex],
-                                            decoration: InputDecoration(
-                                              border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.all(Radius.circular(8))),
-                                            hintText: excercises[index][excerciseIndex],
+                                        child: SizedBox(
+                                          height: 40,
+                                          child: ListTile(
+                                            title: TextFormField(
+                                              controller: excercisesTEC[index][excerciseIndex],
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(8))),
+                                              hintText: excercises[index][excerciseIndex],
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -226,7 +234,7 @@ class _MyListState extends State<ProgramPage> {
                                       // detete excercises button
                                       IconButton(onPressed: () {
                                         setState( () {
-                                          value = value - 1;
+                                          //value = value - 1;
                                           excercises[index].removeAt(excerciseIndex);
                                           excercisesTEC[index].removeAt(excerciseIndex);
                                         });
@@ -234,9 +242,9 @@ class _MyListState extends State<ProgramPage> {
                                       ),
                                     ],//row children
                                   ),//row
-                                ),//Expandsion tile
-                              ),//Padding
-                            );//card
+                                );//,//Expandsion tile
+                              //),//Padding
+                            //);//card
                           }//else
                         },//item builder
                       ),
