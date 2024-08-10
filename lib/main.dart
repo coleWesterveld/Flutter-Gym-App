@@ -18,10 +18,11 @@ class NavigationBarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.deepPurple,
-        brightness: Brightness.dark,
-      )),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        )
+      ),
       //theme: ThemeData(useMaterial3: false),s
       home: NavigationExample(),
     );
@@ -41,8 +42,8 @@ class _NavigationExampleState extends State<NavigationExample> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    var list = ['Legs', 'Push', 'Pull'];
-    var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
+    //var list = ['Legs', 'Push', 'Pull'];
+    //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
       resizeToAvoidBottomInset : false,
       
@@ -87,7 +88,7 @@ class _NavigationExampleState extends State<NavigationExample> {
         /// Workout page
         WorkoutPage(),
         /// Schedule page
-        SchedulePage(theme: theme),
+        SchedulePage(),
         /// Program page
         ProgramPage(),
         ///Analyitcs page
