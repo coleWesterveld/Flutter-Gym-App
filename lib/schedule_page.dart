@@ -7,9 +7,14 @@ class Event{
   Event(this.title);
 }
 
-
+int daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+   return (to.difference(from).inHours / 24).round();
+}
   
 class SchedulePage extends StatefulWidget {
+  
   @override
   _MyScheduleState createState() => _MyScheduleState();
 }
@@ -19,6 +24,9 @@ class SchedulePage extends StatefulWidget {
 class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};
+  final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
+  DateTime startDay = DateTime(2024, 8, 10);
+  
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
@@ -38,9 +46,32 @@ class _MyScheduleState extends State<SchedulePage> {
         padding: const EdgeInsets.only(top: 60.0),
         child: Column(
           children: [
-            Text("hioya there"),
+            Text("schedule WIP"),
             Container(
               child: TableCalendar(
+                calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) {
+                
+                  if (daysBetween(startDay, day) % 7 ==0) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.lightGreen,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(8.0),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  }
+                
+                return null;
+              },
+            ),
                 rowHeight: 90,
                 focusedDay: today, 
                 firstDay: DateTime.utc(2010, 10, 16), 
