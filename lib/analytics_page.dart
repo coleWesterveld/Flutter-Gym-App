@@ -1,7 +1,7 @@
 // analyitcs page
 import 'package:flutter/material.dart';
 
-class AnalyticsPage extends StatelessWidget {
+class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
     super.key,
     required this.theme,
@@ -9,6 +9,11 @@ class AnalyticsPage extends StatelessWidget {
 
   final ThemeData theme;
 
+  @override
+  State<AnalyticsPage> createState() => _AnalyticsPageState();
+}
+
+class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -22,13 +27,13 @@ class AnalyticsPage extends StatelessWidget {
               margin: const EdgeInsets.all(8.0),
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
+                color: widget.theme.colorScheme.primary,
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Text(
                 'Hello',
-                style: theme.textTheme.bodyLarge!
-                    .copyWith(color: theme.colorScheme.onPrimary),
+                style: widget.theme.textTheme.bodyLarge!
+                    .copyWith(color: widget.theme.colorScheme.onPrimary),
               ),
             ),
           );
@@ -39,13 +44,13 @@ class AnalyticsPage extends StatelessWidget {
             margin: const EdgeInsets.all(8.0),
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
+              color: widget.theme.colorScheme.primary,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Text(
               'Hi!',
-              style: theme.textTheme.bodyLarge!
-                  .copyWith(color: theme.colorScheme.onPrimary),
+              style: widget.theme.textTheme.bodyLarge!
+                  .copyWith(color: widget.theme.colorScheme.onPrimary),
             ),
           ),
         );

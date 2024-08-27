@@ -1,30 +1,47 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'workout_page.dart';
 import 'schedule_page.dart';
 import 'program_page.dart';
 import 'analytics_page.dart';
+import 'user.dart';
 //import 'package:google_fonts/google_fonts.dart';//
 
 /// Flutter code sample for [NavigationBar].
 
 void main() => runApp( NavigationBarApp());
 
-class NavigationBarApp extends StatelessWidget {
+class NavigationBarApp extends StatefulWidget {
   NavigationBarApp({super.key});
-  
+  @override
+  State<NavigationBarApp> createState() => _MainPage();
+  //_MainPage createState() => _MainPage();
+}
+class _MainPage extends State<NavigationBarApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        )
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => Profile(
+            split: ["Push", "Pull", "Legs"],
+            excercises: [[],[],[]],
+            ),
+          ),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+            brightness: Brightness.dark,
+          )
+        ),
+        //theme: ThemeData(useMaterial3: false),s
+        home: NavigationExample(),
       ),
-      //theme: ThemeData(useMaterial3: false),s
-      home: NavigationExample(),
     );
   }
 }
@@ -38,7 +55,7 @@ class NavigationExample extends StatefulWidget {
 
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
-
+  ProgramPage _programPage = ProgramPage();
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -87,10 +104,12 @@ class _NavigationExampleState extends State<NavigationExample> {
       body: <Widget>[
         /// Workout page
         WorkoutPage(),
+
+        
         /// Schedule page
         SchedulePage(),
         /// Program page
-        ProgramPage(),
+        _programPage,
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
