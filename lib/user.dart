@@ -1,22 +1,47 @@
 import 'package:flutter/material.dart';
+class SplitDayData{
+  final key = UniqueKey();
+  String data;
+  Color dayColor;
+  
+  SplitDayData({required this.data, required this.dayColor});
+}
 
 class Profile extends ChangeNotifier {
-  List<String> split;
-  List<List<String>> excercises;
-
+  static List<Color> pastelPalette = [
+    const Color.fromRGBO(106, 92, 185, 0.6), 
+    const Color.fromRGBO(150, 50, 50, 0.6), 
+    
+    const Color.fromRGBO(61, 101, 167, 0.6),
+    const Color.fromRGBO(220, 224, 85, 0.6),
+    const  Color.fromRGBO(61, 169, 179, 0.6),
+    const Color.fromRGBO(199, 143, 74, 0.6), 
+    const Color.fromRGBO(57, 129, 42, 0.6),
+    const Color.fromRGBO(131, 49, 131, 0.6),
+    const Color.fromRGBO(180, 180, 178, 0.6),
+    
+    ];
+  var split = <SplitDayData>[];
+  var excercises= <List<SplitDayData>>[];
+  int uuidCount;
   Profile({
+    required this.uuidCount,
     required this.split,
-    required this.excercises
+    required this.excercises,
 
   });
   //I feel like there should be a better way to do all this instead of using a bunch of methods 
   // but it works so thats a later problem
 
+  void uuidInc() async {
+    uuidCount += 1;
+    notifyListeners();
+  }
 
   void splitAppend({
     required String newDay,
   }) async {
-    split.add(newDay);
+    split.add(SplitDayData(data: "New Day", dayColor: pastelPalette[split.length + 1]));
     notifyListeners();
   }
 
@@ -29,7 +54,7 @@ class Profile extends ChangeNotifier {
 
   void splitAssign({
     required int index,
-    required String data,
+    required SplitDayData data,
   }) async {
     split[index] = data;
     notifyListeners();
@@ -38,7 +63,7 @@ class Profile extends ChangeNotifier {
   //inserts data at index, pushes everythign after it back
   void splitInsert({
     required int index,
-    required String data,
+    required SplitDayData data,
   }) async {
     split.insert(index, data);
     notifyListeners();
@@ -46,7 +71,7 @@ class Profile extends ChangeNotifier {
 
   //adds new excercise to end of list of excercises at index
   void excerciseAppend({
-    required String newExcercise,
+    required SplitDayData newExcercise,
     required int index,
   }) async {
     excercises[index].add(newExcercise);
@@ -55,7 +80,7 @@ class Profile extends ChangeNotifier {
 
   //adds new day to end of list
   void excerciseAppendList({
-    required List<String> newDay,
+    required List<SplitDayData> newDay,
   }) async {
     excercises.add(newDay);
     notifyListeners();
@@ -82,7 +107,7 @@ class Profile extends ChangeNotifier {
   void excerciseAssign({
     required int index1,
     required int index2,
-    required String data,
+    required SplitDayData data,
   }) async {
     excercises[index1][index2] = data;
     notifyListeners();
@@ -91,7 +116,7 @@ class Profile extends ChangeNotifier {
   //assigns value for entiere list of excercises in list
   void excerciseAssignList({
     required int index,
-    required List<String> data,
+    required List<SplitDayData> data,
   }) async {
     excercises[index] = data;
     notifyListeners();
@@ -101,7 +126,7 @@ class Profile extends ChangeNotifier {
   void excerciseInsert({
     required int index1,
     required int index2,
-    required String data,
+    required SplitDayData data,
   }) async {
     excercises[index1].insert(index2, data);
     notifyListeners();
@@ -110,7 +135,7 @@ class Profile extends ChangeNotifier {
   //inserts a new list of excercises into list
   void excerciseInsertList({
     required int index,
-    required List<String> data,
+    required List<SplitDayData> data,
   }) async {
     excercises.insert(index, data);
     notifyListeners();

@@ -31,17 +31,17 @@ class _MyScheduleState extends State<SchedulePage> {
   Map<DateTime, List<Event>> events = {};
   DateTime startDay = DateTime(2024, 8, 10);
 
-  List<Color> pastelPalette = [
-    Color.fromRGBO(150, 50, 50, 0.6), 
-    Color.fromRGBO(199, 143, 74, 0.6), 
-    Color.fromRGBO(220, 224, 85, 0.6),
-    Color.fromRGBO(57, 129, 42, 0.6),
-    Color.fromRGBO(61, 169, 179, 0.6),
-    Color.fromRGBO(61, 101, 167, 0.6),
-    Color.fromRGBO(106, 92, 185, 0.6), 
-    Color.fromRGBO(131, 49, 131, 0.6),
-    Color.fromRGBO(180, 180, 178, 0.6),
-    ];
+  // List<Color> pastelPalette = [
+  //   Color.fromRGBO(150, 50, 50, 0.6), 
+  //   Color.fromRGBO(199, 143, 74, 0.6), 
+  //   Color.fromRGBO(220, 224, 85, 0.6),
+  //   Color.fromRGBO(57, 129, 42, 0.6),
+  //   Color.fromRGBO(61, 169, 179, 0.6),
+  //   Color.fromRGBO(61, 101, 167, 0.6),
+  //   Color.fromRGBO(106, 92, 185, 0.6), 
+  //   Color.fromRGBO(131, 49, 131, 0.6),
+  //   Color.fromRGBO(180, 180, 178, 0.6),
+  //   ];
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
@@ -71,14 +71,14 @@ class _MyScheduleState extends State<SchedulePage> {
                 
                 calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
-                  DateTime origin = today;
+                  DateTime origin = DateTime(2024, 1, 7);
                   for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
 
                   
                     if (daysBetween(origin , day) % 7 == (7 ~/ context.watch<Profile>().split.length) * splitDay) {
                       return Container(
                         decoration: BoxDecoration(
-                          color: pastelPalette[splitDay],
+                          color: context.watch<Profile>().split[splitDay].dayColor,
                           borderRadius: BorderRadius.all(
                             Radius.circular(8.0),
                           ),
