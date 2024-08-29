@@ -9,16 +9,16 @@ class SplitDayData{
 
 class Profile extends ChangeNotifier {
   static List<Color> pastelPalette = [
-    const Color.fromRGBO(106, 92, 185, 0.6), 
-    const Color.fromRGBO(150, 50, 50, 0.6), 
+    const Color.fromRGBO(106, 92, 185, 1), 
+    const Color.fromRGBO(150, 50, 50, 1), 
     
-    const Color.fromRGBO(61, 101, 167, 0.6),
-    const Color.fromRGBO(220, 224, 85, 0.6),
-    const  Color.fromRGBO(61, 169, 179, 0.6),
-    const Color.fromRGBO(199, 143, 74, 0.6), 
-    const Color.fromRGBO(57, 129, 42, 0.6),
-    const Color.fromRGBO(131, 49, 131, 0.6),
-    const Color.fromRGBO(180, 180, 178, 0.6),
+    const Color.fromRGBO(61, 101, 167, 1),
+    const Color.fromRGBO(220, 224, 85, 1),
+    const  Color.fromRGBO(61, 169, 179, 1),
+    const Color.fromRGBO(199, 143, 74, 1), 
+    const Color.fromRGBO(57, 129, 42, 1),
+    const Color.fromRGBO(131, 49, 131, 1),
+    const Color.fromRGBO(180, 180, 178, 1),
     
     ];
   var split = <SplitDayData>[];

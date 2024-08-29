@@ -27,9 +27,9 @@ class _MainPage extends State<NavigationBarApp> {
 
         ChangeNotifierProvider(
           create: (context) => Profile(
-            split: [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 0.6), ), 
-              SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 0.6),), 
-              SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 0.6),)],
+            split: [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 1), ), 
+              SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 1),), 
+              SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 1),)],
             excercises: [[],[],[]],
             uuidCount: 0,
             ),

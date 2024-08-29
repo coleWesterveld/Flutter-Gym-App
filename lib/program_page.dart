@@ -72,16 +72,16 @@ class _MyListState extends State<ProgramPage> {
   // todo: connect colour to each day so that it doesnt reset when you like delete a day or sm,,thn
   
     static List<Color> pastelPalette = [
-    const Color.fromRGBO(106, 92, 185, 0.6), 
-    const Color.fromRGBO(150, 50, 50, 0.6), 
+    const Color.fromRGBO(106, 92, 185, 1), 
+    const Color.fromRGBO(150, 50, 50, 1), 
      
-    const Color.fromRGBO(61, 101, 167, 0.6),
-    const Color.fromRGBO(220, 224, 85, 0.6),
-    const  Color.fromRGBO(61, 169, 179, 0.6),
-    const Color.fromRGBO(199, 143, 74, 0.6),
-    const Color.fromRGBO(57, 129, 42, 0.6),
-    const Color.fromRGBO(131, 49, 131, 0.6),
-    const Color.fromRGBO(180, 180, 178, 0.6),];
+    const Color.fromRGBO(61, 101, 167, 1),
+    const Color.fromRGBO(220, 224, 85, 1),
+    const  Color.fromRGBO(61, 169, 179, 1),
+    const Color.fromRGBO(199, 143, 74, 1),
+    const Color.fromRGBO(57, 129, 42, 1),
+    const Color.fromRGBO(131, 49, 131, 1),
+    const Color.fromRGBO(180, 180, 178, 1),];
 
   //TextEditingController();
   List<TextEditingController> splitDaysTEC = List.empty(growable: true);
@@ -282,7 +282,7 @@ class _MyListState extends State<ProgramPage> {
                     //color: pastelPalette[index].,
                     
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: darken(context.watch<Profile>().split[index].dayColor, 30), width: 3.0),
+                      side: BorderSide(color: darken(context.watch<Profile>().split[index].dayColor, 20), width: 3.0),
                       borderRadius: BorderRadius.circular(8.0)
                     ),
                     
@@ -293,7 +293,7 @@ class _MyListState extends State<ProgramPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         gradient: LinearGradient(
-                          colors: [lighten(context.watch<Profile>().split[index].dayColor, 10), darken(context.watch<Profile>().split[index].dayColor, 10)],
+                          colors: [lighten(context.watch<Profile>().split[index].dayColor, 10), darken(context.watch<Profile>().split[index].dayColor, 20)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
