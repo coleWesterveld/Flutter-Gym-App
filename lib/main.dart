@@ -38,6 +38,9 @@ class _MainPage extends State<NavigationBarApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+          snackBarTheme: SnackBarThemeData(
+            backgroundColor: Colors.deepPurple,
+          ),
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.deepPurple,
             brightness: Brightness.dark,

@@ -74,7 +74,6 @@ class _MyListState extends State<ProgramPage> {
     static List<Color> pastelPalette = [
     const Color.fromRGBO(106, 92, 185, 1), 
     const Color.fromRGBO(150, 50, 50, 1), 
-     
     const Color.fromRGBO(61, 101, 167, 1),
     const Color.fromRGBO(220, 224, 85, 1),
     const  Color.fromRGBO(61, 169, 179, 1),
@@ -267,6 +266,11 @@ class _MyListState extends State<ProgramPage> {
               return 
                 Dismissible(
                   key: ValueKey(context.watch<Profile>().split[index]),
+                  background: Container(
+                    color: Colors.red,
+                    child: Icon(Icons.delete)
+                  ),
+
                   onDismissed: (direction) {
                     // Remove the item from the data source.
                     setState(() {
@@ -275,6 +279,17 @@ class _MyListState extends State<ProgramPage> {
                         splitDaysTEC.removeAt(index);
                         excercisesTEC.removeAt(index);         
                     });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          style: TextStyle(
+                            color: Colors.white
+                          ),
+                          'Day Deleted'
+                          ),
+                        
+                      ),
+                    );
                   },
                   child: Card(
                   
@@ -317,25 +332,16 @@ class _MyListState extends State<ProgramPage> {
                                     width: 100,
                                     child: 
                                     
-                                    TextFormField(
-                                      focusNode: splitFocusNode,
-                                      style: TextStyle(
-                                        //color: Color.fromARGB(255, 255, 255, 255),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                      controller: splitDaysTEC[index],
-                                      decoration: InputDecoration(
-                                        //filled: true,
-                                        //fillColor: Color.fromARGB(94, 117, 117, 117),
-                                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        context.watch<Profile>().split[index].data,
                                         
-                                        // border: OutlineInputBorder(
-                                        //   //borderSide: BorderSide(width: 0),
-                                        //     borderRadius: BorderRadius.all(Radius.circular(4)),
-                                        // ),
-                        
-                                        hintText: context.watch<Profile>().split[index].data,
+                                        style: TextStyle(
+                                          color: Color.fromARGB(255, 255, 255, 255),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -343,15 +349,18 @@ class _MyListState extends State<ProgramPage> {
                               ),
                                 
                               //confirm update button
-                              IconButton(onPressed: () {
-                                setState( () {
+                              IconButton(onPressed: () async{
+                                
                         
-                                  context.read<Profile>().splitAssign(index: index, data: SplitDayData(data: splitDaysTEC[index].text, dayColor: context.watch<Profile>().split[index].dayColor));
-                                  //closes keyboard
-                                  splitFocusNode.requestFocus();
-                                  //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
-                        
-                                  });
+                                  String? dayTitle = await openDialog();
+                                  if (dayTitle == null || dayTitle.isEmpty) return;
+                                  setState( () {
+                                    Provider.of<Profile>(context, listen: false).splitAssign(
+                                    index: index, 
+                                    data: SplitDayData(
+                                      data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor));
+                                      }
+                                      );
                                 }, 
                                 icon: Icon(Icons.edit),
                                 color: Color.fromARGB(255, 255, 255, 255),
@@ -494,6 +503,26 @@ class _MyListState extends State<ProgramPage> {
       ),
     );
   }
+  TextEditingController alertTEC = TextEditingController();
+  Future<String?> openDialog() => showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: TextFormField(
+        autofocus: true,
+        controller: alertTEC,
+        decoration: InputDecoration(
+          hintText: "Enter Day Title",
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: (){
+            Navigator.of(context).pop(alertTEC.text);
+        },
+        icon: Icon(Icons.check))
+      ]
+    ),
+  );
 }
 
 
