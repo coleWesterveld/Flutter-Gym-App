@@ -49,7 +49,7 @@ class _MyScheduleState extends State<SchedulePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: (){
           showDialog(context: context, builder: (context){
-            return AlertDialog(
+            return const AlertDialog(
               scrollable: true,
               
             );
@@ -62,10 +62,10 @@ class _MyScheduleState extends State<SchedulePage> {
 
       //bottomNavigationBar: weekView(),
       body: Padding(
-        padding: EdgeInsets.only(top: 60.0),
+        padding: const EdgeInsets.only(top: 60.0),
         child: Column(
           children: [
-            Text("schedule WIP"),
+            const Text("schedule WIP"),
             Container(
               child: TableCalendar(
                 
@@ -79,7 +79,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       return Container(
                         decoration: BoxDecoration(
                           color: context.watch<Profile>().split[splitDay].dayColor,
-                          borderRadius: BorderRadius.all(
+                          borderRadius: const BorderRadius.all(
                             Radius.circular(8.0),
                           ),
                         ),

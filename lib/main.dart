@@ -14,7 +14,7 @@ import 'user.dart';
 void main() => runApp( NavigationBarApp());
 
 class NavigationBarApp extends StatefulWidget {
-  NavigationBarApp({super.key});
+  const NavigationBarApp({super.key});
   @override
   State<NavigationBarApp> createState() => _MainPage();
   //_MainPage createState() => _MainPage();
@@ -54,7 +54,7 @@ class _MainPage extends State<NavigationBarApp> {
 }
 
 class NavigationExample extends StatefulWidget {
-  NavigationExample({super.key});
+  const NavigationExample({super.key});
   
   @override
   State<NavigationExample> createState() => _NavigationExampleState();
@@ -62,7 +62,7 @@ class NavigationExample extends StatefulWidget {
 
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
-  ProgramPage _programPage = ProgramPage();
+  final ProgramPage _programPage = ProgramPage();
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);

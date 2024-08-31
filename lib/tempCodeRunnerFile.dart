@@ -1,2 +1,2 @@
 .fromSeed(
-        seedColor: Colors.deepPurple
+        seedColor = Colors.deepPurple

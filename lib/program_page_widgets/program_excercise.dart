@@ -1,5 +1,6 @@
 /// each card with an excercise
 /// 
+library;
 import 'package:flutter/material.dart';
 
 
@@ -26,10 +27,10 @@ class _ProgramExcerciseState extends State<ProgramExcercise> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 8, left: 8, right: 8),
+      padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
       child: Card(
         child: Padding(
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
             top: 8, left: 8.0, right: 8.0, bottom: 8.0),
             child: ExpansionTile(
             title: TextFormField(
@@ -38,7 +39,7 @@ class _ProgramExcerciseState extends State<ProgramExcercise> {
                 excercises.add(yourController.text);
               },
             
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 15,
             ),
             decoration: const InputDecoration(
@@ -55,11 +56,11 @@ class _ProgramExcerciseState extends State<ProgramExcercise> {
                 for (int exc = 0; exc < widget.excercises.length; exc++)ExpansionTile(
                 title: Text(
                   widget.excercises[exc],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14
                   ),
                   ),
-              children: <Widget>[
+              children: const <Widget>[
               
               Text('No belt, 0 RIR all sets. no safeties, thats for babies'),
               
@@ -75,10 +76,12 @@ class _ProgramExcerciseState extends State<ProgramExcercise> {
 
 class ExcerciseListView extends StatelessWidget {
   final List<ProgramExcercise> excercise_list = [
-    ProgramExcercise(name: 'Legs', excercises: ['squat', 'bench']),
-    ProgramExcercise(name: 'Push', excercises: ['sumo', 'deadlift']),
-    ProgramExcercise(name: 'Pull', excercises: ['run', 'walk']),
+    ProgramExcercise(name: 'Legs', excercises: const ['squat', 'bench']),
+    ProgramExcercise(name: 'Push', excercises: const ['sumo', 'deadlift']),
+    ProgramExcercise(name: 'Pull', excercises: const ['run', 'walk']),
   ];
+
+  const ExcerciseListView({super.key});
   
 
   @override
