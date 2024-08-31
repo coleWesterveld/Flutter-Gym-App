@@ -7,6 +7,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
 
+// todo: add app persistence
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 //import 'program_page_widgets/program_excercise.dart';
 int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);
@@ -82,8 +86,7 @@ class _MyListState extends State<ProgramPage> {
     const Color.fromRGBO(131, 49, 131, 1),
     const Color.fromRGBO(180, 180, 178, 1),];
 
-  //TextEditingController();
-  List<TextEditingController> splitDaysTEC = List.empty(growable: true);
+
 
   // list of excercises at a given day
   //excercises needs to be added as part of user class
@@ -95,7 +98,6 @@ class _MyListState extends State<ProgramPage> {
     //setState(() {
       
       //value = value + 1;
-      splitDaysTEC.add(TextEditingController());
       context.read<Profile>().excerciseAppendList(newDay: []);
       excercisesTEC.add([]);
       context.read<Profile>().splitAppend(newDay: "New Day");
@@ -113,7 +115,7 @@ class _MyListState extends State<ProgramPage> {
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
-    List<TextEditingController> splitDaysTEC = List.filled(Provider.of<Profile>(context, listen: false).split.length, TextEditingController(), growable: true);
+    //List<TextEditingController> splitDaysTEC = List.filled(Provider.of<Profile>(context, listen: false).split.length, TextEditingController(), growable: true);
     //List<List<TextEditingController>>;
     for (int x = 0; x < Provider.of<Profile>(context, listen: false).excercises.length;x++){
       excercisesTEC.add([]);
@@ -212,9 +214,9 @@ class _MyListState extends State<ProgramPage> {
                 context.read<Profile>().excerciseInsertList(index: newIndex, data: y);
                 //excercises.insert(newIndex, y);
         
-                TextEditingController z = splitDaysTEC[oldIndex];
-                splitDaysTEC.removeAt(oldIndex);
-                splitDaysTEC.insert(newIndex, z);
+                //TextEditingController z = splitDaysTEC[oldIndex];
+                //splitDaysTEC.removeAt(oldIndex);
+                //splitDaysTEC.insert(newIndex, z);
         
                 List<TextEditingController> a = excercisesTEC[oldIndex];
                 excercisesTEC.removeAt(oldIndex);
@@ -276,7 +278,7 @@ class _MyListState extends State<ProgramPage> {
                     setState(() {
                       context.read<Profile>().splitPop(index: index);
                         context.read<Profile>().excercisePopList(index: index);
-                        splitDaysTEC.removeAt(index);
+                        //.removeAt(index);
                         excercisesTEC.removeAt(index);         
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -503,8 +505,10 @@ class _MyListState extends State<ProgramPage> {
       ),
     );
   }
-  TextEditingController alertTEC = TextEditingController();
-  Future<String?> openDialog() => showDialog(
+  
+  Future<String?> openDialog() {
+    TextEditingController alertTEC = TextEditingController();
+    return showDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: TextFormField(
@@ -523,6 +527,7 @@ class _MyListState extends State<ProgramPage> {
       ]
     ),
   );
+  }
 }
 
 
