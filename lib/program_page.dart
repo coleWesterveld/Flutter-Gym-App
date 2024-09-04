@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
+import 'package:flutter/services.dart';
 
 // todo: add app persistence
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 
 
 //import 'program_page_widgets/program_excercise.dart';
@@ -75,23 +76,23 @@ class _MyListState extends State<ProgramPage> {
   // and overall volume of each day
   // todo: connect colour to each day so that it doesnt reset when you like delete a day or sm,,thn
   
-    static List<Color> pastelPalette = [
-    const Color.fromRGBO(106, 92, 185, 1), 
-    const Color.fromRGBO(150, 50, 50, 1), 
-    const Color.fromRGBO(61, 101, 167, 1),
-    const Color.fromRGBO(220, 224, 85, 1),
-    const  Color.fromRGBO(61, 169, 179, 1),
-    const Color.fromRGBO(199, 143, 74, 1),
-    const Color.fromRGBO(57, 129, 42, 1),
-    const Color.fromRGBO(131, 49, 131, 1),
-    const Color.fromRGBO(180, 180, 178, 1),];
+    // static List<Color> pastelPalette = [
+    // const Color.fromRGBO(106, 92, 185, 1), 
+    // const Color.fromRGBO(150, 50, 50, 1), 
+    // const Color.fromRGBO(61, 101, 167, 1),
+    // const Color.fromRGBO(220, 224, 85, 1),
+    // const  Color.fromRGBO(61, 169, 179, 1),
+    // const Color.fromRGBO(199, 143, 74, 1),
+    // const Color.fromRGBO(57, 129, 42, 1),
+    // const Color.fromRGBO(131, 49, 131, 1),
+    // const Color.fromRGBO(180, 180, 178, 1),];
 
 
 
   // list of excercises at a given day
   //excercises needs to be added as part of user class
   //List<List<String>> excercises = [[], [], []];
-  List<List<TextEditingController>> excercisesTEC = List.filled(3, List.empty(growable: true), growable: true);
+  //List<List<TextEditingController>> excercisesTEC = List.filled(3, List.empty(growable: true), growable: true);
 
   // adds day to split
   _addItem() {
@@ -99,7 +100,7 @@ class _MyListState extends State<ProgramPage> {
       
       //value = value + 1;
       context.read<Profile>().excerciseAppendList(newDay: []);
-      excercisesTEC.add([]);
+      //excercisesTEC.add([]);
       context.read<Profile>().splitAppend(newDay: "New Day");
       //print(splitDaysTEC.length);
       
@@ -117,12 +118,12 @@ class _MyListState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     //List<TextEditingController> splitDaysTEC = List.filled(Provider.of<Profile>(context, listen: false).split.length, TextEditingController(), growable: true);
     //List<List<TextEditingController>>;
-    for (int x = 0; x < Provider.of<Profile>(context, listen: false).excercises.length;x++){
-      excercisesTEC.add([]);
-      for (int y = 0; y < Provider.of<Profile>(context, listen: false).excercises[x].length;y++){
-        excercisesTEC[x].add(TextEditingController());
-      };
-    };
+    // for (int x = 0; x < Provider.of<Profile>(context, listen: false).excercises.length;x++){
+    //   //excercisesTEC.add([]);
+    //   for (int y = 0; y < Provider.of<Profile>(context, listen: false).excercises[x].length;y++){
+    //     excercisesTEC[x].add(TextEditingController());
+    //   }
+    // }
     
     //print(splitDaysTEC.length);
     return Scaffold(
@@ -196,6 +197,7 @@ class _MyListState extends State<ProgramPage> {
         height: MediaQuery.of(context).size.height - (265),
         child: ReorderableListView.builder(
             onReorder: (oldIndex, newIndex){
+              HapticFeedback.heavyImpact();
               setState(() {
                 if (newIndex > oldIndex) {
                   newIndex -= 1;
@@ -218,13 +220,10 @@ class _MyListState extends State<ProgramPage> {
                 //splitDaysTEC.removeAt(oldIndex);
                 //splitDaysTEC.insert(newIndex, z);
         
-                List<TextEditingController> a = excercisesTEC[oldIndex];
-                excercisesTEC.removeAt(oldIndex);
-                excercisesTEC.insert(newIndex, a);
+                //List<TextEditingController> a = excercisesTEC[oldIndex];
+                //excercisesTEC.removeAt(oldIndex);
+                //excercisesTEC.insert(newIndex, a);
         
-                Color c = pastelPalette[oldIndex];
-                pastelPalette.removeAt(oldIndex);
-                pastelPalette.insert(newIndex, c);
                 //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
 
               });
@@ -240,7 +239,7 @@ class _MyListState extends State<ProgramPage> {
               // defines what each card will look like
               if (index == context.watch<Profile>().split.length){
                 return Card(
-                  key: ValueKey(index),
+                  key: ValueKey('excerciseAdder'),
         
                   
                   color: Colors.deepPurple,
@@ -249,6 +248,7 @@ class _MyListState extends State<ProgramPage> {
                     splashColor: Colors.purple,
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
+                      HapticFeedback.heavyImpact();
                       setState(() {
                         _addItem();
                       });
@@ -276,12 +276,13 @@ class _MyListState extends State<ProgramPage> {
                   ),
 
                   onDismissed: (direction) {
+                    HapticFeedback.heavyImpact();
                     // Remove the item from the data source.
                     setState(() {
                       context.read<Profile>().splitPop(index: index);
                         context.read<Profile>().excercisePopList(index: index);
                         //.removeAt(index);
-                        excercisesTEC.removeAt(index);         
+                        //excercisesTEC.removeAt(index);         
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -301,7 +302,10 @@ class _MyListState extends State<ProgramPage> {
                     //color: pastelPalette[index].,
                     
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: darken(context.watch<Profile>().split[index].dayColor, 20), width: 1.0),
+                      side: BorderSide(
+                        color: darken(context.watch<Profile>().split[index].dayColor, 20),
+                        width: 1.0,
+                      ),
                       borderRadius: BorderRadius.circular(8.0)
                     ),
                     
@@ -321,6 +325,9 @@ class _MyListState extends State<ProgramPage> {
                       child: Theme(
                         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
+                          //controller: ExpansionTileController(
+
+                          //),
                         iconColor: Color.fromARGB(255, 255, 255, 255),
                         collapsedIconColor: Color.fromARGB(255, 255, 255, 255),
                         title: 
@@ -391,7 +398,41 @@ class _MyListState extends State<ProgramPage> {
                         // excercises for each day
                         //this part is viewed after tile is expanded
                           children: [
-                            ListView.builder(
+                            ReorderableListView.builder(
+                              onReorder: (oldIndex, newIndex){
+                                HapticFeedback.heavyImpact();
+                                setState(() {
+                                  if (newIndex > oldIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  //swap excercise list
+                                  //managing these lists shoudl probably be put into a function or smthn this is kinda ugly
+                                  //but hey it works ig
+                                  SplitDayData x = Provider.of<Profile>(context, listen: false).excercises[index][oldIndex];
+                                  context.read<Profile>().excercisePop(index1: oldIndex, index2: oldIndex);
+                                  context.read<Profile>().excerciseInsert(index1: index, index2: newIndex, data: x);
+                                
+                          
+                                  //List<SplitDayData> y = context.read<Profile>().excercises[oldIndex];
+                                  //context.read<Profile>().excercisePopList(index: oldIndex);
+                                  //excercises.removeAt(oldIndex);
+                                  //context.read<Profile>().excerciseInsertList(index: newIndex, data: y);
+                                  //excercises.insert(newIndex, y);
+                          
+                                  //TextEditingController z = splitDaysTEC[oldIndex];
+                                  //splitDaysTEC.removeAt(oldIndex);
+                                  //splitDaysTEC.insert(newIndex, z);
+                          
+                                  //List<TextEditingController> a = excercisesTEC[oldIndex];
+                                  //excercisesTEC.removeAt(oldIndex);
+                                  //excercisesTEC.insert(newIndex, a);
+                          
+
+                                  //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
+
+                                });
+                                //print(split.toString());
+                              },
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: context.read<Profile>().excercises[index].length + 1,
                               shrinkWrap: true,
@@ -401,6 +442,8 @@ class _MyListState extends State<ProgramPage> {
                                 // defines what each card will look like
                                 if (excerciseIndex == context.read<Profile>().excercises[index].length){
                                   return Padding(
+                                    key: ValueKey('dayAdder'),
+
                                     padding: const EdgeInsets.only(left: 8, bottom: 8),
                                     child: SizedBox(
                                       // width: 50,
@@ -412,8 +455,9 @@ class _MyListState extends State<ProgramPage> {
                                           height: 100,
                                           child: ElevatedButton(
                                             onPressed: () {
+                                              HapticFeedback.heavyImpact();
                                               setState(() {
-                                                  excercisesTEC[index].add(TextEditingController());
+                                                  //excercisesTEC[index].add(TextEditingController());
                                                   //print(excercisesTEC[index].length.toString());
                                                   context.read<Profile>().excerciseAppend(newExcercise: SplitDayData(data: "New Excercise", dayColor: Colors.black), index: index);
                                                   //excercises[index].add("New Excercise");
@@ -426,7 +470,8 @@ class _MyListState extends State<ProgramPage> {
                                               //padding: WidgetStateProperty.all(EdgeInsets.all(20)),
                                               backgroundColor: WidgetStateProperty.all(Colors.deepPurple), // <-- Button color
                                               overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                                                if (states.contains(WidgetState.pressed)) return Colors.deepPurpleAccent; // <-- Splash color
+                                                if (states.contains(WidgetState.pressed)) return Colors.deepPurpleAccent;
+                                                return null; // <-- Splash color
                                               }),
                                             ),
                                             child: Icon(Icons.add),
@@ -438,56 +483,109 @@ class _MyListState extends State<ProgramPage> {
                                   );
                                 }
                                 else{
-                                  //todo: centre text boxes, add notes option on dropdown
-                                  return ExpansionTile(
-                                    iconColor: Color.fromARGB(255, 21,18,24),
-                                      title: 
-                                    // row has day title, confirm update button, delete button
-                                    // and excercise dropdown button
+                                  //todo: centre text boxes, add notes option on dropdown, add ondismissed
+                                  return Dismissible(
+                                    direction: DismissDirection.endToStart,
+                                    //key: ValueKey(context.watch<Profile>().split[index]),
+                                    background: Container(
+                                      color: Colors.red,
+                                      //alignment: Alignment.centerRight,
+                                      child: Icon(Icons.delete)
+                                    ),
+
+                                    onDismissed: (direction) {
+                                      HapticFeedback.heavyImpact();
+                                      // Remove the item from the data source.
+                                      setState(() {
+                                        context.read<Profile>().excercisePop(index1: index, index2: excerciseIndex);
+                                          //.removeAt(index);
+                                          //excercisesTEC.removeAt(index);         
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            style: TextStyle(
+                                              color: Colors.white
+                                            ),
+                                            'Excercise Deleted'
+                                            ),
+                                          
+                                        ),
+                                      );
+                                    },
+                                    key: ValueKey(context.watch<Profile>().excercises[index][excerciseIndex]),
+                                    child: Theme(
+                                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                      child: 
+                                       
+                                      // row has day title, confirm update button, delete button
+                                      // and excercise dropdown button
                                         Row(
-                                        //verticalDirection: VerticalDirection,
+                                          //verticalDirection: VerticalDirection,
                                           children: [
                                             Expanded(
-                                              child: SizedBox(
-                                                height: 40,
-                                                child: ListTile(
-                                                  title: TextFormField(
-                                                    controller: excercisesTEC[index][excerciseIndex],
-                                                    decoration: InputDecoration(
+                                              
+                                                child: SizedBox(
+                                                  height: 40,
+                                                  width: 100,
+                                                  child: 
+                                                  
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      context.watch<Profile>().excercises[index][excerciseIndex].data,
                                                       
-                                                      border: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                    hintText: context.read<Profile>().excercises[index][excerciseIndex].data,
+                                                      style: TextStyle(
+                                                        color: Color.fromARGB(255, 255, 255, 255),
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
+                                              
                                             ),
-                                
-                                            //confirm update exceercisesbutton
-                                            IconButton(onPressed: () {
-                                              setState( () {
-                                                context.read<Profile>().excerciseAssign(index1: index, index2: excerciseIndex, data: SplitDayData(data: excercisesTEC[index][excerciseIndex].text, dayColor: Colors.black));
-                                                //excercises[index][excerciseIndex] = (excercisesTEC[index][excerciseIndex].text);
-                                              //closes keyboard
-                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                });
-                                            }, icon: Icon(Icons.check)
+                                              
+                                            //confirm update button
+                                            IconButton(onPressed: () async{
+                                              HapticFeedback.heavyImpact();
+                                              
+                                      
+                                                String? excerciseTitle = await openDialog();
+                                                if (excerciseTitle == null || excerciseTitle.isEmpty) return;
+                                                setState( () {
+                                                  Provider.of<Profile>(context, listen: false).excerciseAssign(
+                                                  index1: index, 
+                                                  index2: excerciseIndex,
+                                                  data: SplitDayData(
+                                                    data: excerciseTitle, dayColor: context.read<Profile>().split[index].dayColor)
+                                                    );
+                                                  }
+                                                  );
+                                              }, 
+                                              icon: Icon(Icons.edit),
+                                              color: Color.fromARGB(255, 255, 255, 255),
                                             ),
-                                
-                                            // detete excercises button
-                                            IconButton(onPressed: () {
-                                              setState( () {
-                                                //value = value - 1;
-                                                context.read<Profile>().excercisePop(index1: index, index2: excerciseIndex);
-                                                //excercises[index].removeAt(excerciseIndex);
-                                                excercisesTEC[index].removeAt(excerciseIndex);
-                                              });
-                                              }, icon: Icon(Icons.delete)
-                                            ),
-                                          ],//row children
-                                        ),//row
-                                      );//,//Expandsion tile
+                                              
+                                            // detete day button
+                                            // IconButton(onPressed: () {
+                                            //   setState( () {
+                                            //     //value = value - 1;
+                                            //     context.read<Profile>().splitPop(index: index);
+                                            //     context.read<Profile>().excercisePopList(index: index);
+                                            //     //excercises.removeAt(index);
+                                            //     splitDaysTEC.removeAt(index);
+                                            //     excercisesTEC.removeAt(index);
+                                            //     //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
+                                      
+                                            //   });
+                                            //   }, 
+                                              
+                                            //),
+                                          ],
+                                        ),
+                                    ),
+                                  );//,//Expandsion tile
                                     //),//Padding
                                   //);//card
                                 }//else
@@ -523,6 +621,7 @@ class _MyListState extends State<ProgramPage> {
       actions: [
         IconButton(
           onPressed: (){
+            HapticFeedback.heavyImpact();
             Navigator.of(context).pop(alertTEC.text);
         },
         icon: Icon(Icons.check))
