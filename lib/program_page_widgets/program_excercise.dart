@@ -81,7 +81,7 @@ class ExcerciseListView extends StatelessWidget {
     ProgramExcercise(name: 'Pull', excercises: const ['run', 'walk']),
   ];
 
-  const ExcerciseListView({super.key});
+  ExcerciseListView({super.key});
   
 
   @override
