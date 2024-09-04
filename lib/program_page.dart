@@ -263,13 +263,15 @@ class _MyListState extends State<ProgramPage> {
                 );
               }
               else{
-              FocusNode splitFocusNode = FocusNode();
+              //FocusNode splitFocusNode = FocusNode();
               
               return 
                 Dismissible(
+                  direction: DismissDirection.endToStart,
                   key: ValueKey(context.watch<Profile>().split[index]),
                   background: Container(
                     color: Colors.red,
+                    //alignment: Alignment.centerRight,
                     child: Icon(Icons.delete)
                   ),
 
