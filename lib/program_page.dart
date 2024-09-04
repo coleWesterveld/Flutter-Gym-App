@@ -301,7 +301,7 @@ class _MyListState extends State<ProgramPage> {
                     //color: pastelPalette[index].,
                     
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: darken(context.watch<Profile>().split[index].dayColor, 20), width: 3.0),
+                      side: BorderSide(color: darken(context.watch<Profile>().split[index].dayColor, 20), width: 1.0),
                       borderRadius: BorderRadius.circular(8.0)
                     ),
                     
