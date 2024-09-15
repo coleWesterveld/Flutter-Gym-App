@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'workout_page.dart';
 import 'schedule_page.dart';
 import 'program_page.dart';
@@ -11,15 +13,63 @@ import 'user.dart';
 
 /// Flutter code sample for [NavigationBar].
 
-void main() => runApp( NavigationBarApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp( NavigationBarApp());
+
+}
 
 class NavigationBarApp extends StatefulWidget {
+    
+
   const NavigationBarApp({super.key});
   @override
   State<NavigationBarApp> createState() => _MainPage();
   //_MainPage createState() => _MainPage();
 }
 class _MainPage extends State<NavigationBarApp> {
+  List<SplitDayData> split = 
+  [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 1), ), 
+  SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 1),), 
+  SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 1),)];
+
+
+  late SharedPreferences _sharedPrefs;
+
+  getSharedPreferences() async {
+    //print("gotsharedprefs");
+    _sharedPrefs = await SharedPreferences.getInstance();
+    readPrefs();
+    
+  }
+
+  writePrefs(){
+    //print("wroteprefs");
+    List<String> splitDataList = split.map((data) => jsonEncode(data.toJson())).toList();
+    _sharedPrefs.setStringList('splitData', splitDataList);
+  }
+
+  readPrefs(){
+    //print("readprefs");
+    List<String>? splitDataList = _sharedPrefs.getStringList('splitData');
+    if (splitDataList != null){
+      split = splitDataList.map((data) => SplitDayData.fromJson(json.decode(data))).toList(growable: true);
+      //rint("split");
+    }
+    setState((){
+
+    });
+  }
+
+  @override
+
+  void initState() {
+    //print("initprefs");
+    getSharedPreferences();
+    super.initState();
+  }
+  //TODO: everytime split is updated, save it to shared porefrecnes.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -27,10 +77,10 @@ class _MainPage extends State<NavigationBarApp> {
 
         ChangeNotifierProvider(
           create: (context) => Profile(
-            split: [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 1), ), 
-              SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 1),), 
-              SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 1),)],
-            excercises: [[],[],[]],
+            split: split,
+            // this is temporairy while i figure out persistence for the split,
+            // so that i dont run into index out of range on the excercises
+            excercises: [[],[],[], [], [], [], [], [], [], [] , []],
             uuidCount: 0,
             ),
           ),
@@ -47,22 +97,24 @@ class _MainPage extends State<NavigationBarApp> {
           )
         ),
         //theme: ThemeData(useMaterial3: false),s
-        home: NavigationExample(),
+        home: NavigationExample(updater: writePrefs,),
       ),
     );
   }
 }
 
 class NavigationExample extends StatefulWidget {
-  const NavigationExample({super.key});
+  Function updater;
+  NavigationExample({super.key, required this.updater});
   
   @override
-  State<NavigationExample> createState() => _NavigationExampleState();
+  _NavigationExampleState createState() => _NavigationExampleState();
 }
 
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
-  final ProgramPage _programPage = ProgramPage();
+  
+  
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -116,7 +168,7 @@ class _NavigationExampleState extends State<NavigationExample> {
         /// Schedule page
         SchedulePage(),
         /// Program page
-        _programPage,
+        ProgramPage(writePrefs: widget.updater),
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],

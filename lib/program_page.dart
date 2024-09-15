@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
+
 import 'package:flutter/services.dart';
 
 // todo: add app persistence
@@ -55,8 +56,8 @@ Color lighten(Color c, [int percent = 10]) {
 // then excercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
   //final List<String> split;
-  
-  const ProgramPage({Key? programkey}) : super(key: programkey);
+  Function writePrefs;
+  ProgramPage({Key? programkey, required this.writePrefs}) : super(key: programkey);
   @override
   _MyListState createState() => _MyListState();
 }
@@ -65,11 +66,14 @@ class ProgramPage extends StatefulWidget {
 // title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
 class _MyListState extends State<ProgramPage> {
   //int value = 0;
+
   //List<String> split = ["Push", "Pull", "Legs"];
   DateTime today = DateTime.now();
   //Map<DateTime, List<Event>> events = {};
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
   DateTime startDay = DateTime(2024, 8, 10);
+
+
   // excercise days are colour coded which will correspond 
   // to colour when putting in calendar to make it look nicer
   // and gives quick and easy view of weekly frequency 
@@ -102,6 +106,7 @@ class _MyListState extends State<ProgramPage> {
       context.read<Profile>().excerciseAppendList(newDay: []);
       //excercisesTEC.add([]);
       context.read<Profile>().splitAppend(newDay: "New Day");
+      
       //print(splitDaysTEC.length);
       
       //print(Provider.of<Profile>(context, listen: false).split.toString());
@@ -225,8 +230,9 @@ class _MyListState extends State<ProgramPage> {
                 //excercisesTEC.insert(newIndex, a);
         
                 //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
-
+               
               });
+              widget.writePrefs();
               //print(split.toString());
             },
           //shrinkWrap: true,
@@ -252,6 +258,7 @@ class _MyListState extends State<ProgramPage> {
                       setState(() {
                         _addItem();
                       });
+                      widget.writePrefs();
                       
                     },
                     child: SizedBox(
@@ -284,6 +291,7 @@ class _MyListState extends State<ProgramPage> {
                         //.removeAt(index);
                         //excercisesTEC.removeAt(index);         
                     });
+                    widget.writePrefs();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -345,7 +353,7 @@ class _MyListState extends State<ProgramPage> {
                                     
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Text(
+                                      child: Text("Day " + (index + 1).toString() + ": " + 
                                         context.watch<Profile>().split[index].data,
                                         
                                         style: TextStyle(
@@ -372,6 +380,7 @@ class _MyListState extends State<ProgramPage> {
                                       data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor));
                                       }
                                       );
+                                      widget.writePrefs();
                                 }, 
                                 icon: Icon(Icons.edit),
                                 color: Color.fromARGB(255, 255, 255, 255),
