@@ -207,7 +207,6 @@ class _MyListState extends State<ProgramPage> {
                 if (newIndex > oldIndex) {
                   newIndex -= 1;
                 }
-        
                 //managing these lists shoudl probably be put into a function or smthn this is kinda ugly
                 //but hey it works ig
                 SplitDayData x = Provider.of<Profile>(context, listen: false).split[oldIndex];
@@ -219,18 +218,7 @@ class _MyListState extends State<ProgramPage> {
                 context.read<Profile>().excercisePopList(index: oldIndex);
                 //excercises.removeAt(oldIndex);
                 context.read<Profile>().excerciseInsertList(index: newIndex, data: y);
-                //excercises.insert(newIndex, y);
-        
-                //TextEditingController z = splitDaysTEC[oldIndex];
-                //splitDaysTEC.removeAt(oldIndex);
-                //splitDaysTEC.insert(newIndex, z);
-        
-                //List<TextEditingController> a = excercisesTEC[oldIndex];
-                //excercisesTEC.removeAt(oldIndex);
-                //excercisesTEC.insert(newIndex, a);
-        
-                //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
-               
+
               });
               widget.writePrefs();
               //print(split.toString());
@@ -341,67 +329,83 @@ class _MyListState extends State<ProgramPage> {
                         title: 
                         // row has day title, confirm update button, delete button
                         // and excercise dropdown button
-                          Row(
-                            //verticalDirection: VerticalDirection,
-                            children: [
-                              Expanded(
-                                
-                                  child: SizedBox(
-                                    height: 40,
-                                    width: 100,
-                                    child: 
-                                    
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text("Day " + (index + 1).toString() + ": " + 
-                                        context.watch<Profile>().split[index].data,
-                                        
-                                        style: TextStyle(
-                                          color: Color.fromARGB(255, 255, 255, 255),
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
+                          SizedBox(
+                            height: 40,
+                            child: Row(
+                              //verticalDirection: VerticalDirection,
+                              children: [
+                                Expanded(
+                                  
+                                    child: SizedBox(
+                                      height: 30,
+                                      width: 100,
+                                      child: 
+                                      
+                                      Padding(
+                                        padding: const EdgeInsets.all(0.0),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              
+                                              (index + 1).toString() + ": ",
+                                              style: TextStyle(
+                                                color: darken(darken(context.watch<Profile>().split[index].dayColor, 20)),
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w900,
+                                                
+                                              ),
+                                            ),
+                                            Text(
+                                              context.watch<Profile>().split[index].data,
+                                              style: TextStyle(
+                                                color: Color.fromARGB(255, 255, 255, 255),
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                  ),
-                                
-                              ),
-                                
-                              //confirm update button
-                              IconButton(onPressed: () async{
-                                
-                        
-                                  String? dayTitle = await openDialog();
-                                  if (dayTitle == null || dayTitle.isEmpty) return;
-                                  setState( () {
-                                    Provider.of<Profile>(context, listen: false).splitAssign(
-                                    index: index, 
-                                    data: SplitDayData(
-                                      data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor));
-                                      }
-                                      );
-                                      widget.writePrefs();
-                                }, 
-                                icon: Icon(Icons.edit),
-                                color: Color.fromARGB(255, 255, 255, 255),
-                              ),
-                                
-                              // detete day button
-                              // IconButton(onPressed: () {
-                              //   setState( () {
-                              //     //value = value - 1;
-                              //     context.read<Profile>().splitPop(index: index);
-                              //     context.read<Profile>().excercisePopList(index: index);
-                              //     //excercises.removeAt(index);
-                              //     splitDaysTEC.removeAt(index);
-                              //     excercisesTEC.removeAt(index);
-                              //     //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
-                        
-                              //   });
-                              //   }, 
-                                
-                              //),
-                            ],
+                                  
+                                ),
+                                  
+                                //confirm update button
+                                IconButton(onPressed: () async{
+                                  
+                                                    
+                                    String? dayTitle = await openDialog();
+                                    if (dayTitle == null || dayTitle.isEmpty) return;
+                                    setState( () {
+                                      Provider.of<Profile>(context, listen: false).splitAssign(
+                                      index: index, 
+                                      data: SplitDayData(
+                                        data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor));
+                                        }
+                                        );
+                                        widget.writePrefs();
+                                  }, 
+                                  icon: Icon(Icons.edit),
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                ),
+                                  
+                                // detete day button
+                                // IconButton(onPressed: () {
+                                //   setState( () {
+                                //     //value = value - 1;
+                                //     context.read<Profile>().splitPop(index: index);
+                                //     context.read<Profile>().excercisePopList(index: index);
+                                //     //excercises.removeAt(index);
+                                //     splitDaysTEC.removeAt(index);
+                                //     excercisesTEC.removeAt(index);
+                                //     //Navigator.of(context).push(MaterialPageRoute(builder: (context)=> SchedulePage(program: widget.split)));
+                                                    
+                                //   });
+                                //   }, 
+                                  
+                                //),
+                              ],
+                            ),
                           ),
                                 
                         // excercises for each day
