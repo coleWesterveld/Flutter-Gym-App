@@ -75,7 +75,7 @@ class _MyScheduleState extends State<SchedulePage> {
                   for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
 
                   
-                    if (daysBetween(origin , day) % 7 == (7 ~/ context.watch<Profile>().split.length) * splitDay) {
+                    if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
                       return Container(
                         decoration: BoxDecoration(
                           color: context.watch<Profile>().split[splitDay].dayColor,

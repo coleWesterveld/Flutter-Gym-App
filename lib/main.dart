@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,43 +8,35 @@ import 'schedule_page.dart';
 import 'program_page.dart';
 import 'analytics_page.dart';
 import 'user.dart';
-//import 'package:google_fonts/google_fonts.dart';//
-
-/// Flutter code sample for [NavigationBar].
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp( NavigationBarApp());
-
 }
 
 class NavigationBarApp extends StatefulWidget {
-    
-
   const NavigationBarApp({super.key});
   @override
   State<NavigationBarApp> createState() => _MainPage();
   //_MainPage createState() => _MainPage();
 }
 class _MainPage extends State<NavigationBarApp> {
+  //default split, gets overwridden by user choices
   List<SplitDayData> split = 
   [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 1), ), 
   SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 1),), 
   SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 1),)];
 
-
+  //getting and storing persistent data
   late SharedPreferences _sharedPrefs;
-
   getSharedPreferences() async {
     //print("gotsharedprefs");
     _sharedPrefs = await SharedPreferences.getInstance();
     readPrefs();
-    
   }
 
   writePrefs(){
-    //print("wroteprefs");
+    
     List<String> splitDataList = split.map((data) => jsonEncode(data.toJson())).toList();
     _sharedPrefs.setStringList('splitData', splitDataList);
   }
@@ -57,6 +48,7 @@ class _MainPage extends State<NavigationBarApp> {
       split = splitDataList.map((data) => SplitDayData.fromJson(json.decode(data))).toList(growable: true);
       //rint("split");
     }
+
     setState((){
 
     });
@@ -68,10 +60,11 @@ class _MainPage extends State<NavigationBarApp> {
     //print("initprefs");
     getSharedPreferences();
     super.initState();
+    
   }
-  //TODO: everytime split is updated, save it to shared porefrecnes.
   @override
   Widget build(BuildContext context) {
+    //provider for global variable information
     return MultiProvider(
       providers: [
 
@@ -80,7 +73,20 @@ class _MainPage extends State<NavigationBarApp> {
             split: split,
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
+            //with sets this is atrocious lol
+            // TODO: fix
             excercises: [[],[],[], [], [], [], [], [], [], [] , []],
+            sets: [[[],[],[], [], [], [], [], [], [], [] , []],
+            [[],[],[], [], [], [], [], [], [], [] , []],
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []], 
+            [[],[],[], [], [], [], [], [], [], [] , []] , 
+            [[],[],[], [], [], [], [], [], [], [] , []]],
             uuidCount: 0,
             ),
           ),
@@ -117,6 +123,7 @@ class _NavigationExampleState extends State<NavigationExample> {
   
   @override
   Widget build(BuildContext context) {
+    
     final ThemeData theme = Theme.of(context);
     //var list = ['Legs', 'Push', 'Pull'];
     //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
@@ -135,8 +142,9 @@ class _NavigationExampleState extends State<NavigationExample> {
           Radius.circular(12),
           ),
         ),
-        //indicatorShape:  RoundedRectangleBorder(BorderSide side = BorderSide.none, borderRadius = BorderRadius.zero),
+
         selectedIndex: currentPageIndex,
+        //different pages that can be navigated to
         destinations: const <Widget>[
           NavigationDestination(
             selectedIcon: Icon(Icons.fitness_center),
@@ -160,11 +168,11 @@ class _NavigationExampleState extends State<NavigationExample> {
           ),
         ],
       ),
+
+      //what opens for each page
       body: <Widget>[
         /// Workout page
         WorkoutPage(),
-
-        
         /// Schedule page
         SchedulePage(),
         /// Program page
