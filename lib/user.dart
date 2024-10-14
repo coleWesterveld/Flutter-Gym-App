@@ -202,4 +202,14 @@ class Profile extends ChangeNotifier {
     sets[index1][index2].insert(index3, data);
     notifyListeners();
   }
+
+    //adds new set to end of list of sets at [index1][index2]
+  void setsAppend({
+    required SplitDayData newSets,
+    required int index1,
+    required int index2,
+  }) async {
+    sets[index1][index2].add(newSets);
+    notifyListeners();
+  }
 }

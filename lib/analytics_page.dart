@@ -1,4 +1,5 @@
 // analyitcs page
+// not updated
 import 'package:flutter/material.dart';
 
 class AnalyticsPage extends StatefulWidget {
