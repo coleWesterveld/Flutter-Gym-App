@@ -21,6 +21,9 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
+
 
 
 //TODO: gradient background
@@ -64,11 +67,14 @@ Color lighten(Color c, [int percent = 10]) {
         c.blue + ((255 - c.blue) * p).round()
     );
 }
+
+
+
 //program page, where user defines the overall program by days,
 // then excercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
   Function writePrefs;
-  ProgramPage({Key? programkey, required this.writePrefs}) : super(key: programkey);
+  ProgramPage({Key? programkey, required this.writePrefs,}) : super(key: programkey);
   @override
   _MyListState createState() => _MyListState();
 }
@@ -79,6 +85,52 @@ class _MyListState extends State<ProgramPage> {
   DateTime today = DateTime.now();
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
   DateTime startDay = DateTime(2024, 8, 10);
+
+  
+
+
+  Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        color: color,
+        boxShadow: [BoxShadow(color: color.withOpacity(0.8), offset: const Offset(1, 2), blurRadius: 0.0)],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: changeColor,
+          borderRadius: BorderRadius.circular(8.0),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 250),
+            opacity: isCurrentColor ? 1 : 0,
+            child: Icon(
+              Icons.done,
+              size: 36,
+              color: useWhiteForeground(color) ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+    Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
+    Orientation orientation = MediaQuery.of(context).orientation;
+
+    return SizedBox(
+      width: 300,
+      height: orientation == Orientation.portrait ? 360 : 240,
+      child: GridView.count(
+        crossAxisCount: orientation == Orientation.portrait ?  5: 4,
+        crossAxisSpacing: 5,
+        mainAxisSpacing: 5,
+        children: [for (Color color in colors) child(color)],
+      ),
+    );
+  }
 
   // adds day to split
   _addItem() {
@@ -255,6 +307,7 @@ class _MyListState extends State<ProgramPage> {
                           blurRadius: 0.0,
                         ),
                         //this shadow is what gives left side lining of colour
+                        //kind of undecided if I want to change this, i could make this more of a drop shadow, idk
                         BoxShadow(
                           color: context.watch<Profile>().split[index].dayColor,
                           offset: const Offset(-4.0, 0.0),
@@ -325,20 +378,22 @@ class _MyListState extends State<ProgramPage> {
                                   
                                 //update title button
                                 IconButton(onPressed: () async{
-  
-                                    String? dayTitle = await openDialog();
-                                    if (dayTitle == null || dayTitle.isEmpty) return;
-                                    //rebuild widget tree reflecting new title
-                                    setState( () {
-                                      Provider.of<Profile>(context, listen: false).splitAssign(
-                                        index: index, 
-                                        newExcercises: context.read<Profile>().excercises[index],
-                                        newSets: context.read<Profile>().sets[index],
-                                        newDay: SplitDayData(
-                                          data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                        )
-                                      );
-                                    }); //close setstate 
+                                    //TODO: make a button to go between two screens, 
+                                    // default to changing title but when toggled to color can also change day color.
+                                    openColorPicker(index);
+                                    // String? dayTitle = await openDialog();
+                                    // if (dayTitle == null || dayTitle.isEmpty) return;
+                                    // //rebuild widget tree reflecting new title
+                                    // setState( () {
+                                    //   Provider.of<Profile>(context, listen: false).splitAssign(
+                                    //     index: index, 
+                                    //     newExcercises: context.read<Profile>().excercises[index],
+                                    //     newSets: context.read<Profile>().sets[index],
+                                    //     newDay: SplitDayData(
+                                    //       data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                    //     )
+                                    //   );
+                                    // }); //close setstate 
                                     widget.writePrefs();
                                   },
 
@@ -410,7 +465,7 @@ class _MyListState extends State<ProgramPage> {
                                       
                                       label: Row(
                                         mainAxisSize: MainAxisSize.min,
-                                        children: [
+                                        children: const [
                                           Icon(Icons.add),
                                           Text(
                                             "Excercise  ",
@@ -525,9 +580,9 @@ class _MyListState extends State<ProgramPage> {
                                                         });  
                                                       },
                                                       label: Row(
-                                                        children: [
-                                                          const Icon(Icons.add),
-                                                          const Text("Set"),
+                                                        children: const [
+                                                          Icon(Icons.add),
+                                                          Text("Set"),
                                                         ],
                                                       ),
                                                     ),
@@ -705,27 +760,76 @@ class _MyListState extends State<ProgramPage> {
   Future<String?> openDialog() {
     TextEditingController alertTEC = TextEditingController();
     return showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: TextFormField(
-        autofocus: true,
-        controller: alertTEC,
-        decoration: InputDecoration(
-          hintText: "Enter Text",
+      context: context,
+      builder: (context) => AlertDialog(
+        title: TextFormField(
+          autofocus: true,
+          controller: alertTEC,
+          decoration: InputDecoration(
+            hintText: "Enter Text",
+          ),
         ),
+        actions: [
+          IconButton(
+            onPressed: (){
+              HapticFeedback.heavyImpact();
+              Navigator.of(context).pop(alertTEC.text);
+            },
+            icon: Icon(Icons.check))
+        ]
       ),
-      actions: [
-        IconButton(
-          onPressed: (){
-            HapticFeedback.heavyImpact();
-            Navigator.of(context).pop(alertTEC.text);
-        },
-        icon: Icon(Icons.check))
-      ]
-    ),
-  );
+    );
+  }
+
+    void openColorPicker(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select a color'),
+          content: SingleChildScrollView(
+            child: BlockPicker(
+              pickerColor: context.watch<Profile>().split[index].dayColor,
+              onColorChanged: (Color color) {
+                context.read<Profile>().splitAssign(
+                  index: index,
+                  newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
+                  newExcercises: context.read<Profile>().excercises[index],
+                  newSets: context.read<Profile>().sets[index],
+                );
+                setState(() {});
+              },
+                
+              
+              availableColors: Profile.colors,
+              layoutBuilder: pickerLayoutBuilder,
+              itemBuilder: pickerItemBuilder,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
+
+
+
+
+
+
+
+// Color selectedColor = Colors.blue; // Set an initial color
+
+// ColorPicker(
+//   color: selectedColor,
+//   onColorChanged: (Color color) {
+//     setState(() {
+//       selectedColor = color;
+//     });
+//   },
+// ).showPickerDialog(
+//   context,
+// );
 
 Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218)}){
   if (index % 2 == 0){

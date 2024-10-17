@@ -30,19 +30,28 @@ class SplitDayData{
 }
 
 class Profile extends ChangeNotifier {
-  static List<Color> pastelPalette = [
-    const Color.fromRGBO(106, 92, 185, 1), 
-    const Color.fromRGBO(150, 50, 50, 1), 
-    
-    const Color.fromRGBO(61, 101, 167, 1),
-    const Color.fromRGBO(220, 224, 85, 1),
-    const  Color.fromRGBO(61, 169, 179, 1),
-    const Color.fromRGBO(199, 143, 74, 1), 
-    const Color.fromRGBO(57, 129, 42, 1),
-    const Color.fromRGBO(131, 49, 131, 1),
-    const Color.fromRGBO(180, 180, 178, 1),
-    
-    ];
+  static const List<Color> colors = [
+  Colors.red,
+  Colors.pink,
+  Colors.purple,
+  Colors.deepPurple,
+  Colors.indigo,
+  Colors.blue,
+  Colors.lightBlue,
+  Colors.cyan,
+  Colors.teal,
+  Colors.green,
+  Colors.lightGreen,
+  Colors.lime,
+  Colors.yellow,
+  Colors.amber,
+  Colors.orange,
+  Colors.deepOrange,
+  Colors.brown,
+  Colors.grey,
+  Colors.blueGrey,
+  Colors.black,
+];
 
   //information of each day of the split
   var split = <SplitDayData>[];
@@ -83,7 +92,7 @@ class Profile extends ChangeNotifier {
     required List<SplitDayData> newExcercises,
     required List<List<SplitDayData>> newSets,
   }) async {
-    split.add(SplitDayData(data: "New Day", dayColor: pastelPalette[split.length + 1]));
+    split.add(SplitDayData(data: "New Day", dayColor: colors[split.length + 1]));
     excercises.add(newExcercises);
     sets.add(newSets);
     lengthUpdate();

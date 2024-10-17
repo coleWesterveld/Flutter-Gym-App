@@ -62,6 +62,9 @@ class _MainPage extends State<NavigationBarApp> {
     super.initState();
     
   }
+
+
+
   @override
   Widget build(BuildContext context) {
     //provider for global variable information
@@ -122,7 +125,7 @@ class NavigationExample extends StatefulWidget {
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
   
-  
+  void changeColor(Color newColor, int index) => setState(() => context.watch<Profile>().split[index].dayColor = newColor);
   @override
   Widget build(BuildContext context) {
     
@@ -178,7 +181,7 @@ class _NavigationExampleState extends State<NavigationExample> {
         /// Schedule page
         SchedulePage(),
         /// Program page
-        ProgramPage(writePrefs: widget.updater),
+        ProgramPage(writePrefs: widget.updater,),
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
