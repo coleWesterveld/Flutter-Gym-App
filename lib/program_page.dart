@@ -17,12 +17,13 @@ Still Todo on this page:
 */
 
 //import 'package:firstapp/main.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-
+//import 'package:flutter/cupertino.dart';
 
 
 
@@ -74,22 +75,31 @@ Color lighten(Color c, [int percent = 10]) {
 // then excercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
   Function writePrefs;
+  
   ProgramPage({Key? programkey, required this.writePrefs,}) : super(key: programkey);
   @override
   _MyListState createState() => _MyListState();
 }
 
+
+enum Viewer {title, color}
 // this class contains the list view of expandable card tiles 
 // title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
 class _MyListState extends State<ProgramPage> {
   DateTime today = DateTime.now();
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
   DateTime startDay = DateTime(2024, 8, 10);
+  int? _sliding = 0;
+  TextEditingController alertTEC = TextEditingController();
+  //double alertInsetValue = 0;
+  
+
 
   
 
 
   Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
+    
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -140,6 +150,8 @@ class _MyListState extends State<ProgramPage> {
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
+    //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
+    //print(_sliding);
     return Scaffold(
       appBar: AppBar(
         // program title
@@ -377,23 +389,69 @@ class _MyListState extends State<ProgramPage> {
                                 ),
                                   
                                 //update title button
-                                IconButton(onPressed: () async{
+                                
+                                IconButton(onPressed: () {
+                                    
                                     //TODO: make a button to go between two screens, 
                                     // default to changing title but when toggled to color can also change day color.
-                                    openColorPicker(index);
-                                    // String? dayTitle = await openDialog();
-                                    // if (dayTitle == null || dayTitle.isEmpty) return;
-                                    // //rebuild widget tree reflecting new title
-                                    // setState( () {
-                                    //   Provider.of<Profile>(context, listen: false).splitAssign(
-                                    //     index: index, 
-                                    //     newExcercises: context.read<Profile>().excercises[index],
-                                    //     newSets: context.read<Profile>().sets[index],
-                                    //     newDay: SplitDayData(
-                                    //       data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                    //     )
-                                    //   );
-                                    // }); //close setstate 
+                                    //TODO: color prefereces persistence
+                                    
+                                    showDialog(
+                                      anchorPoint: Offset(100, 100),
+                                      
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return StatefulBuilder(
+                                          builder: (context, StateSetter setState) {
+                                              return AlertDialog(
+                                                //Padding: EdgeInsets.only(bottom: alertInsetValue),
+                                                title: CupertinoSlidingSegmentedControl(
+                                                  padding: EdgeInsets.all(4.0),
+                                                  children: const <int, Text>{
+                                                    0: Text("Title"),
+                                                    1: Text("Color"),
+                                                  }, 
+                                          
+                                                  onValueChanged: (int? newValue){
+                                                    _sliding = newValue;
+                                          
+                                                    setState((){});
+                                               
+                                                  },
+                                                  thumbColor: Colors.deepPurple,
+                                                  groupValue: _sliding,
+                                                ),
+                                                content: editBuilder(index),
+                                                actions: [
+                                                  IconButton(
+                                                  onPressed: (){
+                                                    HapticFeedback.heavyImpact();
+                                                    String? dayTitle = alertTEC.text;
+                                                    if (dayTitle.isNotEmpty) {
+                                                    //rebuild widget tree reflecting new title
+                                                    setState( () {
+                                                      Provider.of<Profile>(context, listen: false).splitAssign(
+                                                        index: index, 
+                                                        newExcercises: context.read<Profile>().excercises[index],
+                                                        newSets: context.read<Profile>().sets[index],
+                                                        newDay: SplitDayData(
+                                                          data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                                        )
+                                                      );
+                                                    });} //
+                                                    Navigator.of(context, rootNavigator: true).pop('dialog');
+                                                    _sliding = 0;
+
+                                                    
+                                                  },
+                                                  icon: Icon(Icons.check))
+        ]
+                                          
+                                          );},
+                                        );
+                                      },
+                                    );
+                                  
                                     widget.writePrefs();
                                   },
 
@@ -758,7 +816,7 @@ class _MyListState extends State<ProgramPage> {
   //TODO: move to another file
   //this is to show text box to enter text for day titles and excercises
   Future<String?> openDialog() {
-    TextEditingController alertTEC = TextEditingController();
+    
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -781,35 +839,102 @@ class _MyListState extends State<ProgramPage> {
     );
   }
 
-    void openColorPicker(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select a color'),
-          content: SingleChildScrollView(
-            child: BlockPicker(
-              pickerColor: context.watch<Profile>().split[index].dayColor,
-              onColorChanged: (Color color) {
-                context.read<Profile>().splitAssign(
-                  index: index,
-                  newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
-                  newExcercises: context.read<Profile>().excercises[index],
-                  newSets: context.read<Profile>().sets[index],
-                );
-                setState(() {});
-              },
+  // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
+  // its jarring when it bounces around
+  Widget editBuilder(index){
+    if(_sliding == 0){
+      //Value = MediaQuery.sizeOf(context).height - 450;
+    return SizedBox(
+      height: 100,
+      width: 300,
+      child: TextFormField(
+          autofocus: true,
+          controller: alertTEC,
+          decoration: InputDecoration(
+            hintText: "Enter Text",
+          )
+        ),
+    );
+
+
+        
+    }else{
+          //alertInsetValue = MediaQuery.sizeOf(context).height - 300;
+          return SizedBox(
+            height: 250,
+            width: 300,
+            child: SingleChildScrollView(
+              
+              child: BlockPicker(
+                pickerColor: context.watch<Profile>().split[index].dayColor,
+                onColorChanged: (Color color) {
+                  context.read<Profile>().splitAssign(
+                    index: index,
+                    newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
+                    newExcercises: context.read<Profile>().excercises[index],
+                    newSets: context.read<Profile>().sets[index],
+                  );
+                  setState(() {});
+                },
+                  
+                
+                availableColors: Profile.colors,
+                layoutBuilder: pickerLayoutBuilder,
+                itemBuilder: pickerItemBuilder,
+              ),
+            ),
+          );
+    }
+  }
+
+  // //oid openColorPicker(int index) {
+    
+ 
+
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: CupertinoSlidingSegmentedControl(
+  //           padding: EdgeInsets.all(4.0),
+  //           children: const <int, Text>{
+  //             0: Text("Text1"),
+  //             1: Text("Text2"),
+  //             2: Text("Text3"),
+  //           }, 
+
+  //           onValueChanged: (int? newValue){
+  //             sliding = newValue;
+
+  //             setState((){});
+  //             //print(_sliding);
+  //           },
+  //           groupValue: sliding,
+  //         )
+
+          // content: SingleChildScrollView(
+          //   child: BlockPicker(
+          //     pickerColor: context.watch<Profile>().split[index].dayColor,
+          //     onColorChanged: (Color color) {
+          //       context.read<Profile>().splitAssign(
+          //         index: index,
+          //         newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
+          //         newExcercises: context.read<Profile>().excercises[index],
+          //         newSets: context.read<Profile>().sets[index],
+          //       );
+          //       setState(() {});
+          //     },
                 
               
-              availableColors: Profile.colors,
-              layoutBuilder: pickerLayoutBuilder,
-              itemBuilder: pickerItemBuilder,
-            ),
-          ),
-        );
-      },
-    );
-  }
+          //     availableColors: Profile.colors,
+          //     layoutBuilder: pickerLayoutBuilder,
+          //     itemBuilder: pickerItemBuilder,
+          //   ),
+          // ),
+  //       );
+  //     },
+  //   );
+  // }
 }
 
 
@@ -839,3 +964,4 @@ Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218
     return bgColor;
   }
 }
+
