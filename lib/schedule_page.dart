@@ -17,6 +17,8 @@ int daysBetween(DateTime from, DateTime to) {
 }
 
 
+
+
 class SchedulePage extends StatefulWidget {
   
 
@@ -31,81 +33,171 @@ class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};
   DateTime startDay = DateTime(2024, 8, 10);
+  DateTime? _selectedDay;
+  late final ValueNotifier<List<Event>> _selectedEvents;
 
-  // List<Color> pastelPalette = [
-  //   Color.fromRGBO(150, 50, 50, 0.6), 
-  //   Color.fromRGBO(199, 143, 74, 0.6), 
-  //   Color.fromRGBO(220, 224, 85, 0.6),
-  //   Color.fromRGBO(57, 129, 42, 0.6),
-  //   Color.fromRGBO(61, 169, 179, 0.6),
-  //   Color.fromRGBO(61, 101, 167, 0.6),
-  //   Color.fromRGBO(106, 92, 185, 0.6), 
-  //   Color.fromRGBO(131, 49, 131, 0.6),
-  //   Color.fromRGBO(180, 180, 178, 0.6),
-  //   ];
+  void loadEvents(){
+    //
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    _selectedDay = today;
+    //_selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    //loadEvents();
+  }
+
+  List<Event> _getEventsForDay (DateTime day){
+    for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
+      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * splitDay) {
+        return [Event(context.read<Profile>().split[splitDay].data)];
+      }
+    }
+    return [];
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay){
+    if (!isSameDay(_selectedDay, selectedDay)){
+      setState((){
+        _selectedDay = selectedDay;
+        today = focusedDay;
+        _selectedEvents.value = _getEventsForDay(selectedDay);
+      });
+      
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Safe to access context.watch<Profile>() here
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    loadEvents(); // You can call loadEvents() here as well, if needed
+  }
+
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
+
+    
+
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          showDialog(context: context, builder: (context){
-            return const AlertDialog(
-              scrollable: true,
-              
-            );
-          });
-        },
-        child: const Icon(Icons.add)
+      appBar: AppBar(
+        backgroundColor: Color(0xFF643f00),
+        centerTitle: true,
+        title: const Text(
+          "Planner",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+          ),
       ),
+ 
 
       
 
       //bottomNavigationBar: weekView(),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 60.0),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFF180c12),
+        ),
         child: Column(
           children: [
-            const Text("schedule WIP"),
-            Container(
-              child: TableCalendar(
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Container(
                 
-                calendarBuilders: CalendarBuilders(
-              defaultBuilder: (context, day, focusedDay) {
-                  DateTime origin = DateTime(2024, 1, 7);
-                  for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-
+                decoration: BoxDecoration(
                   
-                    if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: context.watch<Profile>().split[splitDay].dayColor,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(8.0),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${day.day}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    }
-                  }
+                  color: const Color.fromARGB(255, 43, 43, 43),
+                  //border: Border
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TableCalendar(
+                  selectedDayPredicate: (day) {
+                    return _selectedDay!.year == day.year &&
+                    _selectedDay!.month == day.month &&
+                    _selectedDay!.day == day.day;
+                  },
+                  onDaySelected: _onDaySelected,
+                  eventLoader: _getEventsForDay,
+                  
+                  calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                    DateTime origin = DateTime(2024, 1, 7);
+                    for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
                 
-                return null;
-              },
-            ),
-                rowHeight: 90,
-                focusedDay: today, 
-                firstDay: DateTime.utc(2010, 10, 16), 
-                lastDay: DateTime.utc(2030, 3, 14)
+                    
+                      if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: context.watch<Profile>().split[splitDay].dayColor,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(8.0),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  
+                  return null;
+                },
+                            ),
+                  rowHeight: 90,
+                  focusedDay: _selectedDay!, 
+                  firstDay: DateTime.utc(2010, 10, 16), 
+                  lastDay: DateTime.utc(2030, 3, 14)
+                ),
               ),
             ),
+            Expanded(
+              child: ValueListenableBuilder<List<Event>>(
+                valueListenable: _selectedEvents, 
+                builder: (context, value, _){
+                  return ListView.builder(
+                    itemCount: value.length,
+                    itemBuilder: (context, index){
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12, 
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 43, 43, 43),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              //color: context.watch<Profile>().split[index].dayColor,
+                            
+                          ),),
+                          child: ListTile(
+                            //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
+                            title: Text(value[index].title)
+                          ),
+                        
+                        ),
+                      );
+                    },
+                  );
+                }
+              ),
+            )
           ],
         ),
       ),
+
+      
     );
   }
 }

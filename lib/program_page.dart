@@ -155,6 +155,7 @@ class _MyListState extends State<ProgramPage> {
     //print(_sliding);
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFF643f00),
         centerTitle: true,
         title: const Text(
           "Build Program",
@@ -166,50 +167,65 @@ class _MyListState extends State<ProgramPage> {
 
 
       bottomSheet: SizedBox(
+        
         height: 66,
-        child: TableCalendar(
-          headerVisible: false,
-          calendarFormat: CalendarFormat.week,
-                  calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, focusedDay) {
-                  DateTime origin = DateTime(2024, 1, 7);
-                  for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-
-                    int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
-                    if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: context.watch<Profile>().split[splitDay].dayColor,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.0),
+        child: ColoredBox(
+          color: Color(0xFF643f00),
+          child: TableCalendar(
+            headerVisible: false,
+            calendarStyle: CalendarStyle(
+              
+              
+            ),
+            calendarFormat: CalendarFormat.week,
+                    calendarBuilders: CalendarBuilders(
+                      
+                  defaultBuilder: (context, day, focusedDay) {
+                    
+                    DateTime origin = DateTime(2024, 1, 7);
+                    for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
+          
+                      int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
+                      if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: context.watch<Profile>().split[splitDay].dayColor,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(8.0),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${day.day}',
-                            style: const TextStyle(color: Colors.white),
+                          child: Center(
+                            child: Text(
+                              '${day.day}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     }
-                  }
-                  
-                  return null;
-                },
-              ),
-                  rowHeight: 50,
-                  focusedDay: today, 
-                  firstDay: DateTime.utc(2010, 10, 16), 
-                  lastDay: DateTime.utc(2030, 3, 14)
+                    
+                    return null;
+                  },
                 ),
+                    rowHeight: 50,
+                    focusedDay: today, 
+                    firstDay: DateTime.utc(2010, 10, 16), 
+                    lastDay: DateTime.utc(2030, 3, 14),
+                    daysOfWeekStyle: DaysOfWeekStyle(
+                      weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
+                       weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
+                      ),
+                  ),
+        ),
       ),
 
       //list of day cards
       body: DecoratedBox(
         decoration: BoxDecoration( 
+          
             // Image set to background of the body
             image: DecorationImage( 
-                image: AssetImage("background.png"), fit: BoxFit.cover),
+                image: AssetImage("gray.png"), fit: BoxFit.cover),
           ),
         child: SizedBox(
           height: MediaQuery.of(context).size.height - (265),
@@ -236,10 +252,10 @@ class _MyListState extends State<ProgramPage> {
                 child: Card(
                   key: ValueKey('dayAdder'),
                 
-                  color: darken(Colors.deepPurple, 10),
+                  color: Colors.orange,
                   child: InkWell(
                  
-                    splashColor: Colors.purple,
+                    splashColor: Colors.deepOrange,
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
                       HapticFeedback.heavyImpact();
@@ -300,12 +316,12 @@ class _MyListState extends State<ProgramPage> {
                       decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withOpacity(0.1),
                             offset: const Offset(-6.0, -6.0),
                             blurRadius: 16.0,
                           ),
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withOpacity(0.6),
                             offset: const Offset(6.0, 6.0),
                             blurRadius: 12.0,
                           ),
@@ -351,7 +367,7 @@ class _MyListState extends State<ProgramPage> {
                                       width: 100,
                                       child: 
                                         Padding(
-                                          padding: const EdgeInsets.all(0.0),
+                                          padding: const EdgeInsets.all(.0),
                                           //actual information: number ordering of day, 
                                           //user given day name, edit button
                                           child: Row(
@@ -414,7 +430,7 @@ class _MyListState extends State<ProgramPage> {
                                                       setState((){});
                                                  
                                                     },
-                                                    thumbColor: Colors.deepPurple,
+                                                    thumbColor: Colors.orange,
                                                     groupValue: _sliding,
                                                   ),
                                                   content: editBuilder(index),
@@ -510,9 +526,9 @@ class _MyListState extends State<ProgramPage> {
                                           shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                       
                                             borderRadius: BorderRadius.circular(12))),
-                                          backgroundColor: WidgetStateProperty.all(Colors.deepPurple,), 
-                                          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                                            if (states.contains(WidgetState.pressed)) return Colors.deepPurpleAccent;
+                                          backgroundColor: WidgetStateProperty.all(Color(0xFF643f00),), 
+                                          overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                                            if (states.contains(WidgetState.pressed)) return Color(0xFF643f00);
                                             return null;
                                           }),
                                         ),
@@ -615,7 +631,7 @@ class _MyListState extends State<ProgramPage> {
                                                           backgroundColor: WidgetStateProperty.all(_listColorFlop(index: excerciseIndex)),
                                                           shape: WidgetStateProperty.all(
                                                             RoundedRectangleBorder(
-                                                              side: BorderSide(color: Colors.deepPurple,
+                                                               side: BorderSide(color: const Color(0xFF643f00),
                                                               width: 2,),
                                                               borderRadius: BorderRadius.all(Radius.circular(8)),
                                                             ),

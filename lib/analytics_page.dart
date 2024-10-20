@@ -17,45 +17,17 @@ class AnalyticsPage extends StatefulWidget {
 class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      reverse: true,
-      itemCount: 2,
-      itemBuilder: (BuildContext context, int index) {
-        if (index == 1) {
-          return Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              margin: const EdgeInsets.all(8.0),
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: widget.theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Text(
-                'Hello',
-                style: widget.theme.textTheme.bodyLarge!
-                    .copyWith(color: widget.theme.colorScheme.onPrimary),
-              ),
-            ),
-          );
-        }
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.all(8.0),
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: widget.theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Text(
-              'Hi!',
-              style: widget.theme.textTheme.bodyLarge!
-                  .copyWith(color: widget.theme.colorScheme.onPrimary),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF643f00),
+        centerTitle: true,
+        title: const Text(
+          "Analytics",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
           ),
-        );
-      },
+          ),
+      ),
     );
   }
 }

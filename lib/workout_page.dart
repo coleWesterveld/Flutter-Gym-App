@@ -70,6 +70,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFF643f00),
         centerTitle: true,
         title: const Text(
           "Workout",
@@ -78,7 +79,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
           ),
           ),
       ),
-
       body: SizedBox(
         height: MediaQuery.of(context).size.height - (265),
         child: ListView.builder(
@@ -117,7 +117,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                         blurRadius: 0.0,
                       ),
                     ],
-                    color: Color(0xFF151218),
+                    color: const Color(0xFF151218),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
               
@@ -128,8 +128,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       
                       //expandable to see excercises and sets for that day
                       child: ExpansionTile(
-                      iconColor: Color.fromARGB(255, 255, 255, 255),
-                      collapsedIconColor: Color.fromARGB(255, 255, 255, 255),
+                      iconColor: const Color.fromARGB(255, 255, 255, 255),
+                      collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
               
                       //top row always displays day title, and edit button
                       //sized boxes and padding is just a bunch of formatting stuff
@@ -166,7 +166,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                           ),
                                           Text(
                                             context.watch<Profile>().split[index].data,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Color.fromARGB(255, 255, 255, 255),
                                               fontSize: 18,
                                               fontWeight: FontWeight.w800,
@@ -214,7 +214,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                               child: Text(
                                                 context.watch<Profile>().excercises[index][excerciseIndex].data,
                                                                                       
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   color: Color.fromARGB(255, 255, 255, 255),
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -242,7 +242,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             direction: DismissDirection.endToStart,
                                             background: Container(
                                               color: Colors.red,
-                                              child: Icon(Icons.delete)
+                                              child: const Icon(Icons.delete)
                                             ),
                                                   
                                             onDismissed: (direction) {
@@ -257,7 +257,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                               });
                                   
                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
+                                                const SnackBar(
                                                   content: Text(
                                                     style: TextStyle(
                                                       color: Colors.white
@@ -293,7 +293,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                       ),
                                                     ),
                                                   ),
-                                                  Icon(Icons.clear),
+                                                  const Icon(Icons.clear),
                                                   Padding(
                                                     padding: const EdgeInsets.all(8.0),
                                                     child: TextFormField(

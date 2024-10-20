@@ -137,12 +137,13 @@ class _NavigationExampleState extends State<NavigationExample> {
       resizeToAvoidBottomInset : false,
       
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Color(0xFF643f00),
         onDestinationSelected: (int index) {
           setState(() {
             currentPageIndex = index;
           });
         },
-        indicatorColor: Colors.deepPurple,
+        indicatorColor: Colors.orange,
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
           Radius.circular(12),
