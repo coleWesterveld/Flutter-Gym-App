@@ -8,6 +8,7 @@ import 'schedule_page.dart';
 import 'program_page.dart';
 import 'analytics_page.dart';
 import 'user.dart';
+import 'data_saving.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,10 +99,10 @@ class _MainPage extends State<NavigationBarApp> {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           snackBarTheme: SnackBarThemeData(
-            backgroundColor: Colors.deepPurple,
+            backgroundColor: Color(0xFFF28500),
           ),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: const Color.fromARGB(255, 60, 55, 50),
             brightness: Brightness.dark,
           )
         ),
