@@ -10,6 +10,13 @@ import 'analytics_page.dart';
 import 'user.dart';
 import 'data_saving.dart';
 
+
+/* colour choices:
+my goal is to make tappable things blue
+editable things orange 
+simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
+*/
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp( NavigationBarApp());
@@ -102,7 +109,7 @@ class _MainPage extends State<NavigationBarApp> {
             backgroundColor: Color(0xFFF28500),
           ),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 60, 55, 50),
+            seedColor: const Color(0XFF1A78EB),
             brightness: Brightness.dark,
           )
         ),
@@ -137,13 +144,13 @@ class _NavigationExampleState extends State<NavigationExample> {
       resizeToAvoidBottomInset : false,
       
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color(0xFF643f00),
+        //backgroundColor: Color(0xFF643f00),
         onDestinationSelected: (int index) {
           setState(() {
             currentPageIndex = index;
           });
         },
-        indicatorColor: Colors.orange,
+        indicatorColor: Color(0XFF1A78EB),
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
           Radius.circular(12),

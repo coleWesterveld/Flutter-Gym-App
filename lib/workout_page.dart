@@ -1,12 +1,8 @@
 // workout page
 //not updated
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'data_saving.dart';
 //import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -70,7 +66,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF643f00),
+        //backgroundColor: const Color(0xFF643f00),
         centerTitle: true,
         title: const Text(
           "Workout",

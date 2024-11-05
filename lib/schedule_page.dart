@@ -84,7 +84,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF643f00),
+        //backgroundColor: const Color(0xFF643f00),
         centerTitle: true,
         title: const Text(
           "Planner",
@@ -99,9 +99,13 @@ class _MyScheduleState extends State<SchedulePage> {
 
       //bottomNavigationBar: weekView(),
       body: Container(
-        decoration: BoxDecoration(
-          color: Color(0xFF180c12),
-        ),
+        //color: const Color(0xFF180c12),
+        // decoration: const BoxDecoration( 
+          
+        //     // Image set to background of the body
+        //     image: DecorationImage( 
+        //         image: AssetImage("darkbg.png"), fit: BoxFit.cover),
+        //   ),
         child: Column(
           children: [
             Padding(
@@ -110,50 +114,53 @@ class _MyScheduleState extends State<SchedulePage> {
                 
                 decoration: BoxDecoration(
                   
-                  color: const Color.fromARGB(255, 43, 43, 43),
+                  color: const Color(0xFF2b2b2b),
                   //border: Border
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: TableCalendar(
-                  selectedDayPredicate: (day) {
-                    return _selectedDay!.year == day.year &&
-                    _selectedDay!.month == day.month &&
-                    _selectedDay!.day == day.day;
-                  },
-                  onDaySelected: _onDaySelected,
-                  eventLoader: _getEventsForDay,
-                  
-                  calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, focusedDay) {
-                    DateTime origin = DateTime(2024, 1, 7);
-                    for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-                
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TableCalendar(
+                    selectedDayPredicate: (day) {
+                      return _selectedDay!.year == day.year &&
+                      _selectedDay!.month == day.month &&
+                      _selectedDay!.day == day.day;
+                    },
+                    onDaySelected: _onDaySelected,
+                    eventLoader: _getEventsForDay,
                     
-                      if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: context.watch<Profile>().split[splitDay].dayColor,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(8.0),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${day.day}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        );
-                      }
-                    }
+                    calendarBuilders: CalendarBuilders(
+                  defaultBuilder: (context, day, focusedDay) {
+                      DateTime origin = DateTime(2024, 1, 7);
+                      for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
                   
-                  return null;
-                },
+                      
+                        if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: context.watch<Profile>().split[splitDay].dayColor,
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(8.0),
+                              ),
                             ),
-                  rowHeight: 90,
-                  focusedDay: _selectedDay!, 
-                  firstDay: DateTime.utc(2010, 10, 16), 
-                  lastDay: DateTime.utc(2030, 3, 14)
+                            child: Center(
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    
+                    return null;
+                  },
+                              ),
+                    rowHeight: 90,
+                    focusedDay: _selectedDay!, 
+                    firstDay: DateTime.utc(2010, 10, 16), 
+                    lastDay: DateTime.utc(2030, 3, 14)
+                  ),
                 ),
               ),
             ),
@@ -175,7 +182,7 @@ class _MyScheduleState extends State<SchedulePage> {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 43, 43, 43),
+                            color: const Color(0xFF2b2b2b),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               //color: context.watch<Profile>().split[index].dayColor,
