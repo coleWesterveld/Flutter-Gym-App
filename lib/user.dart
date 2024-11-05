@@ -32,6 +32,9 @@ class Profile extends ChangeNotifier {
   //stores information on each set of each excercise of each day
   var sets = <List<List<SplitDayData>>>[];
 
+  //for expansion tiles in workout page
+  List<ExpansionTileController> controllers;
+
   int splitLength;
   int uuidCount;
   Profile({
@@ -39,6 +42,7 @@ class Profile extends ChangeNotifier {
     required this.split,
     required this.excercises,
     required this.sets,
+    required this.controllers,
     this.splitLength = 7,
 
   });

@@ -155,7 +155,7 @@ class _MyListState extends State<ProgramPage> {
     //print(_sliding);
     return Scaffold(
       appBar: AppBar(
-        //backgroundColor: Color(0xFF643f00),
+        backgroundColor: Color(0xFF1e2025),
         centerTitle: true,
         title: const Text(
           "Build Program",
@@ -345,7 +345,7 @@ class _MyListState extends State<ProgramPage> {
                           blurRadius: 0.0,
                         ),
                       ],
-                      color: lighten(Color(0xFF141414), 5),
+                      color: Color(0xFF1e2025),
                       borderRadius: BorderRadius.circular(12.0),
                     ),
       
@@ -386,7 +386,7 @@ class _MyListState extends State<ProgramPage> {
       
                                               style: TextStyle(
                                                 color: context.watch<Profile>().split[index].dayColor,
-                                                fontSize: 22,
+                                                fontSize: 20,
                                                 fontWeight: FontWeight.w900,
                                               ),
       
@@ -531,11 +531,11 @@ class _MyListState extends State<ProgramPage> {
                                       style: ButtonStyle(
                                         //when clicked, it splashes a lighter purple to show that button was clicked
                                         shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                    
+                               
                                           borderRadius: BorderRadius.circular(12))),
-                                        backgroundColor: WidgetStateProperty.all(Color(0xFF643f00),), 
+                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
                                         overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                                          if (states.contains(WidgetState.pressed)) return Color(0xFF643f00);
+                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
                                           return null;
                                         }),
                                       ),
@@ -543,9 +543,18 @@ class _MyListState extends State<ProgramPage> {
                                       label: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: const [
-                                          Icon(Icons.add),
+                                          Icon(
+                                            Icons.add,
+                                            color: Colors.white,
+                                          ),
                                           Text(
+
                                             "Excercise  ",
+                                            style: TextStyle(
+                                                color: Color.fromARGB(255, 255, 255, 255),
+                                                //fontSize: 18,
+                                                //fontWeight: FontWeight.w800,
+                                              ),
                                           ),
                                         ],
                                       ),
@@ -638,7 +647,8 @@ class _MyListState extends State<ProgramPage> {
                                                         backgroundColor: WidgetStateProperty.all(_listColorFlop(index: excerciseIndex)),
                                                         shape: WidgetStateProperty.all(
                                                           RoundedRectangleBorder(
-                                                             side: BorderSide(color: const Color(0xFF643f00),
+                                                             side: BorderSide(
+                                                              color:  lighten(Color(0xFF141414), 20),
                                                             width: 2,),
                                                             borderRadius: BorderRadius.all(Radius.circular(8)),
                                                           ),
@@ -657,9 +667,17 @@ class _MyListState extends State<ProgramPage> {
                                                         });  
                                                       },
                                                       label: Row(
-                                                        children: const [
-                                                          Icon(Icons.add),
-                                                          Text("Set"),
+                                                        children:  [
+                                                          Icon(
+                                                            Icons.add,
+                                                            color: lighten(Color(0xFF141414), 70),
+                                                          ),
+                                                          Text(
+                                                            "Set",
+                                                            style: TextStyle(
+                                                              color: lighten(Color(0xFF141414), 70),
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                     ),
@@ -689,7 +707,7 @@ class _MyListState extends State<ProgramPage> {
                                                 }, 
                                                 
                                                 icon: Icon(Icons.edit),
-                                                    color: Color.fromARGB(255, 255, 255, 255),
+                                                    color: lighten(Color(0xFF141414), 70),
                                               ),
                                             ],
                                           ),

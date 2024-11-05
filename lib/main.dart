@@ -22,6 +22,18 @@ void main() async {
   runApp( NavigationBarApp());
 }
 
+Color darken(Color c, [int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var f = 1 - percent / 100;
+    return Color.fromARGB(
+        c.alpha,
+        (c.red * f).round(),
+        (c.green  * f).round(),
+        (c.blue * f).round()
+    );
+}
+
+
 class NavigationBarApp extends StatefulWidget {
   const NavigationBarApp({super.key});
   @override
@@ -82,6 +94,7 @@ class _MainPage extends State<NavigationBarApp> {
         ChangeNotifierProvider(
           create: (context) => Profile(
             split: split,
+            controllers: List<ExpansionTileController>.filled(split.length, ExpansionTileController(),growable: true),
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol
@@ -109,7 +122,7 @@ class _MainPage extends State<NavigationBarApp> {
             backgroundColor: Color(0xFFF28500),
           ),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0XFF1A78EB),
+            seedColor: Color(0XFF1C1C1C),//darken(Color.fromARGB(255, 12, 74, 151),60),
             brightness: Brightness.dark,
           )
         ),
