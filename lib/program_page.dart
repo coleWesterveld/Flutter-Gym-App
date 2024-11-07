@@ -318,6 +318,20 @@ class _MyListState extends State<ProgramPage> {
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: lighten(Color(0xFF141414), 20)),
+
+                      gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      context.watch<Profile>().split[index].dayColor,
+                      context.watch<Profile>().split[index].dayColor,
+                      const Color(0xFF1e2025),
+                    ],
+                    stops: [
+                      0, 0.11, 0.11
+                    ]
+                  ),
+
                       boxShadow: [
                         //following 3 shadows give neumorphic design
                         // commented out cuz idk if thats what I want rn
@@ -339,11 +353,11 @@ class _MyListState extends State<ProgramPage> {
 
                         //this shadow is what gives left side lining of colour
                         //kind of undecided if I want to change this, i could make this more of a drop shadow, idk
-                        BoxShadow(
-                          color: context.watch<Profile>().split[index].dayColor,
-                          offset: const Offset(-4.0, 0.0),
-                          blurRadius: 0.0,
-                        ),
+                        // BoxShadow(
+                        //   color: context.watch<Profile>().split[index].dayColor,
+                        //   offset: const Offset(-4.0, 0.0),
+                        //   blurRadius: 0.0,
+                        // ),
                       ],
                       color: Color(0xFF1e2025),
                       borderRadius: BorderRadius.circular(12.0),
@@ -352,7 +366,12 @@ class _MyListState extends State<ProgramPage> {
                     //defining the inside of the actual box, display information
                     child:  Center(
                       child: Theme(
-                        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                         data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    listTileTheme: ListTileThemeData(
+                      contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
+                    ),
+                  ),
                         
                         //expandable to see excercises and sets for that day
                         child: ExpansionTile(
@@ -373,26 +392,29 @@ class _MyListState extends State<ProgramPage> {
                                     height: 30,
                                     width: 100,
                                     child: 
-                                      Padding(
-                                        padding: const EdgeInsets.all(.0),
-                                        //actual information: number ordering of day, 
-                                        //user given day name, edit button
-                                        child: Row(
-                                          children: [
-      
-                                            //number
-                                            Text(
-                                              "${index + 1}: ",
-      
+                                      Row(
+                                        children: [
+                                            
+                                          //number
+                                          SizedBox(
+                                            width: 30,
+                                            child: Text(
+                                              "${index + 1}",
+                                                  
                                               style: TextStyle(
-                                                color: context.watch<Profile>().split[index].dayColor,
-                                                fontSize: 20,
+                                                 height: 0.6,
+                                        
+                                        color: darken(context.watch<Profile>().split[index].dayColor, 70),
+                                        fontSize: 50,
                                                 fontWeight: FontWeight.w900,
                                               ),
-      
+                                                  
                                             //day title
                                             ),
-                                            Text(
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left : 16.0),
+                                            child: Text(
                                               context.watch<Profile>().split[index].data,
                                               style: TextStyle(
                                                 color: Color.fromARGB(255, 255, 255, 255),
@@ -400,9 +422,9 @@ class _MyListState extends State<ProgramPage> {
                                                 fontWeight: FontWeight.w800,
                                               ),
                                             ),
-                                            
-                                          ], 
-                                        ),//end of title row
+                                          ),
+                                          
+                                        ], 
                                       ),
                                     ),
                                 ),

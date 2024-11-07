@@ -63,7 +63,24 @@ class WorkoutPage extends StatefulWidget {
   State<WorkoutPage> createState() => _WorkoutPageState();
 }
 
-class _WorkoutPageState extends State<WorkoutPage> {
+class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStateMixin{
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1300),
+      vsync: this,
+    )..repeat(reverse: true); // Continuously animates back and forth
+  }
+
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
   DateTime today = DateTime.now();
 
   DateTime startDay = DateTime(2024, 8, 10);
@@ -80,20 +97,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   }
 
-  
-
-
-  
-
-  
-
-  
-  
 
   @override
-
-  
-
   Widget build(BuildContext context) {
   int todaysWorkout = toExpand();
     return Scaffold(
@@ -146,7 +151,21 @@ class _WorkoutPageState extends State<WorkoutPage> {
               
               //following shadows are what gives neumorphism effect
               child: Container(
+                // TODO: dont like how this goes all the way down under "start workout" button and stuff, 
                 decoration: BoxDecoration(
+                  gradient:LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      context.watch<Profile>().split[index].dayColor,
+                      context.watch<Profile>().split[index].dayColor,
+                      const Color(0xFF1e2025),
+                    ],
+                    stops: [
+                      0, 0.11, 0.11
+                    ]
+                  ),
+
                     border: Border.all(color: lighten(const Color(0xFF141414), 20)),
                     boxShadow: [
                       //following 3 shadows give neumorphic design
@@ -172,12 +191,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       todaysWorkout ? BoxShadow(
                         color: context.watch<Profile>().split[index].dayColor,
                         offset: const Offset(0.0, 0.0),
-                        blurRadius: 16.0,
+                        blurRadius: 8.0,
                       ) :
                       BoxShadow(
-                        color: context.watch<Profile>().split[index].dayColor,
-                        offset: const Offset(-4.0, 0.0),
-                        blurRadius: 0.0,
+                        
                       ), 
                       
                     ],
@@ -186,214 +203,330 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   ),
             
                 //defining the inside of the actual box, display information
-                child:  Center(
-                  child: Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                    
-                    //expandable to see excercises and sets for that day
-                    child: ExpansionTile(
-                      initiallyExpanded: todaysWorkout,
-                      //initiallyExpanded: toExpand(index),
-                      //controller: context.watch<Profile>().controllers[index],
-                    iconColor: const Color.fromARGB(255, 255, 255, 255),
-                    collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
-            
-                    //top row always displays day title, and edit button
-                    //sized boxes and padding is just a bunch of formatting stuff
-                    //tbh it could probably be made more concise
-                    //TODO: simplify this
-                    title: 
-                      SizedBox(
-                        height: 40,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 30,
-                                width: 100,
-                                child: 
-                                  Padding(
-                                    padding: const EdgeInsets.all(0.0),
-                                    //actual information: number ordering of day, 
-                                    //user given day name, edit button
-                                    child: Row(
-                                      children: [
-            
-                                        //number
-                                        Text(
-                                          "${index + 1}: ",
-            
-                                          style: TextStyle(
-                                            color: todaysWorkout ? darken(context.watch<Profile>().split[index].dayColor, 70): context.watch<Profile>().split[index].dayColor,
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-            
-                                        //day title
-                                        ),
-                                        Text(
-                                          context.watch<Profile>().split[index].data,
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(255, 255, 255, 255),
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                        
-                                      ], 
-                                    ),//end of title row
-                                  ),
-                                ),
-                            ),
-                           
-                          ],
-                        ),
-                      ),
-                            
-                      //children of expansion tile - what gets shown when user expands that day
-                      // shows excercises for that day
-                      //this part is viewed after tile is expanded
-                      //TODO: show sets per excercise, notes, maybe most recent weight/reps
-                      //excercises are reorderable
-                      children: [
-                        ListView.builder(
+                child:  Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                    listTileTheme: ListTileThemeData(
+                      contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
+                    ),
+                  ),
 
-                          //being able to scroll within the already scrollable day view 
-                          // is annoying so i disabled it
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: context.read<Profile>().excercises[index].length,
-                          shrinkWrap: true,
-            
-                          //displaying list of excercises for that day
-                          
-                          itemBuilder: (context, excerciseIndex) {
-                            return Material(
-                              color: _listColorFlop(index: excerciseIndex, 
-                                bgColor: todaysWorkout ? context.watch<Profile>().split[index].dayColor : Color(0xFF151218)),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Column(
+                  
+                  //expandable to see excercises and sets for that day
+                  child: ExpansionTile(
+                    
+                    initiallyExpanded: todaysWorkout,
+                    //initiallyExpanded: toExpand(index),
+                    //controller: context.watch<Profile>().controllers[index],
+                  iconColor: const Color.fromARGB(255, 255, 255, 255),
+                  collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
+                            
+                  //top row always displays day title, and edit button
+                  //sized boxes and padding is just a bunch of formatting stuff
+                  //tbh it could probably be made more concise
+                  //TODO: simplify this
+                  title: 
+                    SizedBox(
+                      
+                      height: 40,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            
+                            child: SizedBox(
+                              height: 30,
+                              width: 100,
+                              child: 
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              context.watch<Profile>().excercises[index][excerciseIndex].data,
-                                                                                    
-                                              style: const TextStyle(
-                                                color: Color.fromARGB(255, 255, 255, 255),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
+                                            
+                                    //number
+                                    SizedBox(
+                                      width: 30,
+                                      child: Text(
+                                        "${index + 1}",
+                                                  
+                                        style: TextStyle(
+                                          height: 0.6,
+                                          
+                                          color: darken(context.watch<Profile>().split[index].dayColor, 70),
+                                          fontSize: 50,
+                                          fontWeight: FontWeight.w900,
                                         ),
-                                      ],
+                                                  
+                                      //day title
+                                      ),
                                     ),
-                              
-                                    //Displaying Sets for each excercise
-                                    ListView.builder(
-                                      //on reorder, update tree with new ordering
-                                      // is annoying so i disabled it
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
-                                      shrinkWrap: true,
-                              
-                                      //displaying list of sets for that excercise
-                                      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                      itemBuilder: (context, setIndex) {
-                                        return Dismissible(
-                                          key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
-                              
-                                          direction: DismissDirection.endToStart,
-                                          background: Container(
-                                            color: Colors.red,
-                                            child: const Icon(Icons.delete)
-                                          ),
-                                                
-                                          onDismissed: (direction) {
-                                            HapticFeedback.heavyImpact();
-                                            // Remove the item from the data source.
-                                            setState(() {
-                                              context.read<Profile>().setsPop(
-                                                index1: index, 
-                                                index2: excerciseIndex,
-                                                index3: setIndex,
-                                              );    
-                                            });
-                                
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  style: TextStyle(
-                                                    color: Colors.white
-                                                  ),
-                                                  'Excercise Deleted'
-                                                ),
-                                             ),
-                                            );
-                                          },
-                                          
-                                          //actual information about the sets
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Row(
-                                              // TODO: add rep ranges
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: TextFormField(
-                                          
-                                                    decoration: const InputDecoration(
-                                                      contentPadding: EdgeInsets.only(
-                                                        bottom: 10, 
-                                                        left: 8 
-                                                      ),
-                                                      constraints: BoxConstraints(
-                                                        maxWidth: 150,
-                                                        maxHeight: 30,
-                                                      ),
-                                                      border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                      hintText: 'Weight', //This should be made to be whateever this value was last workout
-                                                    ),
-                                                  ),
-                                                ),
-                                                const Icon(Icons.clear),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: TextFormField(
-                                                    decoration: const InputDecoration(
-                                                      contentPadding: EdgeInsets.only(
-                                                        bottom: 10, 
-                                                        left: 8 
-                                                      ),
-                                                      constraints: BoxConstraints(
-                                                        maxWidth: 150,
-                                                        maxHeight: 30,
-                                                      ),
-                                                      border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                      hintText: 'Reps', //This should be made to be whateever this value was last workout
-                                                    ),
-                                                  ),
-                                                ),                  
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
+                                    
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 16.0),
+                                      child: Text(
+                                        context.watch<Profile>().split[index].data,
+                                        style: const TextStyle(
+                                          color: Color.fromARGB(255, 255, 255, 255),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
                                     ),
-                                  ],
+                                    
+                                  ], 
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ]
+                          ),
+                         
+                        ],
+                      ),
                     ),
+                          
+                    //children of expansion tile - what gets shown when user expands that day
+                    // shows excercises for that day
+                    //this part is viewed after tile is expanded
+                    //TODO: show sets per excercise, notes, maybe most recent weight/reps
+                    //excercises are reorderable
+                    children: [
+                      ListView.builder(
+                                  
+                        //being able to scroll within the already scrollable day view 
+                        // is annoying so i disabled it
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: context.read<Profile>().excercises[index].length + 1,
+                        shrinkWrap: true,
+                        
+                            
+                        //displaying list of excercises for that day
+                        
+                        itemBuilder: (context, excerciseIndex) {
+                          if(excerciseIndex == context.read<Profile>().excercises[index].length){
+                            return Padding(
+                              padding : EdgeInsets.all(8),
+                              
+                              child : todaysWorkout
+            ? AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: 1 + 0.05 * _pulseController.value, // Slightly bigger and smaller
+                    child: child,
+                  );
+                },
+                child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal : 8.0),
+                              
+                             
+                              child: ElevatedButton(
+                                style: ButtonStyle(
+                                        //when clicked, it splashes a lighter purple to show that button was clicked
+                                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                               
+                                          borderRadius: BorderRadius.circular(12))),
+                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                                        overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                                          return null;
+                                        }),
+                                      ),
+                              
+                                onPressed: (){}, 
+                                
+                              
+                                child: Text(
+                                  "Start This Workout",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800
+                                  ),
+                                  )
+                              ),
+                            ),)
+
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal : 8.0),
+                              
+                             
+                              child: ElevatedButton(
+                                style: ButtonStyle(
+                                        //when clicked, it splashes a lighter purple to show that button was clicked
+                                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                               
+                                          borderRadius: BorderRadius.circular(12))),
+                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                                        overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                                          return null;
+                                        }),
+                                      ),
+                              
+                                onPressed: (){}, 
+                                
+                              
+                                child: Text(
+                                  "Start This Workout",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800
+                                  ),
+                                  )
+                              ),
+                            ),);
+                            // return Padding(
+                            //   padding: const EdgeInsets.symmetric(horizontal : 8.0),
+                              
+                             
+                            //   child: ElevatedButton(
+                            //     style: ButtonStyle(
+                            //             //when clicked, it splashes a lighter purple to show that button was clicked
+                            //             shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                               
+                            //               borderRadius: BorderRadius.circular(12))),
+                            //             backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                            //             overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                            //               if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                            //               return null;
+                            //             }),
+                            //           ),
+                              
+                            //     onPressed: (){}, 
+                                
+                              
+                            //     child: Text(
+                            //       "Start This Workout",
+                            //       style: TextStyle(
+                            //         color: Colors.white,
+                            //         fontWeight: FontWeight.w800
+                            //       ),
+                            //       )
+                            //   ),
+                            // );
+                          }
+                          else{
+                            return Material(
+                            color: _listColorFlop(index: excerciseIndex, 
+                              bgColor: const Color(0xFF151218)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            context.watch<Profile>().excercises[index][excerciseIndex].data,
+                                                                                  
+                                            style: const TextStyle(
+                                              color: Color.fromARGB(255, 255, 255, 255),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            
+                                  //Displaying Sets for each excercise
+                                  ListView.builder(
+                                    //on reorder, update tree with new ordering
+                                    // is annoying so i disabled it
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
+                                    shrinkWrap: true,
+                            
+                                    //displaying list of sets for that excercise
+                                    //TODO: add sets here too, centre text boxes, add notes option on dropdown
+                                    itemBuilder: (context, setIndex) {
+                                      return Dismissible(
+                                        key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
+                            
+                                        direction: DismissDirection.endToStart,
+                                        background: Container(
+                                          color: Colors.red,
+                                          child: const Icon(Icons.delete)
+                                        ),
+                                              
+                                        onDismissed: (direction) {
+                                          HapticFeedback.heavyImpact();
+                                          // Remove the item from the data source.
+                                          setState(() {
+                                            context.read<Profile>().setsPop(
+                                              index1: index, 
+                                              index2: excerciseIndex,
+                                              index3: setIndex,
+                                            );    
+                                          });
+                              
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                ),
+                                                'Excercise Deleted'
+                                              ),
+                                           ),
+                                          );
+                                        },
+                                        
+                                        //actual information about the sets
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Row(
+                                            // TODO: add rep ranges
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: TextFormField(
+                                        
+                                                  decoration: const InputDecoration(
+                                                    contentPadding: EdgeInsets.only(
+                                                      bottom: 10, 
+                                                      left: 8 
+                                                    ),
+                                                    constraints: BoxConstraints(
+                                                      maxWidth: 150,
+                                                      maxHeight: 30,
+                                                    ),
+                                                    border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                                                    hintText: 'Weight', //This should be made to be whateever this value was last workout
+                                                  ),
+                                                ),
+                                              ),
+                                              const Icon(Icons.clear),
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: TextFormField(
+                                                  decoration: const InputDecoration(
+                                                    contentPadding: EdgeInsets.only(
+                                                      bottom: 10, 
+                                                      left: 8 
+                                                    ),
+                                                    constraints: BoxConstraints(
+                                                      maxWidth: 150,
+                                                      maxHeight: 30,
+                                                    ),
+                                                    border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                                                    hintText: 'Reps', //This should be made to be whateever this value was last workout
+                                                  ),
+                                                ),
+                                              ),                  
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                          }
+                        },
+                      ),
+                    ]
                   ),
                 ),
               )
