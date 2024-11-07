@@ -327,12 +327,12 @@ class _MyListState extends State<ProgramPage> {
                       context.watch<Profile>().split[index].dayColor,
                       const Color(0xFF1e2025),
                     ],
-                    stops: [
+                    stops: const [
                       0, 0.11, 0.11
                     ]
                   ),
 
-                      boxShadow: [
+                      boxShadow: const [
                         //following 3 shadows give neumorphic design
                         // commented out cuz idk if thats what I want rn
                         // BoxShadow(

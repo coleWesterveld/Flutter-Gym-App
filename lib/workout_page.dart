@@ -65,10 +65,27 @@ class WorkoutPage extends StatefulWidget {
 
 class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStateMixin{
   late AnimationController _pulseController;
+  late  List<ExpansionTileController> _expansionControllers;
+   
+  
+  @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+
+  // Access Provider or other inherited widgets here
+  int splitLength = context.watch<Profile>().split.length;
+  _expansionControllers = List.generate(
+    splitLength,
+    (index) => ExpansionTileController(),
+  );
+}
 
   @override
   void initState() {
     super.initState();
+
+    //List<ExpansionTileController> _expansionControllers = List.filled(context.watch<Profile>().split.length, ExpansionTileController(), growable: true);
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1300),
       vsync: this,
@@ -100,6 +117,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    
   int todaysWorkout = toExpand();
     return Scaffold(
       appBar: AppBar(
@@ -122,19 +140,19 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
             itemBuilder: (context, index) {
               if (todaysWorkout != -1){
                 if (index == 0){
-                    return dayBuild(context, todaysWorkout, true);
+                    return dayBuild(context, todaysWorkout, true, _expansionControllers);
                 }
                 else if (index <= todaysWorkout){
-                  return dayBuild(context, index - 1, false);
+                  return dayBuild(context, index - 1, false, _expansionControllers);
                 }
                 else {
-                  return dayBuild(context, index, false);
+                  return dayBuild(context, index, false, _expansionControllers);
                 }
                 
               }
               else{
 
-                return dayBuild(context, index, false);
+                return dayBuild(context, index, false,_expansionControllers );
               }
               
             },
@@ -143,7 +161,11 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
     );
   }
 
-  Padding dayBuild(BuildContext context, int index, bool todaysWorkout) {
+  Padding dayBuild(BuildContext context, int index, bool todaysWorkout, List<ExpansionTileController> _controllers) {
+
+    
+
+    
     
     return Padding(
               key: ValueKey(context.watch<Profile>().split[index]),
@@ -161,39 +183,19 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                       context.watch<Profile>().split[index].dayColor,
                       const Color(0xFF1e2025),
                     ],
-                    stops: [
+                    stops: const [
                       0, 0.11, 0.11
                     ]
                   ),
 
                     border: Border.all(color: lighten(const Color(0xFF141414), 20)),
                     boxShadow: [
-                      //following 3 shadows give neumorphic design
-                      //commented out cuz idk if thats what I want rn
-                      //  BoxShadow(
-                      //   color: Colors.white.withOpacity(0.1),
-                      //   offset: const Offset(-6.0, -6.0),
-                      //   blurRadius: 16.0,
-                      //  ),
-                      // BoxShadow(
-                      //   color: Colors.black.withOpacity(0.6),
-                      //   offset: const Offset(6.0, 6.0),
-                      //   blurRadius: 12.0,
-                      // ),
-                      // BoxShadow(
-                      //   color: context.watch<Profile>().split[index].dayColor,
-                      //   offset: const Offset(0.0, 0.0),
-                      //   blurRadius: 0.0,
-                      // ),
-
-                      //this shadow is what gives left side lining of colour
-                      //kind of undecided if I want to change this, i could make this more of a drop shadow, idk
                       todaysWorkout ? BoxShadow(
                         color: context.watch<Profile>().split[index].dayColor,
                         offset: const Offset(0.0, 0.0),
                         blurRadius: 8.0,
                       ) :
-                      BoxShadow(
+                      const BoxShadow(
                         
                       ), 
                       
@@ -206,7 +208,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                 child:  Theme(
                   data: Theme.of(context).copyWith(
                     dividerColor: Colors.transparent,
-                    listTileTheme: ListTileThemeData(
+                    listTileTheme: const ListTileThemeData(
                       contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
                     ),
                   ),
@@ -214,6 +216,19 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                   
                   //expandable to see excercises and sets for that day
                   child: ExpansionTile(
+                    controller: _controllers[index],
+                    key: ValueKey(context.watch<Profile>().split[index]),
+                    onExpansionChanged: (isExpanded) {
+                      setState(() {
+                        for (int i = 0; i < _expansionControllers.length; i++){
+                          if (i != index && isExpanded){
+                            _expansionControllers[i].collapse();
+                          }
+                        }
+                      });
+                    },
+
+
                     
                     initiallyExpanded: todaysWorkout,
                     //initiallyExpanded: toExpand(index),
@@ -299,7 +314,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                         itemBuilder: (context, excerciseIndex) {
                           if(excerciseIndex == context.read<Profile>().excercises[index].length){
                             return Padding(
-                              padding : EdgeInsets.all(8),
+                              padding : const EdgeInsets.all(8),
                               
                               child : todaysWorkout
             ? AnimatedBuilder(
@@ -320,9 +335,9 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                                         shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                
                                           borderRadius: BorderRadius.circular(12))),
-                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                                        backgroundColor: WidgetStateProperty.all(const Color(0XFF1A78EB),), 
                                         overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                                          if (states.contains(WidgetState.pressed)) return const Color(0XFF1A78EB);
                                           return null;
                                         }),
                                       ),
@@ -330,7 +345,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                                 onPressed: (){}, 
                                 
                               
-                                child: Text(
+                                child: const Text(
                                   "Start This Workout",
                                   style: TextStyle(
                                     color: Colors.white,
@@ -350,9 +365,9 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                                         shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                
                                           borderRadius: BorderRadius.circular(12))),
-                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                                        backgroundColor: WidgetStateProperty.all(const Color(0XFF1A78EB),), 
                                         overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                                          if (states.contains(WidgetState.pressed)) return const Color(0XFF1A78EB);
                                           return null;
                                         }),
                                       ),
@@ -360,7 +375,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                                 onPressed: (){}, 
                                 
                               
-                                child: Text(
+                                child: const Text(
                                   "Start This Workout",
                                   style: TextStyle(
                                     color: Colors.white,
@@ -369,35 +384,7 @@ class _WorkoutPageState extends State<WorkoutPage> with SingleTickerProviderStat
                                   )
                               ),
                             ),);
-                            // return Padding(
-                            //   padding: const EdgeInsets.symmetric(horizontal : 8.0),
-                              
-                             
-                            //   child: ElevatedButton(
-                            //     style: ButtonStyle(
-                            //             //when clicked, it splashes a lighter purple to show that button was clicked
-                            //             shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                               
-                            //               borderRadius: BorderRadius.circular(12))),
-                            //             backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
-                            //             overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                            //               if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
-                            //               return null;
-                            //             }),
-                            //           ),
-                              
-                            //     onPressed: (){}, 
-                                
-                              
-                            //     child: Text(
-                            //       "Start This Workout",
-                            //       style: TextStyle(
-                            //         color: Colors.white,
-                            //         fontWeight: FontWeight.w800
-                            //       ),
-                            //       )
-                            //   ),
-                            // );
+                        
                           }
                           else{
                             return Material(
