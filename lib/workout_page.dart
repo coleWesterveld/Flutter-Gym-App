@@ -135,7 +135,9 @@ void didChangeDependencies() {
         child: ListView.builder(
             // building the rest of the tiles, one for each day from split list stored in user
             //dismissable and reorderable: each child for dismissable needs to have a unique key
-            itemCount: context.watch<Profile>().split.length,
+            itemCount: (todaysWorkout == -1) ? 
+            context.watch<Profile>().split.length + 1 : 
+            context.watch<Profile>().split.length,
             
             itemBuilder: (context, index) {
               if (todaysWorkout != -1){
@@ -151,8 +153,9 @@ void didChangeDependencies() {
                 
               }
               else{
-
-                return dayBuild(context, index, false,_expansionControllers );
+                // TODO: here I want to make a little grayed box that says "no workouts planned today" so the user knows why none are highliughted
+                return dayBuild(context, index - 1, false,_expansionControllers );
+                
               }
               
             },
@@ -161,15 +164,29 @@ void didChangeDependencies() {
     );
   }
 
-  Padding dayBuild(BuildContext context, int index, bool todaysWorkout, List<ExpansionTileController> _controllers) {
+  Padding dayBuild(BuildContext context, int index, bool todaysWorkout, List<ExpansionTileController> controllers) {
 
     
 
     
-    
+    if (!todaysWorkout && index == -1){
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Center(child: Text(
+          "No Workout Scheduled For Today",
+          style: TextStyle(
+            //height: 0.5,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: lighten(Color(0xFF1e2025), 40)//socks
+          )
+          )),
+      );
+    }
+    else{
     return Padding(
               key: ValueKey(context.watch<Profile>().split[index]),
-              padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+              padding:  EdgeInsets.only(left: 15, right: 15, top: (!todaysWorkout && index == 0) ? 5 :15),
               
               //following shadows are what gives neumorphism effect
               child: Container(
@@ -216,7 +233,7 @@ void didChangeDependencies() {
                   
                   //expandable to see excercises and sets for that day
                   child: ExpansionTile(
-                    controller: _controllers[index],
+                    controller: controllers[index],
                     key: ValueKey(context.watch<Profile>().split[index]),
                     onExpansionChanged: (isExpanded) {
                       setState(() {
@@ -518,5 +535,6 @@ void didChangeDependencies() {
                 ),
               )
             );
+  }  
   }
 }
