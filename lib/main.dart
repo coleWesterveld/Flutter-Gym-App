@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'workout_page.dart';
+import 'workout_selection_page.dart';
 import 'schedule_page.dart';
 import 'program_page.dart';
 import 'analytics_page.dart';
