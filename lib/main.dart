@@ -99,7 +99,33 @@ class _MainPage extends State<NavigationBarApp> {
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol
             // TODO: fix
-            excercises: [[],[],[], [], [], [], [], [], [], [] , []],
+            excercises: [
+              [
+                SplitDayData(data: "Bench Press", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Tricep Pushdown", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Lateral Raise", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Shoulder Press", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Cable Chest Fly", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+              ],
+              [
+                SplitDayData(data: "Weighted Pull-ups", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Cable Rows", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Reverse Dumbbell Flies", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Hammer Curls", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Barbell Rows", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+              ],
+              [
+                SplitDayData(data: "Barbell Squats", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Romanian Deadlift", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Calf Raises", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Seated Leg Curl", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(data: "Leg Extension", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+              ],
+              [], 
+              [], 
+              [], 
+              [], 
+              [], [], [] , []],
             sets: [[[],[],[], [], [], [], [], [], [], [] , []],
             [[],[],[], [], [], [], [], [], [], [] , []],
             [[],[],[], [], [], [], [], [], [], [] , []], 

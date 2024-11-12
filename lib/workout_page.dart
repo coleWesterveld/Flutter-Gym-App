@@ -1,10 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:provider/provider.dart';
-import 'user.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'data_saving.dart';
 
 class Workout extends StatefulWidget {
   const Workout({super.key});

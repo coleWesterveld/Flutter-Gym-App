@@ -319,7 +319,7 @@ void didChangeDependencies() {
                     //excercises are reorderable
                     children: [
                       Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                                 color:Color(0xFF1e2025),
                                 borderRadius: BorderRadius.only(
                                   
@@ -449,98 +449,99 @@ void didChangeDependencies() {
                                     ),
                               
                                     //Displaying Sets for each excercise
-                                    ListView.builder(
-                                      //on reorder, update tree with new ordering
-                                      // is annoying so i disabled it
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
-                                      shrinkWrap: true,
+                                    // ListView.builder(
+                                    //   //on reorder, update tree with new ordering
+                                    //   // is annoying so i disabled it
+                                    //   physics: const NeverScrollableScrollPhysics(),
+                                    //   itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
+                                    //   shrinkWrap: true,
                               
-                                      //displaying list of sets for that excercise
-                                      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                      itemBuilder: (context, setIndex) {
-                                        return Dismissible(
-                                          key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
+                                    //   //displaying list of sets for that excercise
+                                    //   //TODO: add sets here too, centre text boxes, add notes option on dropdown
+                                    //   itemBuilder: (context, setIndex) {
+                                    //     return Dismissible(
+                                    //       key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
                               
-                                          direction: DismissDirection.endToStart,
-                                          background: Container(
-                                            color: Colors.red,
-                                            child: const Icon(Icons.delete)
-                                          ),
+                                    //       direction: DismissDirection.endToStart,
+                                    //       background: Container(
+                                    //         color: Colors.red,
+                                    //         child: const Icon(Icons.delete)
+                                    //       ),
                                                 
-                                          onDismissed: (direction) {
-                                            HapticFeedback.heavyImpact();
-                                            // Remove the item from the data source.
-                                            setState(() {
-                                              context.read<Profile>().setsPop(
-                                                index1: index, 
-                                                index2: excerciseIndex,
-                                                index3: setIndex,
-                                              );    
-                                            });
+                                    //       onDismissed: (direction) {
+                                    //         HapticFeedback.heavyImpact();
+                                    //         // Remove the item from the data source.
+                                    //         setState(() {
+                                    //           context.read<Profile>().setsPop(
+                                    //             index1: index, 
+                                    //             index2: excerciseIndex,
+                                    //             index3: setIndex,
+                                    //           );    
+                                    //         });
                                 
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  style: TextStyle(
-                                                    color: Colors.white
-                                                  ),
-                                                  'Excercise Deleted'
-                                                ),
-                                             ),
-                                            );
-                                          },
+                                    //         ScaffoldMessenger.of(context).showSnackBar(
+                                    //           const SnackBar(
+                                    //             content: Text(
+                                    //               style: TextStyle(
+                                    //                 color: Colors.white
+                                    //               ),
+                                    //               'Excercise Deleted'
+                                    //             ),
+                                    //          ),
+                                    //         );
+                                    //       },
                                           
-                                          //actual information about the sets
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                            child: Row(
-                                              // TODO: add rep ranges
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: TextFormField(
+                                    //       //actual information about the sets
+                                    //       child: Padding(
+                                    //         padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    //         child: Row(
+                                    //           // TODO: add rep ranges
+                                    //           children: [
+                                    //             Padding(
+                                    //               padding: const EdgeInsets.all(8.0),
+                                    //               child: TextFormField(
                                           
-                                                    decoration: const InputDecoration(
-                                                      contentPadding: EdgeInsets.only(
-                                                        bottom: 10, 
-                                                        left: 8 
-                                                      ),
-                                                      constraints: BoxConstraints(
-                                                        maxWidth: 150,
-                                                        maxHeight: 30,
-                                                      ),
-                                                      border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                      hintText: 'Weight', //This should be made to be whateever this value was last workout
-                                                    ),
-                                                  ),
-                                                ),
-                                                const Icon(Icons.clear),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: TextFormField(
-                                                    decoration: const InputDecoration(
-                                                      contentPadding: EdgeInsets.only(
-                                                        bottom: 10, 
-                                                        left: 8 
-                                                      ),
-                                                      constraints: BoxConstraints(
-                                                        maxWidth: 150,
-                                                        maxHeight: 30,
-                                                      ),
-                                                      border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                      hintText: 'Reps', //This should be made to be whateever this value was last workout
-                                                    ),
-                                                  ),
-                                                ),                  
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                    //                 decoration: const InputDecoration(
+                                    //                   contentPadding: EdgeInsets.only(
+                                    //                     bottom: 10, 
+                                    //                     left: 8 
+                                    //                   ),
+                                    //                   constraints: BoxConstraints(
+                                    //                     maxWidth: 150,
+                                    //                     maxHeight: 30,
+                                    //                   ),
+                                    //                   border: OutlineInputBorder(
+                                    //                       borderRadius: BorderRadius.all(Radius.circular(8))),
+                                    //                   hintText: 'Weight', //This should be made to be whateever this value was last workout
+                                    //                 ),
+                                    //               ),
+                                    //             ),
+                                    //             const Icon(Icons.clear),
+                                    //             Padding(
+                                    //               padding: const EdgeInsets.all(8.0),
+                                    //               child: TextFormField(
+                                    //                 decoration: const InputDecoration(
+                                    //                   contentPadding: EdgeInsets.only(
+                                    //                     bottom: 10, 
+                                    //                     left: 8 
+                                    //                   ),
+                                    //                   constraints: BoxConstraints(
+                                    //                     maxWidth: 150,
+                                    //                     maxHeight: 30,
+                                    //                   ),
+                                    //                   border: OutlineInputBorder(
+                                    //                       borderRadius: BorderRadius.all(Radius.circular(8))),
+                                    //                   hintText: 'Reps', //This should be made to be whateever this value was last workout
+                                    //                 ),
+                                    //               ),
+                                    //             ),                  
+                                    //           ],
+                                    //         ),
+                                    //       ),
+                                    //     );
+                                    //   },
+                                    // ),
+                                  
                                   ],
                                 ),
                               ),
