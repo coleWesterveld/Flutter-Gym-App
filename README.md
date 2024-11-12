@@ -1,10 +1,14 @@
-# firstapp
+# Gym Progress Tracking App
 
 A new Flutter project.
-I am trying to make an app I can use to track gym weights sets and notes, monitor progress, schedule workouts and create a workout program. 
-I didnt like any of the apps online or I had to pay - I already know what I want, I just need to track. ion wanna pay for any fancy programs. 
-Also I thought it would be cool to learn app development and I thought it would be cool if it was cross platofrm so I am l;earning Flutter through this project
-So uhh dont expect much lol
+As of now, I track gym progress on a long note on my phone. I wanted to create an app to help me organize my tracking, and provide some extra features such as reminders as to what equipment I need to bring to the gym each day, timers for how long to rest, and more. Some apps already exist that do some of these things, however I felt that they were missing some features I would like or were expensive, had bloat/required internet that made the app harder to use for my simple purpose, or some combination of those. I was also looking for an excuse to get into app development, and wanted to create a free, open-source app for people to use. 
+
+The plan is, when the app is ready, to put it on the app store and play store for free. 
+
+Since this project is written in Dart with Flutter, with the one codebase it should be easy to upload to both, I have been able to emulate it on both Android and IOS. 
+
+You can see the various screenshots of the apps development, and my progress in changing the UI and adding features to improve the app. the screenshots at the end with a higher ending number will be more recent, but I leave the old ones to show the progress throughout the project over time. 
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
