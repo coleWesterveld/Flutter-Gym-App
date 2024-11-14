@@ -93,8 +93,10 @@ class _MainPage extends State<NavigationBarApp> {
 
         ChangeNotifierProvider(
           create: (context) => Profile(
+            //programTEC: List<TextEditingController>.filled(split.length, TextEditingController(),growable: true),
             split: split,
             controllers: List<ExpansionTileController>.filled(split.length, ExpansionTileController(),growable: true),
+            //rpeTEC: ,
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol

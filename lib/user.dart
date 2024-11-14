@@ -34,6 +34,11 @@ class Profile extends ChangeNotifier {
 
   //for expansion tiles in workout page
   List<ExpansionTileController> controllers;
+  // List<List<List<TextEditingController>>> setsTEC;
+  // List<List<List<TextEditingController>>> rpeTEC;
+  // List<List<List<TextEditingController>>> reps1TEC;
+  // List<List<List<TextEditingController>>> reps2TEC;
+
 
   int splitLength;
   int uuidCount;
@@ -43,6 +48,10 @@ class Profile extends ChangeNotifier {
     required this.excercises,
     required this.sets,
     required this.controllers,
+    // required this.rpeTEC,
+    // required this.reps1TEC,
+    // required this.reps2TEC,
+    // required this.setsTEC,
     this.splitLength = 7,
 
   });

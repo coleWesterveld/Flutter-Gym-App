@@ -151,9 +151,41 @@ class _MyListState extends State<ProgramPage> {
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
+    void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Type something...',
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
     //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
     //print(_sliding);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Color(0xFF1e2025),
         centerTitle: true,
@@ -577,6 +609,7 @@ class _MyListState extends State<ProgramPage> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: context.read<Profile>().excercises[index].length,
                                 shrinkWrap: true,
+                                
                                     
                                 //displaying list of excercises for that day
                                 //TODO: add sets here too, centre text boxes, add notes option on dropdown
@@ -612,10 +645,11 @@ class _MyListState extends State<ProgramPage> {
                                     //actual information about the excercise
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(Radius.circular(1))
+                                        borderRadius: BorderRadius.all(Radius.circular(1)),
+                                        border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
                                       ),
                                       child: Material(
-                                        color: _listColorFlop(index: excerciseIndex),
+                                        color: const Color(0xFF1e2025),//_listColorFlop(index: excerciseIndex),
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                           child: Column(
@@ -665,7 +699,7 @@ class _MyListState extends State<ProgramPage> {
                                                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                                             padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
                                                             //alignment: Alignment.centerLeft,
-                                                            backgroundColor: _listColorFlop(index: excerciseIndex + 1),
+                                                            backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: excerciseIndex + 1),
                                                             shape:
                                                               RoundedRectangleBorder(
                                                                  side: BorderSide(
@@ -714,7 +748,7 @@ class _MyListState extends State<ProgramPage> {
                                                       
                                                     HapticFeedback.heavyImpact();
                                                       //print(context.read<Profile>().split[index].data);
-                                                      alertTEC.text = context.read<Profile>().split[index].data;
+                                                      alertTEC = TextEditingController(text: context.read<Profile>().excercises[index][excerciseIndex].data);
                                                       String? excerciseTitle = await openDialog();
                                                       if (excerciseTitle == null || excerciseTitle.isEmpty) return;
                                                           
@@ -814,9 +848,15 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
+                                                              onFieldSubmitted: (value){
+            HapticFeedback.heavyImpact();
+            Navigator.of(context).pop(alertTEC.text);
+          },
                                                                     
-                                                              keyboardType: TextInputType.numberWithOptions(signed: true, decimal: true),
-                                                              decoration: const InputDecoration(
+                                                              keyboardType: TextInputType.number,
+                                                              decoration: InputDecoration(
+                                                                filled: true,
+                                                                fillColor: darken(Color(0xFF1e2025), 25),
                                                                 contentPadding: EdgeInsets.only(
                                                                   bottom: 10, 
                                                                   left: 8 
@@ -835,9 +875,11 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
-                                                              keyboardType: TextInputType. numberWithOptions(signed: true, decimal: true),
+                                                              keyboardType: TextInputType. numberWithOptions(decimal: true),
                                       
-                                                              decoration: const InputDecoration(
+                                                              decoration:  InputDecoration(
+                                                                filled: true,
+                                                                fillColor: darken(Color(0xFF1e2025), 25),
                                                                 contentPadding: EdgeInsets.only(
                                                                   bottom: 10, 
                                                                   left: 8 
@@ -858,8 +900,10 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
-                                                              keyboardType: TextInputType. numberWithOptions(signed: true, decimal: true),
-                                                              decoration: const InputDecoration(
+                                                              keyboardType: TextInputType. numberWithOptions(decimal: true,),
+                                                              decoration: InputDecoration(
+                                                                filled: true,
+                                                                fillColor: darken(Color(0xFF1e2025), 25),
                                                                 contentPadding: EdgeInsets.only(
                                                                   bottom: 10, 
                                                                   left: 8 
@@ -905,11 +949,16 @@ class _MyListState extends State<ProgramPage> {
   //TODO: move to another file
   //this is to show text box to enter text for day titles and excercises
   Future<String?> openDialog() {
-    
+    //alertTEC = TextEditingController(text: hints);
     return showDialog(
+      
       context: context,
       builder: (context) => AlertDialog(
         title: TextFormField(
+          onFieldSubmitted: (value){
+            HapticFeedback.heavyImpact();
+            Navigator.of(context).pop(alertTEC.text);
+          },
           autofocus: true,
           controller: alertTEC,
           decoration: InputDecoration(
@@ -931,12 +980,17 @@ class _MyListState extends State<ProgramPage> {
   // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
   // its jarring when it bounces around
   Widget editBuilder(index){
+    alertTEC = TextEditingController(text: context.read<Profile>().split[index].data);
     if(_sliding == 0){
       //Value = MediaQuery.sizeOf(context).height - 450;
     return SizedBox(
       height: 100,
       width: 300,
       child: TextFormField(
+          onFieldSubmitted: (value){
+            HapticFeedback.heavyImpact();
+            Navigator.of(context).pop(alertTEC.text);
+          },
           autofocus: true,
           controller: alertTEC,
           decoration: InputDecoration(
