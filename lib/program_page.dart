@@ -93,11 +93,6 @@ class _MyListState extends State<ProgramPage> {
   int? _sliding = 0;
   TextEditingController alertTEC = TextEditingController();
   //double alertInsetValue = 0;
-  
-
-
-  
-
 
   Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
     
@@ -145,43 +140,25 @@ class _MyListState extends State<ProgramPage> {
 
   // adds day to split
   _addItem() {
-      context.read<Profile>().splitAppend(newDay: "New Day", newExcercises: [], newSets: []);
+      context.read<Profile>().splitAppend(
+        newDay: "New Day", 
+        newExcercises: [], 
+        newSets: [],
+        newReps1Focus: [],
+        newReps1TEC: [],
+        newReps2Focus: [],
+        newReps2TEC: [],
+        newRpeFocus: [],
+        newRpeTEC: [],
+        newSetsFocus: [],
+        newSetsTEC: [],
+        );
   }
 
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
-    void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Type something...',
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('Close'),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+    
     //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
     //print(_sliding);
     return Scaffold(
@@ -198,7 +175,10 @@ class _MyListState extends State<ProgramPage> {
       ),
 
 
-      bottomSheet: SizedBox(
+      bottomSheet: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.zero)
+        ),
         
         height: 66,
         child: TableCalendar(
@@ -275,8 +255,36 @@ class _MyListState extends State<ProgramPage> {
                 SplitDayData x = Provider.of<Profile>(context, listen: false).split[oldIndex];
                 List<SplitDayData> y = context.read<Profile>().excercises[oldIndex];
                 List<List<SplitDayData>> z = context.read<Profile>().sets[oldIndex];
+                
+                List<List<FocusNode>> a = context.read<Profile>().setsFocus[oldIndex];
+                List<List<TextEditingController>> b = context.read<Profile>().setsTEC[oldIndex];
+
+                List<List<FocusNode>> c = context.read<Profile>().reps1Focus[oldIndex];
+                List<List<TextEditingController>> d = context.read<Profile>().reps1TEC[oldIndex];
+
+                List<List<FocusNode>> e = context.read<Profile>().reps2Focus[oldIndex];
+                List<List<TextEditingController>> f = context.read<Profile>().reps2TEC[oldIndex];
+
+                List<List<FocusNode>> g = context.read<Profile>().rpeFocus[oldIndex];
+                List<List<TextEditingController>> h = context.read<Profile>().rpeTEC[oldIndex];
+
+
                 context.read<Profile>().splitPop(index: oldIndex);
-                context.read<Profile>().splitInsert(index: newIndex, days: x, excerciseList: y, newSets: z);
+
+                context.read<Profile>().splitInsert(
+                  index: newIndex, 
+                  days: x, 
+                  excerciseList: y, 
+                  newSets: z,
+                  newSetsFocus: a,
+                  newSetsTEC: b,
+                  newReps1Focus: c,
+                  newReps1TEC: d,
+                  newReps2Focus: e,
+                  newReps2TEC: f,
+                  newRpeFocus: g,
+                  newRpeTEC: h,
+                );
               });
               widget.writePrefs();
             },
@@ -481,6 +489,19 @@ class _MyListState extends State<ProgramPage> {
                                                         index: index, 
                                                         newExcercises: context.read<Profile>().excercises[index],
                                                         newSets: context.read<Profile>().sets[index],
+
+                                                        newSetsFocus: context.read<Profile>().setsFocus[index],
+                                                        newSetsTEC: context.read<Profile>().setsTEC[index],
+
+                                                        newReps1Focus: context.read<Profile>().reps1Focus[index],
+                                                        newReps1TEC: context.read<Profile>().reps1TEC[index],
+
+                                                        newReps2Focus: context.read<Profile>().reps2Focus[index],
+                                                        newReps2TEC: context.read<Profile>().reps2TEC[index],
+
+                                                        newRpeFocus: context.read<Profile>().rpeFocus[index],
+                                                        newRpeTEC: context.read<Profile>().rpeTEC[index],
+
                                                         newDay: SplitDayData(
                                                           data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
                                                         )
@@ -541,10 +562,35 @@ class _MyListState extends State<ProgramPage> {
                                     SplitDayData x = Provider.of<Profile>(context, listen: false).excercises[index][oldIndex];
                                     
                                     List<SplitDayData> y = Provider.of<Profile>(context, listen: false).sets[index][oldIndex];
+
+                                    List<FocusNode> a = Provider.of<Profile>(context, listen: false).setsFocus[index][oldIndex];
+                                    List<TextEditingController> b = Provider.of<Profile>(context, listen: false).setsTEC[index][oldIndex];
+
+                                    List<FocusNode> c = Provider.of<Profile>(context, listen: false).reps1Focus[index][oldIndex];
+                                    List<TextEditingController> d = Provider.of<Profile>(context, listen: false).reps1TEC[index][oldIndex];
+
+                                    List<FocusNode> e = Provider.of<Profile>(context, listen: false).reps2Focus[index][oldIndex];
+                                    List<TextEditingController> f = Provider.of<Profile>(context, listen: false).reps2TEC[index][oldIndex];
+
+                                    List<FocusNode> g = Provider.of<Profile>(context, listen: false).rpeFocus[index][oldIndex];
+                                    List<TextEditingController> h = Provider.of<Profile>(context, listen: false).rpeTEC[index][oldIndex];
                                     
                                     context.read<Profile>().excercisePop(index1: index, index2: oldIndex);
                                     
-                                    context.read<Profile>().excerciseInsert(index1: index, index2: newIndex, data: x, newSets: y);
+                                    context.read<Profile>().excerciseInsert(
+                                      index1: index, 
+                                      index2: newIndex, 
+                                      data: x, 
+                                      newSets: y,
+                                      newSetsFocus: a,
+                                      newSetsTEC: b,
+                                      newReps1Focus: c,
+                                      newReps1TEC: d,
+                                      newReps2Focus: e,
+                                      newReps2TEC: f,
+                                      newRpeFocus: g,
+                                      newRpeTEC: h,
+                                    );
                                   });
                                 },
                                 
@@ -565,6 +611,14 @@ class _MyListState extends State<ProgramPage> {
                                               SplitDayData(data: "New Excercise", dayColor: Colors.black), 
                                               index: index,
                                               newSets: [],
+                                              newReps1Focus: [],
+                                              newReps1TEC: [],
+                                              newReps2Focus: [],
+                                              newReps2TEC: [],
+                                              newRpeFocus: [],
+                                              newRpeTEC: [],
+                                              newSetsFocus: [],
+                                              newSetsTEC: [],
                                             );
                                           });  
                                         },
@@ -761,6 +815,17 @@ class _MyListState extends State<ProgramPage> {
                                                           ),
                                                           
                                                           newSets: context.read<Profile>().sets[index][excerciseIndex],
+                                                          newSetsFocus: context.read<Profile>().setsFocus[index][excerciseIndex],
+                                                          newSetsTEC: context.read<Profile>().setsTEC[index][excerciseIndex],
+
+                                                          newRpeFocus: context.read<Profile>().rpeFocus[index][excerciseIndex],
+                                                          newRpeTEC: context.read<Profile>().rpeTEC[index][excerciseIndex],
+
+                                                          newReps1Focus: context.read<Profile>().reps1Focus[index][excerciseIndex],
+                                                          newReps1TEC: context.read<Profile>().reps1TEC[index][excerciseIndex],
+
+                                                          newReps2Focus: context.read<Profile>().reps2Focus[index][excerciseIndex],
+                                                          newReps2TEC: context.read<Profile>().reps2TEC[index][excerciseIndex],
                                                         );
                                                       });
                                                     }, 
@@ -848,10 +913,12 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
+                                                              controller: context.watch<Profile>().setsTEC[index][excerciseIndex][setIndex],
+                                                              focusNode: context.watch<Profile>().setsFocus[index][excerciseIndex][setIndex],
                                                               onFieldSubmitted: (value){
-            HapticFeedback.heavyImpact();
-            Navigator.of(context).pop(alertTEC.text);
-          },
+                                                                HapticFeedback.heavyImpact();
+                                                                Navigator.of(context).pop(alertTEC.text);
+                                                              },
                                                                     
                                                               keyboardType: TextInputType.number,
                                                               decoration: InputDecoration(
@@ -875,6 +942,8 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
+                                                              controller: context.watch<Profile>().rpeTEC[index][excerciseIndex][setIndex],
+                                                              focusNode: context.watch<Profile>().rpeFocus[index][excerciseIndex][setIndex],
                                                               keyboardType: TextInputType. numberWithOptions(decimal: true),
                                       
                                                               decoration:  InputDecoration(
@@ -900,6 +969,9 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: TextFormField(
+                                                              controller: context.watch<Profile>().reps1TEC[index][excerciseIndex][setIndex],
+                                                              focusNode: context.watch<Profile>().reps1Focus[index][excerciseIndex][setIndex],
+                                                              
                                                               keyboardType: TextInputType. numberWithOptions(decimal: true,),
                                                               decoration: InputDecoration(
                                                                 filled: true,
@@ -1016,6 +1088,18 @@ class _MyListState extends State<ProgramPage> {
                     newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
                     newExcercises: context.read<Profile>().excercises[index],
                     newSets: context.read<Profile>().sets[index],
+
+                    newSetsFocus: context.read<Profile>().setsFocus[index],
+                    newSetsTEC: context.read<Profile>().setsTEC[index],
+
+                    newRpeFocus: context.read<Profile>().rpeFocus[index],
+                    newRpeTEC: context.read<Profile>().rpeTEC[index],
+
+                    newReps1Focus: context.read<Profile>().reps1Focus[index],
+                    newReps1TEC: context.read<Profile>().reps1TEC[index],
+
+                    newReps2Focus: context.read<Profile>().reps2Focus[index],
+                    newReps2TEC: context.read<Profile>().reps2TEC[index],
                   );
                   setState(() {});
                 },

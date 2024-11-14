@@ -10,7 +10,6 @@ import 'analytics_page.dart';
 import 'user.dart';
 import 'data_saving.dart';
 
-
 /* colour choices:
 my goal is to make tappable things blue
 editable things orange 
@@ -19,20 +18,15 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp( NavigationBarApp());
+  runApp(NavigationBarApp());
 }
 
 Color darken(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var f = 1 - percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        (c.red * f).round(),
-        (c.green  * f).round(),
-        (c.blue * f).round()
-    );
+  assert(1 <= percent && percent <= 100);
+  var f = 1 - percent / 100;
+  return Color.fromARGB(c.alpha, (c.red * f).round(), (c.green * f).round(),
+      (c.blue * f).round());
 }
-
 
 class NavigationBarApp extends StatefulWidget {
   const NavigationBarApp({super.key});
@@ -40,12 +34,23 @@ class NavigationBarApp extends StatefulWidget {
   State<NavigationBarApp> createState() => _MainPage();
   //_MainPage createState() => _MainPage();
 }
+
 class _MainPage extends State<NavigationBarApp> {
   //default split, gets overwridden by user choices
-  List<SplitDayData> split = 
-  [SplitDayData(data: "Push", dayColor: const Color.fromRGBO(106, 92, 185, 1), ), 
-  SplitDayData(data: "Pull", dayColor:  const Color.fromRGBO(150, 50, 50, 1),), 
-  SplitDayData(data: "Legs", dayColor: const Color.fromRGBO(61, 101, 167, 1),)];
+  List<SplitDayData> split = [
+    SplitDayData(
+      data: "Push",
+      dayColor: const Color.fromRGBO(106, 92, 185, 1),
+    ),
+    SplitDayData(
+      data: "Pull",
+      dayColor: const Color.fromRGBO(150, 50, 50, 1),
+    ),
+    SplitDayData(
+      data: "Legs",
+      dayColor: const Color.fromRGBO(61, 101, 167, 1),
+    )
+  ];
 
   //getting and storing persistent data
   late SharedPreferences _sharedPrefs;
@@ -55,47 +60,44 @@ class _MainPage extends State<NavigationBarApp> {
     readPrefs();
   }
 
-  writePrefs(){
-    
-    List<String> splitDataList = split.map((data) => jsonEncode(data.toJson())).toList();
+  writePrefs() {
+    List<String> splitDataList =
+        split.map((data) => jsonEncode(data.toJson())).toList();
     _sharedPrefs.setStringList('splitData', splitDataList);
   }
 
-  readPrefs(){
+  readPrefs() {
     //print("readprefs");
     List<String>? splitDataList = _sharedPrefs.getStringList('splitData');
-    if (splitDataList != null){
-      split = splitDataList.map((data) => SplitDayData.fromJson(json.decode(data))).toList(growable: true);
+    if (splitDataList != null) {
+      split = splitDataList
+          .map((data) => SplitDayData.fromJson(json.decode(data)))
+          .toList(growable: true);
       //rint("split");
     }
 
-    setState((){
-
-    });
+    setState(() {});
   }
 
   @override
-
   void initState() {
     //print("initprefs");
     getSharedPreferences();
     super.initState();
-    
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     //provider for global variable information
     return MultiProvider(
       providers: [
-
         ChangeNotifierProvider(
           create: (context) => Profile(
             //programTEC: List<TextEditingController>.filled(split.length, TextEditingController(),growable: true),
             split: split,
-            controllers: List<ExpansionTileController>.filled(split.length, ExpansionTileController(),growable: true),
+            controllers: List<ExpansionTileController>.filled(
+                split.length, ExpansionTileController(),
+                growable: true),
             //rpeTEC: ,
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
@@ -103,59 +105,215 @@ class _MainPage extends State<NavigationBarApp> {
             // TODO: fix
             excercises: [
               [
-                SplitDayData(data: "Bench Press", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Tricep Pushdown", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Lateral Raise", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Shoulder Press", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Cable Chest Fly", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Bench Press",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Tricep Pushdown",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Lateral Raise",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Shoulder Press",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Cable Chest Fly",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
               ],
               [
-                SplitDayData(data: "Weighted Pull-ups", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Cable Rows", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Reverse Dumbbell Flies", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Hammer Curls", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Barbell Rows", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Weighted Pull-ups",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Cable Rows",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Reverse Dumbbell Flies",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Hammer Curls",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Barbell Rows",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
               ],
               [
-                SplitDayData(data: "Barbell Squats", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Romanian Deadlift", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Calf Raises", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Seated Leg Curl", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(data: "Leg Extension", dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Barbell Squats",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Romanian Deadlift",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Calf Raises",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Seated Leg Curl",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
+                SplitDayData(
+                    data: "Leg Extension",
+                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
               ],
-              [], 
-              [], 
-              [], 
-              [], 
-              [], [], [] , []],
-            sets: [[[],[],[], [], [], [], [], [], [], [] , []],
-            [[],[],[], [], [], [], [], [], [], [] , []],
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []], 
-            [[],[],[], [], [], [], [], [], [], [] , []] , 
-            [[],[],[], [], [], [], [], [], [], [] , []]],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ],
+            sets: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+
+            reps1Focus: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+
+            reps1TEC: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+            
+            reps2Focus: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+            
+            reps2TEC: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+            
+            rpeFocus: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+
+            rpeTEC: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+            
+            setsFocus: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+
+            setsTEC: [
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []],
+              [[], [], [], [], [], [], [], [], [], [], []]
+            ],
+
             uuidCount: 0,
-            ),
           ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          snackBarTheme: SnackBarThemeData(
-            backgroundColor: Color(0xFFF28500),
-          ),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Color(0XFF1C1C1C),//darken(Color.fromARGB(255, 12, 74, 151),60),
-            brightness: Brightness.dark,
-          )
         ),
-        //theme: ThemeData(useMaterial3: false),s
-        home: NavigationExample(updater: writePrefs,),
+      ],
+      child: GestureDetector(
+        onTap: () =>
+            WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
+        child: MaterialApp(
+          title: 'TempTitle',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+              snackBarTheme: SnackBarThemeData(
+                backgroundColor: Color(0xFFF28500),
+              ),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(
+                    0XFF1C1C1C), //darken(Color.fromARGB(255, 12, 74, 151),60),
+                brightness: Brightness.dark,
+              )),
+          //theme: ThemeData(useMaterial3: false),s
+          home: NavigationExample(
+            updater: writePrefs,
+          ),
+        ),
       ),
     );
   }
@@ -164,26 +322,24 @@ class _MainPage extends State<NavigationBarApp> {
 class NavigationExample extends StatefulWidget {
   Function updater;
   NavigationExample({super.key, required this.updater});
-  
+
   @override
   _NavigationExampleState createState() => _NavigationExampleState();
 }
 
-
-
 class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
-  
-  void changeColor(Color newColor, int index) => setState(() => context.watch<Profile>().split[index].dayColor = newColor);
+
+  void changeColor(Color newColor, int index) =>
+      setState(() => context.watch<Profile>().split[index].dayColor = newColor);
   @override
   Widget build(BuildContext context) {
-    
     final ThemeData theme = Theme.of(context);
     //var list = ['Legs', 'Push', 'Pull'];
     //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
-      resizeToAvoidBottomInset : false,
-      
+      resizeToAvoidBottomInset: false,
+
       bottomNavigationBar: NavigationBar(
         //backgroundColor: Color(0xFF643f00),
         onDestinationSelected: (int index) {
@@ -194,7 +350,7 @@ class _NavigationExampleState extends State<NavigationExample> {
         indicatorColor: Color(0XFF1A78EB),
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
-          Radius.circular(12),
+            Radius.circular(12),
           ),
         ),
 
@@ -228,14 +384,18 @@ class _NavigationExampleState extends State<NavigationExample> {
       body: <Widget>[
         /// Workout page
         WorkoutPage(),
+
         /// Schedule page
         SchedulePage(),
+
         /// Program page
-        ProgramPage(writePrefs: widget.updater,),
+        ProgramPage(
+          writePrefs: widget.updater,
+        ),
+
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
     );
   }
 }
-

@@ -19,21 +19,20 @@ class _WorkoutState extends State<Workout> {
           style: TextStyle(
             fontWeight: FontWeight.w900,
           ),
-          ),
+        ),
       ),
       body: const Center(
-        child: Column(
-          children: [
-            Text("Workout Page"),
-            // BackButton(
-      
-            //   onPressed: (){
-            //     Navigator.pop(context);
-            //   },
-            // ),
-      
-          ],
-        )),
+          child: Column(
+        children: [
+          Text("Workout Page"),
+          // BackButton(
+
+          //   onPressed: (){
+          //     Navigator.pop(context);
+          //   },
+          // ),
+        ],
+      )),
     );
   }
 }
