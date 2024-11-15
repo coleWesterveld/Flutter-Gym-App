@@ -6,6 +6,8 @@ import 'user.dart';
 //import 'package:flutter/cupertino.dart';
 import 'schedule_page.dart';
 import 'workout_page.dart';
+import 'dart:math';
+
 
 // lighten and darken colour functions found on stackoverflow by mr_mmmmore
 // here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
@@ -411,132 +413,86 @@ class _WorkoutPageState extends State<WorkoutPage>
                                     ),
                             );
                           } else {
-                            return Material(
-                              color: _listColorFlop(
-                                  index: excerciseIndex,
-                                  bgColor: const Color(0xFF151218)),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              context
-                                                  .watch<Profile>()
-                                                  .excercises[index]
-                                                      [excerciseIndex]
-                                                  .data,
-                                              style: const TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 255, 255, 255),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(1)),
+                                border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
+                              ),
+                              child: Material(
+                                color:const Color(0xFF1e2025),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                            SizedBox(
+                                              height: max(45,context.watch<Profile>().setsTEC[index][excerciseIndex].length * 20 + 16),
+                                              //color: Colors.red,s
+                                              child: Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(12.0),
+                                                  child: Text(
+                                                    context
+                                                        .watch<Profile>()
+                                                        .excercises[index]
+                                                            [excerciseIndex]
+                                                        .data,
+                                                    style: const TextStyle(
+                                                      color: Color.fromARGB(
+                                                          255, 255, 255, 255),
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                            height: context.watch<Profile>().setsTEC[index][excerciseIndex].length * 20 + 16,
+                                            width: 100,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: ListView(
+                                                physics: const NeverScrollableScrollPhysics(),
+                                                children: [
+                                                  for(int i = 0; i < context.watch<Profile>().setsTEC[index][excerciseIndex].length; i++) 
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(right: 24.0),
+                                                      child: Center(
+                                                        child: Text(
+                                                          "${context.watch<Profile>().setsTEC[index][excerciseIndex][i].text} x ${context.watch<Profile>().reps1TEC[index][excerciseIndex][i].text}",
+                                                          style: TextStyle(
+                                                            fontWeight: FontWeight.w700,
+                                                          )
+                                                          ),
+                                                      ),
+                                                    ),
+                                                ]
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                          
+                                          // SizedBox(
+                                          //   height: 100,
+                                          //   width: 100,
+                                          //   child: ListView(
+                                          //     physics: const NeverScrollableScrollPhysics(),
+                                          //     children: [
+                                          //       for(int i = 0; i <5 ; i++) const Text("Stff"),
+                                          //     ]
+                                          //   ),
+                                          // )
+                                        ],
+                                      ),
+                                      
+                              
 
-                                    //Displaying Sets for each excercise
-                                    // ListView.builder(
-                                    //   //on reorder, update tree with new ordering
-                                    //   // is annoying so i disabled it
-                                    //   physics: const NeverScrollableScrollPhysics(),
-                                    //   itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
-                                    //   shrinkWrap: true,
-
-                                    //   //displaying list of sets for that excercise
-                                    //   //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                    //   itemBuilder: (context, setIndex) {
-                                    //     return Dismissible(
-                                    //       key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
-
-                                    //       direction: DismissDirection.endToStart,
-                                    //       background: Container(
-                                    //         color: Colors.red,
-                                    //         child: const Icon(Icons.delete)
-                                    //       ),
-
-                                    //       onDismissed: (direction) {
-                                    //         HapticFeedback.heavyImpact();
-                                    //         // Remove the item from the data source.
-                                    //         setState(() {
-                                    //           context.read<Profile>().setsPop(
-                                    //             index1: index,
-                                    //             index2: excerciseIndex,
-                                    //             index3: setIndex,
-                                    //           );
-                                    //         });
-
-                                    //         ScaffoldMessenger.of(context).showSnackBar(
-                                    //           const SnackBar(
-                                    //             content: Text(
-                                    //               style: TextStyle(
-                                    //                 color: Colors.white
-                                    //               ),
-                                    //               'Excercise Deleted'
-                                    //             ),
-                                    //          ),
-                                    //         );
-                                    //       },
-
-                                    //       //actual information about the sets
-                                    //       child: Padding(
-                                    //         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    //         child: Row(
-                                    //           // TODO: add rep ranges
-                                    //           children: [
-                                    //             Padding(
-                                    //               padding: const EdgeInsets.all(8.0),
-                                    //               child: TextFormField(
-
-                                    //                 decoration: const InputDecoration(
-                                    //                   contentPadding: EdgeInsets.only(
-                                    //                     bottom: 10,
-                                    //                     left: 8
-                                    //                   ),
-                                    //                   constraints: BoxConstraints(
-                                    //                     maxWidth: 150,
-                                    //                     maxHeight: 30,
-                                    //                   ),
-                                    //                   border: OutlineInputBorder(
-                                    //                       borderRadius: BorderRadius.all(Radius.circular(8))),
-                                    //                   hintText: 'Weight', //This should be made to be whateever this value was last workout
-                                    //                 ),
-                                    //               ),
-                                    //             ),
-                                    //             const Icon(Icons.clear),
-                                    //             Padding(
-                                    //               padding: const EdgeInsets.all(8.0),
-                                    //               child: TextFormField(
-                                    //                 decoration: const InputDecoration(
-                                    //                   contentPadding: EdgeInsets.only(
-                                    //                     bottom: 10,
-                                    //                     left: 8
-                                    //                   ),
-                                    //                   constraints: BoxConstraints(
-                                    //                     maxWidth: 150,
-                                    //                     maxHeight: 30,
-                                    //                   ),
-                                    //                   border: OutlineInputBorder(
-                                    //                       borderRadius: BorderRadius.all(Radius.circular(8))),
-                                    //                   hintText: 'Reps', //This should be made to be whateever this value was last workout
-                                    //                 ),
-                                    //               ),
-                                    //             ),
-                                    //           ],
-                                    //         ),
-                                    //       ),
-                                    //     );
-                                    //   },
-                                    // ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             );

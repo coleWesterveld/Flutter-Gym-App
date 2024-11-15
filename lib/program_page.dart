@@ -24,6 +24,9 @@ import 'package:provider/provider.dart';
 import 'user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'data_saving.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+
+
 //import 'package:flutter/cupertino.dart';
 
 
@@ -81,6 +84,8 @@ class ProgramPage extends StatefulWidget {
   @override
   _MyListState createState() => _MyListState();
 }
+
+final FocusNode _focusNode = FocusNode();
 
 
 enum Viewer {title, color}
@@ -154,6 +159,24 @@ class _MyListState extends State<ProgramPage> {
         newSetsTEC: [],
         );
   }
+  //final FocusNode _focusNode = FocusNode();
+    // void _showBottomSheet(BuildContext context) {
+    //   showModalBottomSheet(
+    //     context: context,
+    //     isScrollControlled: true, // Enable scroll control
+    //     builder: (context) {
+    //       return Padding(
+    //         padding: MediaQuery.of(context).viewInsets, // Adjust padding for keyboard
+    //         // child: TextButton(onPressed: (){
+    //         //   WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+    //         // }, 
+    //         child: Text("Done"),
+    //         //)
+    //       );
+    //     },
+    //   );
+    // }
+
 
   @override
   // main scaffold, putting it all together
@@ -912,29 +935,38 @@ class _MyListState extends State<ProgramPage> {
                                                         children: [
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
-                                                            child: TextFormField(
-                                                              controller: context.watch<Profile>().setsTEC[index][excerciseIndex][setIndex],
-                                                              focusNode: context.watch<Profile>().setsFocus[index][excerciseIndex][setIndex],
-                                                              onFieldSubmitted: (value){
-                                                                HapticFeedback.heavyImpact();
-                                                                Navigator.of(context).pop(alertTEC.text);
-                                                              },
-                                                                    
-                                                              keyboardType: TextInputType.number,
-                                                              decoration: InputDecoration(
-                                                                filled: true,
-                                                                fillColor: darken(Color(0xFF1e2025), 25),
-                                                                contentPadding: EdgeInsets.only(
-                                                                  bottom: 10, 
-                                                                  left: 8 
+                                                            child: Focus(
+                                                              // onFocusChange: (hasFocus) {
+                                                              //   if (hasFocus){
+                                                              //     _showBottomSheet(context);
+                                                              //   }
+                                                                
+                                                              // },
+                                                              child: TextFormField(
+                                                              
+                                                                controller: context.watch<Profile>().setsTEC[index][excerciseIndex][setIndex],
+                                                                focusNode: context.watch<Profile>().setsFocus[index][excerciseIndex][setIndex],
+                                                                onFieldSubmitted: (value){
+                                                                  HapticFeedback.heavyImpact();
+                                                                  Navigator.of(context).pop(alertTEC.text);
+                                                                },
+                                                                      
+                                                                keyboardType: TextInputType.number,
+                                                                decoration: InputDecoration(
+                                                                  filled: true,
+                                                                  fillColor: darken(Color(0xFF1e2025), 25),
+                                                                  contentPadding: EdgeInsets.only(
+                                                                    bottom: 10, 
+                                                                    left: 8 
+                                                                  ),
+                                                                  constraints: BoxConstraints(
+                                                                    maxWidth: 50,
+                                                                    maxHeight: 30,
+                                                                  ),
+                                                                  border: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8))),
+                                                                  hintText: 'Sets', //This should be made to be whateever this value was last workout
                                                                 ),
-                                                                constraints: BoxConstraints(
-                                                                  maxWidth: 50,
-                                                                  maxHeight: 30,
-                                                                ),
-                                                                border: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                hintText: 'Sets', //This should be made to be whateever this value was last workout
                                                               ),
                                                             ),
                                                           ),

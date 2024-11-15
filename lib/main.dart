@@ -88,6 +88,7 @@ class _MainPage extends State<NavigationBarApp> {
 
   @override
   Widget build(BuildContext context) {
+
     //provider for global variable information
     return MultiProvider(
       providers: [
