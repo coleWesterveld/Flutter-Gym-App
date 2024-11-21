@@ -12,6 +12,7 @@ Still Todo on this page:
   - either through shared preferences or local SQLite database
 - Change look of calendar, right now big blocks of colour are too much
 - stop bottom from being like stuck too low
+- I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
 
 - LATER: add sidebar, user can have multiple different programs to swap between
 */
@@ -1203,81 +1204,12 @@ class _MyListState extends State<ProgramPage> {
     }
   }
 
-  // //oid openColorPicker(int index) {
-    
- 
 
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: CupertinoSlidingSegmentedControl(
-  //           padding: EdgeInsets.all(4.0),
-  //           children: const <int, Text>{
-  //             0: Text("Text1"),
-  //             1: Text("Text2"),
-  //             2: Text("Text3"),
-  //           }, 
-
-  //           onValueChanged: (int? newValue){
-  //             sliding = newValue;
-
-  //             setState((){});
-  //             //print(_sliding);
-  //           },
-  //           groupValue: sliding,
-  //         )
-
-          // content: SingleChildScrollView(
-          //   child: BlockPicker(
-          //     pickerColor: context.watch<Profile>().split[index].dayColor,
-          //     onColorChanged: (Color color) {
-          //       context.read<Profile>().splitAssign(
-          //         index: index,
-          //         newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
-          //         newExcercises: context.read<Profile>().excercises[index],
-          //         newSets: context.read<Profile>().sets[index],
-          //       );
-          //       setState(() {});
-          //     },
-                
-              
-          //     availableColors: Profile.colors,
-          //     layoutBuilder: pickerLayoutBuilder,
-          //     itemBuilder: pickerItemBuilder,
-          //   ),
-          // ),
-  //       );
-  //     },
-  //   );
-  // }
+// Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218)}){
+//   if (index % 2 == 0){
+//     return lighten(bgColor, 5);
+//   }
+//   else{
+//     return bgColor;
+//   }
 }
-
-
-
-
-
-
-
-// Color selectedColor = Colors.blue; // Set an initial color
-
-// ColorPicker(
-//   color: selectedColor,
-//   onColorChanged: (Color color) {
-//     setState(() {
-//       selectedColor = color;
-//     });
-//   },
-// ).showPickerDialog(
-//   context,
-// );
-
-Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218)}){
-  if (index % 2 == 0){
-    return lighten(bgColor, 5);
-  }
-  else{
-    return bgColor;
-  }
-}
-
