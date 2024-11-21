@@ -296,8 +296,10 @@ class _MainPage extends State<NavigationBarApp> {
         ),
       ],
       child: GestureDetector(
-        onTap: () =>
-            WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
+        onTap: (){
+            WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+            
+        },
         child: MaterialApp(
           title: 'TempTitle',
           debugShowCheckedModeBanner: false,
@@ -339,7 +341,7 @@ class _NavigationExampleState extends State<NavigationExample> {
     //var list = ['Legs', 'Push', 'Pull'];
     //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
 
       bottomNavigationBar: NavigationBar(
         //backgroundColor: Color(0xFF643f00),

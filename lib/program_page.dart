@@ -24,7 +24,7 @@ import 'package:provider/provider.dart';
 import 'user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'data_saving.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
+
 
 
 //import 'package:flutter/cupertino.dart';
@@ -85,8 +85,6 @@ class ProgramPage extends StatefulWidget {
   _MyListState createState() => _MyListState();
 }
 
-final FocusNode _focusNode = FocusNode();
-
 
 enum Viewer {title, color}
 // this class contains the list view of expandable card tiles 
@@ -94,6 +92,8 @@ enum Viewer {title, color}
 class _MyListState extends State<ProgramPage> {
   DateTime today = DateTime.now();
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
+
+  bool _done = false;
   DateTime startDay = DateTime(2024, 8, 10);
   int? _sliding = 0;
   TextEditingController alertTEC = TextEditingController();
@@ -159,25 +159,9 @@ class _MyListState extends State<ProgramPage> {
         newSetsTEC: [],
         );
   }
-  //final FocusNode _focusNode = FocusNode();
-    // void _showBottomSheet(BuildContext context) {
-    //   showModalBottomSheet(
-    //     context: context,
-    //     isScrollControlled: true, // Enable scroll control
-    //     builder: (context) {
-    //       return Padding(
-    //         padding: MediaQuery.of(context).viewInsets, // Adjust padding for keyboard
-    //         // child: TextButton(onPressed: (){
-    //         //   WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-    //         // }, 
-    //         child: Text("Done"),
-    //         //)
-    //       );
-    //     },
-    //   );
-    // }
 
 
+  //TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
   @override
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
@@ -185,7 +169,7 @@ class _MyListState extends State<ProgramPage> {
     //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
     //print(_sliding);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Color(0xFF1e2025),
         centerTitle: true,
@@ -196,14 +180,56 @@ class _MyListState extends State<ProgramPage> {
           ),
           ),
       ),
+      
 
-
-      bottomSheet: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.zero)
-        ),
+      bottomSheet: _done
+          ? Container(
+              
+              decoration: BoxDecoration(
+                border:
+                Border(top: BorderSide(
+                  color:  lighten(Color(0xFF141414), 20),
+                )),
         
-        height: 66,
+          
+
+            
+                color: Color(0xFF1e2025),
+                //borderRadius: BorderRadius.circular(12.0),
+              ),
+
+              height: 50,
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      //when clicked, it splashes a lighter purple to show that button was clicked
+                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
+              
+                        borderRadius: BorderRadius.circular(4))),
+                      backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),), 
+             
+                    ),
+                      
+                    onPressed: () {
+                      WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                    },
+                    child: Text(
+                      'Done',
+                      style: TextStyle(color: Colors.white),
+                      ),
+                  ),
+                ],
+              ),
+            )
+          : 
+
+          Container(
+              color: Color(0xFF1e2025),
+              padding: const EdgeInsets.all(8.0),
+              height: 82,
         child: TableCalendar(
           headerVisible: false,
           calendarStyle: CalendarStyle(
@@ -249,7 +275,8 @@ class _MyListState extends State<ProgramPage> {
                      weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
                     ),
                 ),
-      ),
+            ),
+
 
 
       // with image background
@@ -266,7 +293,7 @@ class _MyListState extends State<ProgramPage> {
 
       //list of day cards
       body: SizedBox(
-        height: MediaQuery.of(context).size.height - (265),
+        height: 650,
         child: ReorderableListView.builder(
           //reordering days
             onReorder: (oldIndex, newIndex){
@@ -340,6 +367,7 @@ class _MyListState extends State<ProgramPage> {
               ),
             ),
       
+            //TODO: fix same globalkey error when reordering excercises
             // building the rest of the tiles, one for each day from split list stored in user
             //dismissable and reorderable: each child for dismissable needs to have a unique key
             itemCount: context.watch<Profile>().split.length,
@@ -936,20 +964,24 @@ class _MyListState extends State<ProgramPage> {
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: Focus(
-                                                              // onFocusChange: (hasFocus) {
-                                                              //   if (hasFocus){
-                                                              //     _showBottomSheet(context);
-                                                              //   }
+                                                              onFocusChange: (hasFocus) {
+                                                                if (hasFocus){
+                                                                  setState((){_done = true;});
+                                                                }else{
+                                                                  setState((){_done = false;});
+                                                                }
+                                                              
                                                                 
-                                                              // },
+                                                              },
                                                               child: TextFormField(
+                                                               
                                                               
                                                                 controller: context.watch<Profile>().setsTEC[index][excerciseIndex][setIndex],
                                                                 focusNode: context.watch<Profile>().setsFocus[index][excerciseIndex][setIndex],
-                                                                onFieldSubmitted: (value){
-                                                                  HapticFeedback.heavyImpact();
-                                                                  Navigator.of(context).pop(alertTEC.text);
-                                                                },
+                                                                // onFieldSubmitted: (value){
+                                                                //   //HapticFeedback.heavyImpact();
+                                                                //   //Navigator.of(context).pop(alertTEC.text);
+                                                                // },
                                                                       
                                                                 keyboardType: TextInputType.number,
                                                                 decoration: InputDecoration(
@@ -973,25 +1005,37 @@ class _MyListState extends State<ProgramPage> {
                                                                     
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
-                                                            child: TextFormField(
-                                                              controller: context.watch<Profile>().rpeTEC[index][excerciseIndex][setIndex],
-                                                              focusNode: context.watch<Profile>().rpeFocus[index][excerciseIndex][setIndex],
-                                                              keyboardType: TextInputType. numberWithOptions(decimal: true),
-                                      
-                                                              decoration:  InputDecoration(
-                                                                filled: true,
-                                                                fillColor: darken(Color(0xFF1e2025), 25),
-                                                                contentPadding: EdgeInsets.only(
-                                                                  bottom: 10, 
-                                                                  left: 8 
+                                                            child: Focus(
+                                                              onFocusChange: (hasFocus) {
+                                                                if (hasFocus){
+                                                                  setState((){_done = true;});
+                                                                }else{
+                                                                  setState((){_done = false;});
+                                                                }
+                                                              
+                                                                
+                                                              },
+                                                              child: TextFormField(
+                                                              
+                                                                controller: context.watch<Profile>().rpeTEC[index][excerciseIndex][setIndex],
+                                                                focusNode: context.watch<Profile>().rpeFocus[index][excerciseIndex][setIndex],
+                                                                keyboardType: TextInputType. numberWithOptions(decimal: true),
+                                                                                                    
+                                                                decoration:  InputDecoration(
+                                                                  filled: true,
+                                                                  fillColor: darken(Color(0xFF1e2025), 25),
+                                                                  contentPadding: EdgeInsets.only(
+                                                                    bottom: 10, 
+                                                                    left: 8 
+                                                                  ),
+                                                                  constraints: BoxConstraints(
+                                                                    maxWidth: 80,
+                                                                    maxHeight: 30,
+                                                                  ),
+                                                                  border: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8))),
+                                                                  hintText: 'RPE', //This should be made to be whateever this value was last workout
                                                                 ),
-                                                                constraints: BoxConstraints(
-                                                                  maxWidth: 80,
-                                                                  maxHeight: 30,
-                                                                ),
-                                                                border: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                hintText: 'RPE', //This should be made to be whateever this value was last workout
                                                               ),
                                                             ),
                                                           ),
@@ -1000,25 +1044,37 @@ class _MyListState extends State<ProgramPage> {
                                                                     
                                                           Padding(
                                                             padding: const EdgeInsets.all(8.0),
-                                                            child: TextFormField(
-                                                              controller: context.watch<Profile>().reps1TEC[index][excerciseIndex][setIndex],
-                                                              focusNode: context.watch<Profile>().reps1Focus[index][excerciseIndex][setIndex],
+                                                            child: Focus(
+                                                              onFocusChange: (hasFocus) {
+                                                                if (hasFocus){
+                                                                  setState((){_done = true;});
+                                                                }else{
+                                                                  setState((){_done = false;});
+                                                                }
                                                               
-                                                              keyboardType: TextInputType. numberWithOptions(decimal: true,),
-                                                              decoration: InputDecoration(
-                                                                filled: true,
-                                                                fillColor: darken(Color(0xFF1e2025), 25),
-                                                                contentPadding: EdgeInsets.only(
-                                                                  bottom: 10, 
-                                                                  left: 8 
+                                                                
+                                                              },
+                                                              child: TextFormField(
+                                                                
+                                                                controller: context.watch<Profile>().reps1TEC[index][excerciseIndex][setIndex],
+                                                                focusNode: context.watch<Profile>().reps1Focus[index][excerciseIndex][setIndex],
+                                                                
+                                                                keyboardType: TextInputType. numberWithOptions(decimal: true,),
+                                                                decoration: InputDecoration(
+                                                                  filled: true,
+                                                                  fillColor: darken(Color(0xFF1e2025), 25),
+                                                                  contentPadding: EdgeInsets.only(
+                                                                    bottom: 10, 
+                                                                    left: 8 
+                                                                  ),
+                                                                  constraints: BoxConstraints(
+                                                                    maxWidth: 80,
+                                                                    maxHeight: 30,
+                                                                  ),
+                                                                  border: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.all(Radius.circular(8))),
+                                                                  hintText: 'Reps', //This should be made to be whateever this value was last workout
                                                                 ),
-                                                                constraints: BoxConstraints(
-                                                                  maxWidth: 80,
-                                                                  maxHeight: 30,
-                                                                ),
-                                                                border: OutlineInputBorder(
-                                                                    borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                hintText: 'Reps', //This should be made to be whateever this value was last workout
                                                               ),
                                                             ),
                                                           ),                  
@@ -1049,6 +1105,7 @@ class _MyListState extends State<ProgramPage> {
       ),
     );
   }
+
   
   //TODO: move to another file
   //this is to show text box to enter text for day titles and excercises

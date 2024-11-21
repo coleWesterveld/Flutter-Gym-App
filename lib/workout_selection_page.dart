@@ -351,9 +351,10 @@ class _WorkoutPageState extends State<WorkoutPage>
                                                   .resolveWith<Color?>(
                                                       (states) {
                                                 if (states.contains(
-                                                    WidgetState.pressed))
+                                                    WidgetState.pressed)) {
                                                   return const Color(
                                                       0XFF1A78EB);
+                                                }
                                                 return null;
                                               }),
                                             ),
@@ -391,8 +392,9 @@ class _WorkoutPageState extends State<WorkoutPage>
                                             overlayColor: WidgetStateProperty
                                                 .resolveWith<Color?>((states) {
                                               if (states.contains(
-                                                  WidgetState.pressed))
+                                                  WidgetState.pressed)) {
                                                 return const Color(0XFF1A78EB);
+                                              }
                                               return null;
                                             }),
                                           ),
@@ -415,8 +417,8 @@ class _WorkoutPageState extends State<WorkoutPage>
                           } else {
                             return Container(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(1)),
-                                border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
+                                borderRadius: const BorderRadius.all(Radius.circular(1)),
+                                border: Border(bottom: BorderSide(color: lighten(const Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
                               ),
                               child: Material(
                                 color:const Color(0xFF1e2025),
@@ -465,7 +467,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                                       child: Center(
                                                         child: Text(
                                                           "${context.watch<Profile>().setsTEC[index][excerciseIndex][i].text} x ${context.watch<Profile>().reps1TEC[index][excerciseIndex][i].text}",
-                                                          style: TextStyle(
+                                                          style: const TextStyle(
                                                             fontWeight: FontWeight.w700,
                                                           )
                                                           ),
