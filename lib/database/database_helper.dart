@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'profile.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -75,6 +76,13 @@ class DatabaseHelper {
   }
 
   // TODO: CRUD HERE
+
+
+  // need to be able to:
+  // add day of given program
+  // delete day of given program
+  // update day of given program
+  // 
 
   Future close() async {
     final db = await instance.database;
