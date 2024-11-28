@@ -9,6 +9,7 @@ import 'program_page.dart';
 import 'analytics_page.dart';
 import 'user.dart';
 import 'data_saving.dart';
+import 'database/database_helper.dart';
 
 /* colour choices:
 my goal is to make tappable things blue
@@ -17,6 +18,8 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 */
 
 void main() async {
+  final dbHelper = DatabaseHelper.instance;
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(NavigationBarApp());
 }
@@ -52,6 +55,7 @@ class _MainPage extends State<NavigationBarApp> {
     )
   ];
 
+  
   //getting and storing persistent data
   late SharedPreferences _sharedPrefs;
   getSharedPreferences() async {
