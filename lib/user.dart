@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'data_saving.dart';
+import 'database/database_helper.dart';
+import 'database/profile.dart';
+// split, sets, etc in provider
+// on opening app, set split data and other data to whatever is in database
+// database is initialized with values but is then changed by user
+// give that split to provider
+// whenever data is changed, update database in provider asynchronously
+// whenever we retrieve data from provider, we now have to user futurebuilder
 
+//TODO: in splitdaydata, make sure we have a dayID (could change from current uuid) so that i can manipulate database
 class Profile extends ChangeNotifier {
   static const List<Color> colors = [
     Colors.red,
@@ -26,13 +35,13 @@ class Profile extends ChangeNotifier {
   ];
 
   //information of each day of the split
-  var split = <SplitDayData>[];
+  Future<List<Day>> split;
   //excercises for each day
-  var excercises = <List<SplitDayData>>[];
+  Future<List<List<Excercise>>> excercises;
   //stores information on each set of each excercise of each day
-  var sets = <List<List<SplitDayData>>>[];
+  Future<List<List<List<PlannedSet>>>> sets;
 
-
+  DatabaseHelper dbHelper;
 
   //for expansion tiles in workout page
 
@@ -59,6 +68,7 @@ class Profile extends ChangeNotifier {
     required this.reps1TEC,
     required this.reps2TEC,
     required this.setsTEC,
+    required this.dbHelper,
     this.splitLength = 7,
      
   });
@@ -68,65 +78,106 @@ class Profile extends ChangeNotifier {
     done = val;
     notifyListeners();
   }
-  void lengthUpdate() async {
-    if (split.length > 7) {
-      splitLength = split.length;
+  // void lengthUpdate() async {
+  //   if (split.length > 7) {
+  //     splitLength = split.length;
+  //   } else {
+  //     splitLength = 7;
+  //   }
+  //   notifyListeners();
+  // }
+
+  // since this function is async, we will have to await it if we want a value
+  Future<void> updateSplitLength() async {
+    final resolvedSplit = await split; // Resolve the future
+    if (resolvedSplit.length > 7) {
+      splitLength = resolvedSplit.length;
     } else {
       splitLength = 7;
     }
     notifyListeners();
   }
 
-  void uuidInc() async {
+  // this isnt used I should either use it or bye bye
+  void uuidInc() {
     uuidCount += 1;
     notifyListeners();
   }
 
-  void splitAppend({
+
+  Future<void> splitAppend({
     required String newDay,
     required List<SplitDayData> newExcercises,
     required List<List<SplitDayData>> newSets,
-
-
     required List<List<TextEditingController>> newSetsTEC,
-
-
     required List<List<TextEditingController>> newReps1TEC,
-
-
     required List<List<TextEditingController>> newReps2TEC,
-
-
     required List<List<TextEditingController>> newRpeTEC,
-
   }) async {
-    split
-        .add(SplitDayData(data: "New Day", dayColor: colors[split.length + 1]));
-    excercises.add(newExcercises);
-    sets.add(newSets);
+    // this function resolves the data (waits for it to come in from future), mutates it and then reassigns it.
+    // this is to ultimately add a day and update the future variables
+
+    final resolvedSplit = await split;
+    final resolvedExcercises = await excercises;
+    final resolvedSets = await sets;
+
+    resolvedSplit.add(SplitDayData(
+      data: "New Day", 
+      dayColor: colors[resolvedSplit.length + 1],
+      dayID: uuidCount //TODO: if im going to do this I need to keep uuid updated and insync with keys in database
+    ));
+
+    resolvedExcercises.add(newExcercises);
+
+    resolvedSets.add(newSets);
 
     setsTEC.add(newSetsTEC);
     reps1TEC.add(newReps1TEC);
     reps2TEC.add(newReps2TEC);
     rpeTEC.add(newRpeTEC);
 
-    lengthUpdate();
+    // also, update database
+    dbHelper.insertDay(1, "New Day");
+
+    split = Future.value(resolvedSplit);
+    excercises = Future.value(resolvedExcercises);
+    sets = Future.value(resolvedSets);
+
+    updateSplitLength();
     notifyListeners();
   }
 
   void splitPop({
     required int index,
   }) async {
-    split.removeAt(index);
-    excercises.removeAt(index);
-    sets.removeAt(index);
+    // this resolves to future variables, deletes a given day, and then updates them
+    // also updates database to reflect
+    final resolvedSplit = await split;
+    final resolvedExcercises = await excercises;
+    final resolvedSets = await sets;
 
+    resolvedSplit.removeAt(index);
+    resolvedExcercises.removeAt(index);
+    resolvedSets.removeAt(index);
+
+    // these are not future and so can be updated directly, no need to resolve
     setsTEC.removeAt(index);
     reps1TEC.removeAt(index);
     reps2TEC.removeAt(index);
     rpeTEC.removeAt(index);
 
-    lengthUpdate();
+    split = Future.value(resolvedSplit);
+    excercises = Future.value(resolvedExcercises);
+    sets = Future.value(resolvedSets);
+
+
+    // this *should* cascade in database and delete all other associated excercises n stuff
+    dbHelper.deleteDay(resolvedSplit[index].dayID);
+    
+    //dbHelper.deleteExercisesByDayId(resolvedSplit[index].dayID);
+    //dbHelper.deletePlannedSet(plannedSetId);
+
+    updateSplitLength();
     notifyListeners();
   }
 
@@ -135,33 +186,31 @@ class Profile extends ChangeNotifier {
     required SplitDayData newDay,
     required List<SplitDayData> newExcercises,
     required List<List<SplitDayData>> newSets,
-
-   
     required List<List<TextEditingController>> newSetsTEC,
-
-    
     required List<List<TextEditingController>> newReps1TEC,
-
-
     required List<List<TextEditingController>> newReps2TEC,
-
-    
     required List<List<TextEditingController>> newRpeTEC,
   }) async {
-    split[index] = newDay;
-    excercises[index] = newExcercises;
-    sets[index] = newSets;
+    final resolvedSplit = await split;
+    final resolvedExcercises = await excercises;
+    final resolvedSets = await sets;
 
+    resolvedSplit[index] = newDay;
+    resolvedExcercises[index] = newExcercises;
+    resolvedSets[index] = newSets;
 
     rpeTEC[index] = newRpeTEC;
-
-
     reps2TEC[index] = newReps2TEC;
-
-
     reps1TEC[index] = newReps1TEC;
-
     setsTEC[index] = newSetsTEC;
+
+    split = Future.value(resolvedSplit);
+    excercises = Future.value(resolvedExcercises);
+    sets = Future.value(resolvedSets);
+
+    dbHelper.updateDay(resolvedSplit[index].dayID, newDay.data);
+    // should update other data here I think
+
     notifyListeners();
   }
 

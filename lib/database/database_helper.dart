@@ -1,7 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:firstapp/data_saving.dart';
+import 'package:flutter/material.dart';
+import 'package:firstapp/user.dart';
+import 'profile.dart';
 //import 'profile.dart';
 
+//TODO: add order to days, as theyre not implicity stored that way 
+// it is in the table but I need to include functionality
+// need to use "ORDER BY" SQL command when retrieving days so I get them in the right order
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -23,45 +30,60 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: _createDB,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      }, 
     );
   }
 
   // create initial tables on startup
   Future _createDB(Database db, int version) async {
-    await db.execute('''
+    await db.execute(
+    '''
       CREATE TABLE programs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        program_title TEXT NOT NULL
-      )
-    ''');
+        program_title TEXT NOT NULL,
+      );
+    '''
+    );
 
-    await db.execute('''
+    await db.execute(
+    '''
       CREATE TABLE days (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        day_title TEXT NOT NULL
-        FOREIGN KEY (program_id) REFERENCES programs (id)
-      )
-    ''');
+        day_title TEXT NOT NULL,
+        day_order INTEGER NOT NULL,
+        FOREIGN KEY (program_id) REFERENCES programs (id) ON DELETE CASCADE
+      );
+    '''
+    );
 
-    await db.execute('''
+    await db.execute(
+    '''
       CREATE TABLE excercises (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         excercise_title TEXT NOT NULL,
-        FOREIGN KEY (day_id) REFERENCES days (id)
-      )
-    ''');
+        persistent_note TEXT NOT NULL,
+        FOREIGN KEY (day_id) REFERENCES days (id) ON DELETE CASCADE
+      );
+    '''
+    );
 
-    await db.execute('''
+    await db.execute(
+    '''
       CREATE TABLE plannedSets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         num_sets INTEGER NOT NULL,
         set_lower INTEGER NOT NULL,
         set_upper INTEGER NOT NULL,
-        FOREIGN KEY (excercise_id) REFERENCES excercises (id)
-      )
-    ''');
+        FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
+      );
+    '''
+    );
 
-    await db.execute('''
+    // might want to remove on delete cascade
+    await db.execute(
+    '''
       CREATE TABLE setRecord (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT NOT NULL,
@@ -70,9 +92,10 @@ class DatabaseHelper {
         weight INTEGER NOT NULL,
         rpe INTEGER NOT NULL,
         history_note TEXT NOT NULL,
-        FOREIGN KEY (excercise_id) REFERENCES excercises (id)
+        FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
       )
-    ''');
+    '''
+    );
 
     // Insert initial data
     await _insertInitialData(db);
@@ -124,8 +147,85 @@ class DatabaseHelper {
       'set_upper': 8,
     });
     }
-    
+  }
 
+  Future<List<Day>> initializeSplitList() async {
+    // TODO: allow more than one program
+    // irght now, we are just allowing 1 program, but in the future, 
+    // I want to expand to allow user to have multiple programs saved
+    // Fetch days from the database
+    final List<Map<String, dynamic>> daysData = await fetchDays(1);
+    // Map the database rows to SplitDayData objects
+    final List<Day> splitList = daysData.map((day) {
+      // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
+
+      return Day(
+        programID: 1,
+        dayTitle: day['day_title'], // Assuming 'day_title' is the column name in the database
+        //dayColor: Profile.colors[day['day_id'] - 1],
+      );
+    }).toList();
+
+    return splitList;
+  }
+
+  Future<List<List<Excercise>>> initializeExcerciseList() async {
+    List<List<Excercise>> excerciseList = [];
+    // TODO: allow more than one program
+    // irght now, we are just allowing 1 program, but in the future, 
+    // I want to expand to allow user to have multiple programs saved
+    // Fetch days from the database
+    List<Map<String, dynamic>> days = await fetchDays(1);
+
+    for (var day in days){
+      List<Map<String, dynamic>> excerciseData = await fetchExercises(day["id"]);
+
+      List<Excercise> excerciseDataList = excerciseData.map((excercise) {
+        // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
+
+        return Excercise(
+          dayID: excercise["day_id"],
+          excerciseTitle: excercise["excercise_title"],
+          persistentNote: excercise["persistent_note"],
+        );
+      }).toList();
+
+      excerciseList.add(excerciseDataList);
+    }
+    return Future.value(excerciseList);
+  }
+
+  Future<List<List<List<PlannedSet>>>> initializeSetList() async {
+    List<List<List<PlannedSet>>> setList = [];
+    // TODO: allow more than one program
+    // irght now, we are just allowing 1 program, but in the future, 
+    // I want to expand to allow user to have multiple programs saved
+    // Fetch days from the database
+    List<Map<String, dynamic>> days = await fetchDays(1);
+
+    for (int i = 0; i < days.length; i++){//(var day in days){
+      setList.add([]);
+      List<Map<String, dynamic>> excercises = await fetchExercises(days[i]["id"]);
+      for (int j = 0; j < excercises.length; j++){//(var excercise in excercises){
+        List<Map<String, dynamic>> setData = await fetchPlannedSets(excercises[j]["id"]);
+
+        List<PlannedSet> setDataList = setData.map((set) {
+
+          return PlannedSet(
+
+            excerciseID: set["excercise_id"],
+            numSets: set["num_sets"],
+            setLower: set["set_lower"],
+            setUpper: set["set_upper"],
+            //excerciseTitle: excercise["excercise_title"],
+            // persistentNote: excercise["persistent_note"],
+          );
+        }).toList();
+
+        setList[i].add(setDataList);
+      }
+    }
+    return Future.value(setList);
   }
 
   // CRUD OPERATIONS FOR TABLES
@@ -341,6 +441,18 @@ class DatabaseHelper {
       whereArgs: [setRecordId],
     );
   }
+
+  // dont need this type of stuff if i just use ondelete cascade in tab;es
+  // Future<int> deleteExercisesByDayId(int dayId) async {
+  //   final db = await DatabaseHelper.instance.database; // Access the database instance
+  //   return await db.delete(
+  //     'exercises', // Replace with the name of your exercises table
+  //     where: 'dayId = ?', // Replace 'dayId' with the actual column name in your table
+  //     whereArgs: [dayId], // Bind the dayId to avoid SQL injection
+  //   );
+  // }
+
+
 
   // close database
   Future close() async {

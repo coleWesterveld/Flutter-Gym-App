@@ -3,7 +3,7 @@
 
 /*
 Still Todo on this page:
-- change colours, make customizeable by user
+- DONE change colours, make customizeable by user
 - move random functions to their own files
 - make more modular, this file feels unnecessarily long 
 - ability to add notes per excercise
@@ -12,12 +12,13 @@ Still Todo on this page:
   - either through shared preferences or local SQLite database
 - Change look of calendar, right now big blocks of colour are too much
 - stop bottom from being like stuck too low
-- I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
+- DONE I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
 
 - LATER: add sidebar, user can have multiple different programs to swap between
 */
 
 //import 'package:firstapp/main.dart';
+import 'package:firstapp/database/database_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -25,12 +26,7 @@ import 'package:provider/provider.dart';
 import 'user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'data_saving.dart';
-
-
-
 //import 'package:flutter/cupertino.dart';
-
-
 
 //TODO: gradient background
 
@@ -79,9 +75,10 @@ Color lighten(Color c, [int percent = 10]) {
 //program page, where user defines the overall program by days,
 // then excercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
-  Function writePrefs;
+  //Function writePrefs;
+  final DatabaseHelper dbHelper;
   
-  ProgramPage({Key? programkey, required this.writePrefs,}) : super(key: programkey);
+  const ProgramPage({Key? programkey, required this.dbHelper,}) : super(key: programkey);
   @override
   _MyListState createState() => _MyListState();
 }
@@ -326,6 +323,7 @@ class _MyListState extends State<ProgramPage> {
                   context.read<Profile>().splitPop(index: oldIndex);
       
                   context.read<Profile>().splitInsert(
+                    // TODO: this and other code blocks like this are a bit opaque imo, could use some refactoring/cleanup
                     index: newIndex, 
                     days: x, 
                     excerciseList: y, 
@@ -340,7 +338,7 @@ class _MyListState extends State<ProgramPage> {
                     newRpeTEC: h,
                   );
                 });
-                widget.writePrefs();
+                //widget.writePrefs();
               },
             
               //button at bottom to add a new day to split
@@ -359,7 +357,8 @@ class _MyListState extends State<ProgramPage> {
                       setState(() {
                         _addItem();
                       });
-                      widget.writePrefs();
+                      
+                      //insertDay(context, 1, 'Day 1 - Upper Body');
                       
                     },
                     child: SizedBox(
@@ -391,7 +390,7 @@ class _MyListState extends State<ProgramPage> {
                     setState(() {
                       context.read<Profile>().splitPop(index: index);    
                     });
-                    widget.writePrefs();
+                    //widget.writePrefs();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -577,7 +576,7 @@ class _MyListState extends State<ProgramPage> {
                                         },
                                       );
                                     
-                                      widget.writePrefs();
+                                      //widget.writePrefs();
                                     },
         
                                     icon: Icon(Icons.edit_outlined),
@@ -1206,6 +1205,7 @@ class _MyListState extends State<ProgramPage> {
           );
     }
   }
+
 
 
 // Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218)}){

@@ -1,8 +1,8 @@
 // ignore_for_file: prefer_const_constructors
-import 'dart:convert';
+//import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 import 'workout_selection_page.dart';
 import 'schedule_page.dart';
 import 'program_page.dart';
@@ -10,15 +10,17 @@ import 'analytics_page.dart';
 import 'user.dart';
 import 'data_saving.dart';
 import 'database/database_helper.dart';
+import 'database/profile.dart';
 
 /* colour choices:
 my goal is to make tappable things blue
 editable things orange 
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
+// TODO: lots of overhaul to convert all builders to future builders 
+// to work with database data retrieval
 
 void main() async {
-  final dbHelper = DatabaseHelper.instance;
 
   WidgetsFlutterBinding.ensureInitialized();
   runApp(NavigationBarApp());
@@ -39,56 +41,48 @@ class NavigationBarApp extends StatefulWidget {
 }
 
 class _MainPage extends State<NavigationBarApp> {
-  //default split, gets overwridden by user choices
-  List<SplitDayData> split = [
-    SplitDayData(
-      data: "Push",
-      dayColor: const Color.fromRGBO(106, 92, 185, 1),
-    ),
-    SplitDayData(
-      data: "Pull",
-      dayColor: const Color.fromRGBO(150, 50, 50, 1),
-    ),
-    SplitDayData(
-      data: "Legs",
-      dayColor: const Color.fromRGBO(61, 101, 167, 1),
-    )
-  ];
+  Future<List<Day>> split = Future.value([]);
+  Future<List<List<Excercise>>> excercises = Future.value([]);
+  Future<List<List<List<PlannedSet>>>> sets = Future.value([]);
 
-  
-  //getting and storing persistent data
-  late SharedPreferences _sharedPrefs;
-  getSharedPreferences() async {
-    //print("gotsharedprefs");
-    _sharedPrefs = await SharedPreferences.getInstance();
-    readPrefs();
-  }
+//  default split, gets overwridden by user choices
+  // List<SplitDayData> split = [
+  //   SplitDayData(
+  //     data: "Push",
+  //     dayColor: const Color.fromRGBO(106, 92, 185, 1),
+  //   ),
+  //   SplitDayData(
+  //     data: "Pull",
+  //     dayColor: const Color.fromRGBO(150, 50, 50, 1),
+  //   ),
+  //   SplitDayData(
+  //     data: "Legs",
+  //     dayColor: const Color.fromRGBO(61, 101, 167, 1),
+  //   )
+  // ];
 
-  writePrefs() {
-    List<String> splitDataList =
-        split.map((data) => jsonEncode(data.toJson())).toList();
-    _sharedPrefs.setStringList('splitData', splitDataList);
-  }
+  final dbHelper = DatabaseHelper.instance;
 
-  readPrefs() {
-    //print("readprefs");
-    List<String>? splitDataList = _sharedPrefs.getStringList('splitData');
-    if (splitDataList != null) {
-      split = splitDataList
-          .map((data) => SplitDayData.fromJson(json.decode(data)))
-          .toList(growable: true);
-      //rint("split");
-    }
 
-    setState(() {});
-  }
+  //Future<List<ExpansionTileController>> controllers;
 
   @override
   void initState() {
-    //print("initprefs");
-    getSharedPreferences();
+    split = dbHelper.initializeSplitList();
+    excercises = dbHelper.initializeExcerciseList();
+    sets = dbHelper.initializeSetList();
     super.initState();
   }
+
+  // List<ExpansionTileController> setControllers() {
+  //   return List<ExpansionTileController>.filled(
+  //               growable: true);
+  // }
+
+
+  // List<ExpansionTileController>.filled(
+  //               split.length, ExpansionTileController(),
+  //               growable: true),
 
   @override
   Widget build(BuildContext context) {
@@ -98,90 +92,16 @@ class _MainPage extends State<NavigationBarApp> {
       providers: [
         ChangeNotifierProvider(
           create: (context) => Profile(
-            //programTEC: List<TextEditingController>.filled(split.length, TextEditingController(),growable: true),
+            dbHelper: dbHelper,
             split: split,
-            controllers: List<ExpansionTileController>.filled(
-                split.length, ExpansionTileController(),
-                growable: true),
-            //rpeTEC: ,
+            controllers: [],//setControllers()
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol
             // TODO: fix
-            excercises: [
-              [
-                SplitDayData(
-                    data: "Bench Press",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Tricep Pushdown",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Lateral Raise",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Shoulder Press",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Cable Chest Fly",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-              ],
-              [
-                SplitDayData(
-                    data: "Weighted Pull-ups",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Cable Rows",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Reverse Dumbbell Flies",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Hammer Curls",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Barbell Rows",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-              ],
-              [
-                SplitDayData(
-                    data: "Barbell Squats",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Romanian Deadlift",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Calf Raises",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Seated Leg Curl",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-                SplitDayData(
-                    data: "Leg Extension",
-                    dayColor: const Color.fromRGBO(0, 0, 0, 1)),
-              ],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ],
-            sets: [
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []]
-            ],
+             excercises: excercises,
+
+            sets: sets,
 
 
             reps1TEC: [
@@ -261,7 +181,8 @@ class _MainPage extends State<NavigationBarApp> {
             )),
         //theme: ThemeData(useMaterial3: false),s
         home: NavigationExample(
-          updater: writePrefs,
+          dbHelper: dbHelper,
+          //updater: writePrefs,
         ),
       ),
     );
@@ -269,8 +190,9 @@ class _MainPage extends State<NavigationBarApp> {
 }
 
 class NavigationExample extends StatefulWidget {
-  Function updater;
-  NavigationExample({super.key, required this.updater});
+  //Function updater;
+  final DatabaseHelper dbHelper;
+  NavigationExample({super.key, required this.dbHelper,/*required this.updater*/});
 
   @override
   _NavigationExampleState createState() => _NavigationExampleState();
@@ -339,7 +261,8 @@ class _NavigationExampleState extends State<NavigationExample> {
 
         /// Program page
         ProgramPage(
-          writePrefs: widget.updater,
+          dbHelper: widget.dbHelper,
+          // writePrefs: widget.updater,
         ),
 
         ///Analyitcs page
