@@ -107,8 +107,8 @@ class Profile extends ChangeNotifier {
 
   Future<void> splitAppend({
     required String newDay,
-    required List<SplitDayData> newExcercises,
-    required List<List<SplitDayData>> newSets,
+    required List<Excercise> newExcercises,
+    required List<List<PlannedSet>> newSets,
     required List<List<TextEditingController>> newSetsTEC,
     required List<List<TextEditingController>> newReps1TEC,
     required List<List<TextEditingController>> newReps2TEC,
@@ -121,10 +121,13 @@ class Profile extends ChangeNotifier {
     final resolvedExcercises = await excercises;
     final resolvedSets = await sets;
 
-    resolvedSplit.add(SplitDayData(
-      data: "New Day", 
-      dayColor: colors[resolvedSplit.length + 1],
-      dayID: uuidCount //TODO: if im going to do this I need to keep uuid updated and insync with keys in database
+    int id = await dbHelper.insertDay(1, "New Day", resolvedSplit.length);
+
+    resolvedSplit.add(Day(
+      dayTitle: "New Day", 
+      programID: 1,
+      dayColor: colors[resolvedSplit.length + 1].value,
+      dayID: id,
     ));
 
     resolvedExcercises.add(newExcercises);
@@ -136,8 +139,6 @@ class Profile extends ChangeNotifier {
     reps2TEC.add(newReps2TEC);
     rpeTEC.add(newRpeTEC);
 
-    // also, update database
-    dbHelper.insertDay(1, "New Day");
 
     split = Future.value(resolvedSplit);
     excercises = Future.value(resolvedExcercises);
@@ -155,6 +156,8 @@ class Profile extends ChangeNotifier {
     final resolvedSplit = await split;
     final resolvedExcercises = await excercises;
     final resolvedSets = await sets;
+    //int index = id - 1;
+    int id = resolvedSplit[index].dayID;
 
     resolvedSplit.removeAt(index);
     resolvedExcercises.removeAt(index);
@@ -172,7 +175,8 @@ class Profile extends ChangeNotifier {
 
 
     // this *should* cascade in database and delete all other associated excercises n stuff
-    dbHelper.deleteDay(resolvedSplit[index].dayID);
+    //TODO: make sure index is actually what we want here, we might actually 
+    dbHelper.deleteDay(id);
     
     //dbHelper.deleteExercisesByDayId(resolvedSplit[index].dayID);
     //dbHelper.deletePlannedSet(plannedSetId);
@@ -182,10 +186,11 @@ class Profile extends ChangeNotifier {
   }
 
   void splitAssign({
+    required int id,
+    required Day newDay,
     required int index,
-    required SplitDayData newDay,
-    required List<SplitDayData> newExcercises,
-    required List<List<SplitDayData>> newSets,
+    required List<Excercise> newExcercises,
+    required List<List<PlannedSet>> newSets,
     required List<List<TextEditingController>> newSetsTEC,
     required List<List<TextEditingController>> newReps1TEC,
     required List<List<TextEditingController>> newReps2TEC,
@@ -194,6 +199,7 @@ class Profile extends ChangeNotifier {
     final resolvedSplit = await split;
     final resolvedExcercises = await excercises;
     final resolvedSets = await sets;
+    //int index = id - 1;
 
     resolvedSplit[index] = newDay;
     resolvedExcercises[index] = newExcercises;
@@ -208,7 +214,7 @@ class Profile extends ChangeNotifier {
     excercises = Future.value(resolvedExcercises);
     sets = Future.value(resolvedSets);
 
-    dbHelper.updateDay(resolvedSplit[index].dayID, newDay.data);
+    dbHelper.updateDay(id, newDay.dayTitle);
     // should update other data here I think
 
     notifyListeners();

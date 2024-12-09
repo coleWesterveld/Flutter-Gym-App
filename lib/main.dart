@@ -2,6 +2,10 @@
 //import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+//import 'package:/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+
 //import 'package:shared_preferences/shared_preferences.dart';
 import 'workout_selection_page.dart';
 import 'schedule_page.dart';
@@ -18,11 +22,14 @@ editable things orange
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
 // TODO: lots of overhaul to convert all builders to future builders 
+// implement copywith methods to make it easy to change just one value
 // to work with database data retrieval
 
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   runApp(NavigationBarApp());
 }
 
@@ -63,11 +70,11 @@ class _MainPage extends State<NavigationBarApp> {
 
   final dbHelper = DatabaseHelper.instance;
 
-
   //Future<List<ExpansionTileController>> controllers;
 
   @override
   void initState() {
+
     split = dbHelper.initializeSplitList();
     excercises = dbHelper.initializeExcerciseList();
     sets = dbHelper.initializeSetList();
@@ -86,6 +93,7 @@ class _MainPage extends State<NavigationBarApp> {
 
   @override
   Widget build(BuildContext context) {
+    //sets =sets ;//sets;
 
     //provider for global variable information
     return MultiProvider(
@@ -99,69 +107,14 @@ class _MainPage extends State<NavigationBarApp> {
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol
             // TODO: fix
-             excercises: excercises,
+            excercises: excercises,
 
             sets: sets,
 
-
-            reps1TEC: [
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []]
-            ],
-
-            
-            reps2TEC: [
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []]
-            ],
-            
-
-
-            rpeTEC: [
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []]
-            ],
-       
-            setsTEC: [
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []],
-              [[], [], [], [], [], [], [], [], [], [], []]
-            ],
+            reps1TEC: [],
+            reps2TEC: [],
+            rpeTEC: [],
+            setsTEC: [],
 
             uuidCount: 0,
           ),
@@ -192,13 +145,13 @@ class _MainPage extends State<NavigationBarApp> {
 class NavigationExample extends StatefulWidget {
   //Function updater;
   final DatabaseHelper dbHelper;
-  NavigationExample({super.key, required this.dbHelper,/*required this.updater*/});
+  const  NavigationExample({super.key, required this.dbHelper,/*required this.updater*/});
 
   @override
-  _NavigationExampleState createState() => _NavigationExampleState();
+  NavigationExampleState createState() => NavigationExampleState();
 }
 
-class _NavigationExampleState extends State<NavigationExample> {
+class NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
 
   void changeColor(Color newColor, int index) =>

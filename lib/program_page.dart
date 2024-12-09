@@ -19,6 +19,7 @@ Still Todo on this page:
 
 //import 'package:firstapp/main.dart';
 import 'package:firstapp/database/database_helper.dart';
+import 'package:firstapp/database/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -179,104 +180,8 @@ class _MyListState extends State<ProgramPage> {
             ),
             ),
         ),
-        
       
-        bottomSheet: context.read<Profile>().done
-            ? Container(
-                
-                decoration: BoxDecoration(
-                  border:
-                  Border(top: BorderSide(
-                    color:  lighten(Color(0xFF141414), 20),
-                  )),
-          
-            
-      
-              
-                  color: Color(0xFF1e2025),
-                  //borderRadius: BorderRadius.circular(12.0),
-                ),
-      
-                height: 50,
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        //when clicked, it splashes a lighter purple to show that button was clicked
-                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                
-                          borderRadius: BorderRadius.circular(4))),
-                        backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),), 
-               
-                      ),
-                        
-                      onPressed: () {
-                        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                        context.read<Profile>().done = false;
-                        setState((){});
-                      },
-                      child: Text(
-                        'Done',
-                        style: TextStyle(color: Colors.white),
-                        ),
-                    ),
-                  ],
-                ),
-              )
-            : 
-      
-            Container(
-                color: Color(0xFF1e2025),
-                padding: const EdgeInsets.all(8.0),
-                height: 82,
-          child: TableCalendar(
-            headerVisible: false,
-            calendarStyle: CalendarStyle(
-              
-              
-            ),
-            calendarFormat: CalendarFormat.week,
-                    calendarBuilders: CalendarBuilders(
-                      
-                  defaultBuilder: (context, day, focusedDay) {
-                    
-                    DateTime origin = DateTime(2024, 1, 7);
-                    for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-          
-                      int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
-                      if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: context.watch<Profile>().split[splitDay].dayColor,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(8.0),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${day.day}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        );
-                      }
-                    }
-                    
-                    return null;
-                  },
-                ),
-                    rowHeight: 50,
-                    focusedDay: today, 
-                    firstDay: DateTime.utc(2010, 10, 16), 
-                    lastDay: DateTime.utc(2030, 3, 14),
-                    daysOfWeekStyle: DaysOfWeekStyle(
-                      weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
-                       weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
-                      ),
-                  ),
-              ),
+        bottomSheet: 
       
       
       
@@ -1141,9 +1046,191 @@ class _MyListState extends State<ProgramPage> {
     );
   }
 
+
+  Widget buildBottomSheet(){
+    // if we should be displaying done button for numeric keyboard, then create.
+    // else display calendar
+  if (context.read<Profile>().done){ 
+    //return done bottom sheet
+    return Container(
+      decoration: BoxDecoration(
+
+        border: Border(
+          top: BorderSide(
+            color:  lighten(Color(0xFF141414), 20),
+          ),
+        ),
+        
+        color: Color(0xFF1e2025),
+          //borderRadius: BorderRadius.circular(12.0),
+        ),
+
+        height: 50,
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                //when clicked, it splashes a lighter purple to show that button was clicked
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4)
+                  ),
+                ),
+                backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),),
+              ),
+                
+              onPressed: () {
+                WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                context.read<Profile>().done = false;
+                setState((){});
+              },
+
+              child: Text(
+                'Done',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      }else{
+        // return calendary bottom sheet
+
+        return FutureBuilder(
+          future: context.watch<Profile>().split, 
+
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Text('No data available');
+            } else {
+              final data = snapshot.data!;
+              return Container(
+                color: Color(0xFF1e2025),
+                padding: const EdgeInsets.all(8.0),
+                height: 82,
+                child: TableCalendar(
+                  headerVisible: false,
+                  calendarFormat: CalendarFormat.week,
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, day, focusedDay) {
+                      DateTime origin = DateTime(2024, 1, 7);
+
+                      for (int splitDay = 0; splitDay < data.length; splitDay ++){
+                        int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
+                        if (diff == (context.watch<Profile>().splitLength ~/ data.length) * splitDay) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Color(data[splitDay].dayColor),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8.0),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                      
+                      return null;
+                    },
+                  ),
+
+                  rowHeight: 50,
+                  focusedDay: today, 
+                  firstDay: DateTime.utc(2010, 10, 16), 
+                  lastDay: DateTime.utc(2030, 3, 14),
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
+                      weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
+                ),
+              ),
+            );
+          }
+        },
+      );
+    }
+  }
+
   // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
   // its jarring when it bounces around
   Widget editBuilder(index){
+    return FutureBuilder(
+      future: context.watch<Profile>().split, 
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No data available');
+        } else {
+          final data = snapshot.data!;
+          alertTEC = TextEditingController(text: data[index].dayTitle);
+          if(_sliding == 0){
+            //Value = MediaQuery.sizeOf(context).height - 450;
+            return SizedBox(
+              height: 100,
+              width: 300,
+              child: TextFormField(
+                  onFieldSubmitted: (value){
+                    HapticFeedback.heavyImpact();
+                    Navigator.of(context).pop(alertTEC.text);
+                  },
+                  autofocus: true,
+                  controller: alertTEC,
+                  decoration: InputDecoration(
+                    hintText: "Enter Text",
+                  )
+                ),
+            );
+
+          }else{
+                //alertInsetValue = MediaQuery.sizeOf(context).height - 300;
+                return SizedBox(
+                  height: 250,
+                  width: 300,
+                  child: SingleChildScrollView(
+                    
+                    child: BlockPicker(
+                      pickerColor: Color(data[index].dayColor),
+                      onColorChanged: (Color color) {
+                        context.read<Profile>().splitAssign(
+                          id: data[index].dayID,
+                          index: index,
+                          newDay:data[index].copyWith(newDayColor: color.value),
+                          newExcercises: context.read<Profile>().excercises[index],
+                          newSets: context.read<Profile>().sets[index],
+
+                          newSetsTEC: context.read<Profile>().setsTEC[index],
+                          newRpeTEC: context.read<Profile>().rpeTEC[index],
+                          newReps1TEC: context.read<Profile>().reps1TEC[index],
+                          newReps2TEC: context.read<Profile>().reps2TEC[index],
+                        );
+                        setState(() {});
+                      },
+                        
+                      
+                      availableColors: Profile.colors,
+                      layoutBuilder: pickerLayoutBuilder,
+                      itemBuilder: pickerItemBuilder,
+                    ),
+                  ),
+                );
+          }
+        }
+  },
+    );
     alertTEC = TextEditingController(text: context.read<Profile>().split[index].data);
     if(_sliding == 0){
       //Value = MediaQuery.sizeOf(context).height - 450;
@@ -1163,8 +1250,6 @@ class _MyListState extends State<ProgramPage> {
         ),
     );
 
-
-        
     }else{
           //alertInsetValue = MediaQuery.sizeOf(context).height - 300;
           return SizedBox(

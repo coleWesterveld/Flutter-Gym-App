@@ -11,10 +11,11 @@
 // PROGRAM TABLE
 // (one program -> many days)
 class Program {
-  final int? programID;
+
+  final int programID;
   final String programTitle;
 
-  Program({this.programID, required this.programTitle});
+  Program({required this.programID, required this.programTitle});
 
   Map<String, dynamic> toMap() {
     return {
@@ -29,30 +30,52 @@ class Program {
       programTitle: map['programTitle'],
     );
   }
+  @override
+  String toString() {
+    return 'Program{title: $programTitle, id: $programID}';
+  }
 }
 
 // DAY TABLE
 // (one day -> many excercises)
 class Day {
-  final int? dayID;
+  final int dayID;
   final String dayTitle;
   final int programID;
+  final int dayColor;
 
-  Day({this.dayID, required this.dayTitle, required this.programID});
+  Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor});
 
   Map<String, dynamic> toMap() {
     return {
       'dayID': dayID,
       'dayTitle': dayTitle,
       'programID': programID,
+      'dayColor': dayColor,
     };
   }
 
   factory Day.fromMap(Map<String, dynamic> map) {
     return Day(
+      dayColor: map['dayColor'],
       dayID: map['dayID'],
       dayTitle: map['dayTitle'],
       programID: map['programID'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Day{title: $dayTitle, id: $dayID, prgmID: $programID}';
+  }
+
+
+  Day copyWith({int? newDayColor, int? newDayID, String? newDayTitle, int? newProgramID}) {
+    return Day(
+      dayColor: newDayColor ?? dayColor,
+      dayID: newDayID ?? dayID,
+      dayTitle: newDayTitle ?? dayTitle,
+      programID: newProgramID ?? programID,
     );
   }
 }
@@ -60,14 +83,14 @@ class Day {
 // EXCERCISE TABLE
 // (one excercise -> many planned sets, many set records)
 class Excercise {
-  final int? excerciseID;
+  final int excerciseID;
   final int dayID;
   final String excerciseTitle;
   final String? persistentNote;
 
 
   Excercise({
-    this.excerciseID, 
+    required this.excerciseID, 
     required this.dayID, 
     required this.excerciseTitle, 
     this.persistentNote
@@ -75,7 +98,7 @@ class Excercise {
 
   Map<String, dynamic> toMap() {
     return {
-      'excerciseID': excerciseID,
+      'id': excerciseID,
       'dayID': dayID,
       'excerciseTitle': excerciseTitle,
       'persistentNote': persistentNote,
@@ -84,17 +107,21 @@ class Excercise {
 
   factory Excercise.fromMap(Map<String, dynamic> map) {
     return Excercise(
-      excerciseID: map['excerciseID'],
+      excerciseID: map['id'],
       dayID: map['dayID'],
       excerciseTitle: map['excerciseTitle'],
       persistentNote: map['persistentNote'],
     );
   }
+  @override
+  String toString() {
+    return 'Excercise{title: $excerciseTitle, id: $excerciseID, dayID: $dayID, persistNote: $persistentNote}';
+  }
 }
 
 // PLANNED SET TABLE
 class PlannedSet {
-  final int? setID;
+  final int setID;
   final int excerciseID;
   final int numSets;
   final int setLower;
@@ -102,7 +129,7 @@ class PlannedSet {
 
 
   PlannedSet({
-    this.setID, 
+    required this.setID, 
     required this.excerciseID, 
     required this.numSets, 
     required this.setLower, 
@@ -128,11 +155,15 @@ class PlannedSet {
       setLower: map['setLower'],
     );
   }
+  @override
+  String toString() {
+    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID}';
+  }
 }
 
 // SET RECORD TABLE
 class SetRecord {
-  final int? recordID;
+  final int recordID;
   final int excerciseID;
   final String date;
   final int numSets;
@@ -143,7 +174,7 @@ class SetRecord {
 
 
   SetRecord({
-    this.recordID, 
+    required this.recordID, 
     required this.excerciseID, 
     required this.date, 
     required this.numSets, 
@@ -177,5 +208,9 @@ class SetRecord {
       rpe: map['rpe'],
       historyNote: map['historyNote'],
     );
+  }
+  @override
+  String toString() {
+    return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $excerciseID}';
   }
 }

@@ -4,6 +4,8 @@ import 'package:firstapp/data_saving.dart';
 import 'package:flutter/material.dart';
 import 'package:firstapp/user.dart';
 import 'profile.dart';
+// import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 //import 'profile.dart';
 
 //TODO: add order to days, as theyre not implicity stored that way 
@@ -42,7 +44,7 @@ class DatabaseHelper {
     '''
       CREATE TABLE programs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        program_title TEXT NOT NULL,
+        program_title TEXT NOT NULL
       );
     '''
     );
@@ -53,6 +55,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         day_title TEXT NOT NULL,
         day_order INTEGER NOT NULL,
+        program_id INTEGER NOT NULL,
+        day_color INTEGER NOT NULL
         FOREIGN KEY (program_id) REFERENCES programs (id) ON DELETE CASCADE
       );
     '''
@@ -64,6 +68,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         excercise_title TEXT NOT NULL,
         persistent_note TEXT NOT NULL,
+        day_id INTEGER NOT NULL,
         FOREIGN KEY (day_id) REFERENCES days (id) ON DELETE CASCADE
       );
     '''
@@ -76,6 +81,7 @@ class DatabaseHelper {
         num_sets INTEGER NOT NULL,
         set_lower INTEGER NOT NULL,
         set_upper INTEGER NOT NULL,
+        excercise_id INTEGER NOT NULL,
         FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
       );
     '''
@@ -92,6 +98,7 @@ class DatabaseHelper {
         weight INTEGER NOT NULL,
         rpe INTEGER NOT NULL,
         history_note TEXT NOT NULL,
+        excercise_id INTEGER NOT NULL,
         FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
       )
     '''
@@ -111,31 +118,31 @@ class DatabaseHelper {
     // an example of how managing a program might be structured on opening the app
     // for the first time
     // insert initial days for program
-    await db.insert('days', {'program_id': 1, 'day_title': 'Push'});
-    await db.insert('days', {'program_id': 1, 'day_title': 'Pull'});
-    await db.insert('days', {'program_id': 1, 'day_title': 'Legs'});
+    await db.insert('days', {'program_id': 1, 'day_title': 'Push', 'day_order': 1, 'day_color': Profile.colors[0].value});
+    await db.insert('days', {'program_id': 1, 'day_title': 'Pull', 'day_order' : 2, 'day_color': Profile.colors[1].value});
+    await db.insert('days', {'program_id': 1, 'day_title': 'Legs', 'day_order' : 3, 'day_color': Profile.colors[2].value});
 
     //insert initial excercises for program
     //Push
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press'});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown'});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise'});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press'});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly'});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly', 'persistent_note': ''});
 
     //pull  
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups'});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows'});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies'});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls'});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows'});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows', 'persistent_note': ''});
 
     //legs
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats'});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift'});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises'});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl'});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension'});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension', 'persistent_note': ''});
 
     // sets for each excercise
     // each will just start off with 3 sets, 5-8 reps
@@ -161,7 +168,9 @@ class DatabaseHelper {
 
       return Day(
         programID: 1,
-        dayTitle: day['day_title'], // Assuming 'day_title' is the column name in the database
+        dayColor: Profile.colors[day['id'] - 1].value,
+        dayTitle: day['day_title'], 
+        dayID: day['id'],// Assuming 'day_title' is the column name in the database
         //dayColor: Profile.colors[day['day_id'] - 1],
       );
     }).toList();
@@ -184,6 +193,7 @@ class DatabaseHelper {
         // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
 
         return Excercise(
+          excerciseID: excercise['id'],
           dayID: excercise["day_id"],
           excerciseTitle: excercise["excercise_title"],
           persistentNote: excercise["persistent_note"],
@@ -217,6 +227,7 @@ class DatabaseHelper {
             numSets: set["num_sets"],
             setLower: set["set_lower"],
             setUpper: set["set_upper"],
+            setID: set['id']
             //excerciseTitle: excercise["excercise_title"],
             // persistentNote: excercise["persistent_note"],
           );
@@ -269,11 +280,12 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // DAY TABLE CRUD
 
-  Future<int> insertDay(int programId, String dayTitle) async {
+  Future<int> insertDay(int programId, String dayTitle, int dayOrder) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('days', {
       'program_id': programId,
       'day_title': dayTitle,
+      'day_order': dayOrder,
     });
   }
 
