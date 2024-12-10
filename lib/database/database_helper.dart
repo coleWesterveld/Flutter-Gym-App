@@ -293,6 +293,8 @@ class DatabaseHelper {
       'program_id': programId,
       'day_title': dayTitle,
       'day_order': dayOrder,
+      // CAREFUL HERE TODO: user could have a ton of days, more than colours, then crash.
+      'day_color': Profile.colors[dayOrder].value
     });
   }
 
@@ -379,11 +381,12 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // EXCERCISE TABLE CRUD
 
-  Future<int> insertExercise(int dayId, String exerciseTitle) async {
+  Future<int> insertExcercise({required int dayId, required String excerciseTitle, String persistentNote = ''}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('excercises', {
       'day_id': dayId,
-      'excercise_title': exerciseTitle,
+      'excercise_title': excerciseTitle,
+      'persistent_note': persistentNote,
     });
   }
 

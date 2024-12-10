@@ -1182,7 +1182,7 @@ class _MyListState extends State<ProgramPage> {
                         context.read<Profile>().splitAssign(
                           
                           index: index,
-                          newDay: context.watch<Profile>().split[index].copyWith(newDayColor: color.value),
+                          newDay: context.read<Profile>().split[index].copyWith(newDayColor: color.value),
                           // newExcercises: context.read<Profile>().excercises[index],
                           // newSets: context.read<Profile>().sets[index],
 

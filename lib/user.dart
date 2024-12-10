@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'data_saving.dart';
 import 'database/database_helper.dart';
 import 'database/profile.dart';
+import 'dart:math';
 // split, sets, etc in provider
 // on opening app, set split data and other data to whatever is in database
 // database is initialized with values but is then changed by user
@@ -81,6 +82,34 @@ class Profile extends ChangeNotifier {
     split = await dbHelper.initializeSplitList();
     excercises = await dbHelper.initializeExcerciseList();
     sets = await dbHelper.initializeSetList();
+
+
+    // intiializing Text editing and expansion tile controllers
+    // there may be a better way to do this...
+    for (int i = 0; i < sets.length; i++){
+      // each day
+      controllers.add(ExpansionTileController());
+      
+      setsTEC.add(<List<TextEditingController>>[]);
+      reps1TEC.add(<List<TextEditingController>>[]);
+      reps2TEC.add(<List<TextEditingController>>[]);
+      rpeTEC.add(<List<TextEditingController>>[]);
+      //each excercise of each day
+      for (int j = 0; j < sets[i].length; j++){
+        setsTEC[i].add(<TextEditingController>[]);
+        reps1TEC[i].add(<TextEditingController>[]);
+        reps2TEC[i].add(<TextEditingController>[]);
+        rpeTEC[i].add(<TextEditingController>[]);
+        // each group of sets per excercise per day
+        for (int k = 0; k < sets[i][j].length; k++){
+          setsTEC[i][j].add(TextEditingController());
+          reps1TEC[i][j].add(TextEditingController());
+          reps2TEC[i][j].add(TextEditingController());
+          rpeTEC[i][j].add(TextEditingController());
+          
+        }
+      }
+    }
     
     //_initialized = true;
     notifyListeners();
@@ -297,7 +326,7 @@ class Profile extends ChangeNotifier {
     // reps1TEC[index].add(newReps1TEC);
     // reps2TEC[index].add(newReps2TEC);
     // rpeTEC[index].add(newRpeTEC);//socks
-    int id = await dbHelper.insertExercise(split[index].dayID, "New Excercise");
+    int id = await dbHelper.insertExcercise(dayId: split[index].dayID, excerciseTitle: "New Excercise");
 
     excercises[index].add(
       Excercise(
@@ -306,14 +335,14 @@ class Profile extends ChangeNotifier {
         excerciseTitle: "New Excercise",
     ));
 
-    excercises.add([]);
+    //excercises.add([]);
 
-    sets.add([]);
+    sets[index].add([]);
 
-    setsTEC.add([]);
-    reps1TEC.add([]);
-    reps2TEC.add([]);
-    rpeTEC.add([]);
+    setsTEC[index].add([]);
+    reps1TEC[index].add([]);
+    reps2TEC[index].add([]);
+    rpeTEC[index].add([]);
 
     
     notifyListeners();
@@ -324,6 +353,7 @@ class Profile extends ChangeNotifier {
     required int index1,
     required int index2,
   }) async {
+    dbHelper.deleteExercise(excercises[index1][index2].excerciseID);
     excercises[index1].removeAt(index2);
     sets[index1].removeAt(index2);
     setsTEC[index1].removeAt(index2);
@@ -331,7 +361,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1].removeAt(index2);
     rpeTEC[index1].removeAt(index2);
 
-    dbHelper.deleteExercise(excercises[index1][index2].excerciseID);
+    
     notifyListeners();
   }
 
@@ -380,7 +410,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1].insert(index2, newReps2TEC);
     rpeTEC[index1].insert(index2, newRpeTEC);
 
-    dbHelper.insertExercise(excercises[index1][index2].dayID, data.excerciseTitle);
+    dbHelper.insertExcercise(dayId: excercises[index1][index2].dayID, excerciseTitle: data.excerciseTitle);
 
     notifyListeners();
   }
@@ -391,17 +421,14 @@ class Profile extends ChangeNotifier {
     required int index2,
     required int index3,
   }) async {
+    dbHelper.deletePlannedSet(sets[index1][index2][index3].setID);
     sets[index1][index2].removeAt(index3);
-
     setsTEC[index1][index2].removeAt(index3);
-
     reps1TEC[index1][index2].removeAt(index3);
-
     reps2TEC[index1][index2].removeAt(index3);
-
     rpeTEC[index1][index2].removeAt(index3);
 
-    dbHelper.deletePlannedSet(sets[index1][index2][index3].setID);
+    
     notifyListeners();
   }
 
