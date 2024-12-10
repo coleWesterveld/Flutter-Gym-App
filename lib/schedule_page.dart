@@ -51,7 +51,7 @@ class _MyScheduleState extends State<SchedulePage> {
   List<Event> _getEventsForDay (DateTime day){
     for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
       if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * splitDay) {
-        return [Event(context.read<Profile>().split[splitDay].data)];
+        return [Event(context.read<Profile>().split[splitDay].dayTitle)];
       }
     }
     return [];
@@ -138,7 +138,7 @@ class _MyScheduleState extends State<SchedulePage> {
                         if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
                           return Container(
                             decoration: BoxDecoration(
-                              color: context.watch<Profile>().split[splitDay].dayColor,
+                              color: Color(context.watch<Profile>().split[splitDay].dayColor),
                               borderRadius: const BorderRadius.all(
                                 Radius.circular(8.0),
                               ),

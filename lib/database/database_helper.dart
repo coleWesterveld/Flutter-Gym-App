@@ -4,6 +4,10 @@ import 'package:firstapp/data_saving.dart';
 import 'package:flutter/material.dart';
 import 'package:firstapp/user.dart';
 import 'profile.dart';
+import 'dart:async';
+import 'dart:io';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:flutter_app/models/note.dart';
 // import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 //import 'profile.dart';
@@ -56,7 +60,7 @@ class DatabaseHelper {
         day_title TEXT NOT NULL,
         day_order INTEGER NOT NULL,
         program_id INTEGER NOT NULL,
-        day_color INTEGER NOT NULL
+        day_color INTEGER NOT NULL,
         FOREIGN KEY (program_id) REFERENCES programs (id) ON DELETE CASCADE
       );
     '''
@@ -157,6 +161,7 @@ class DatabaseHelper {
   }
 
   Future<List<Day>> initializeSplitList() async {
+    
     // TODO: allow more than one program
     // irght now, we are just allowing 1 program, but in the future, 
     // I want to expand to allow user to have multiple programs saved
@@ -167,6 +172,7 @@ class DatabaseHelper {
       // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
 
       return Day(
+        dayOrder: day['day_order'],
         programID: 1,
         dayColor: Profile.colors[day['id'] - 1].value,
         dayTitle: day['day_title'], 
@@ -238,6 +244,7 @@ class DatabaseHelper {
     }
     return Future.value(setList);
   }
+  
 
   // CRUD OPERATIONS FOR TABLES
   // create
@@ -289,12 +296,64 @@ class DatabaseHelper {
     });
   }
 
+  Future<void> reorderDay(int programId, int oldIndex, int newIndex) async {
+    final db = await database;
+
+    // Find the day_id for the day currently at oldIndex
+    final oldDayResult = await db.query(
+      'days',
+      columns: ['id'],
+      where: 'program_id = ? AND day_order = ?',
+      whereArgs: [programId, oldIndex],
+    );
+
+    if (oldDayResult.isEmpty) {
+      // No day at oldIndex, nothing to reorder
+      return;
+    }
+
+    final oldDayId = oldDayResult.first['id'];
+
+    if (newIndex < oldIndex) {
+      // Moving the day upwards in the list
+      // Increase the day_order of all days between newIndex and oldIndex - 1 by 1
+      await db.rawUpdate('''
+        UPDATE days
+        SET day_order = day_order + 1
+        WHERE program_id = ?
+          AND day_order >= ?
+          AND day_order < ?
+      ''', [programId, newIndex, oldIndex]);
+
+    } else if (newIndex > oldIndex) {
+      // Moving the day downwards in the list
+      // Decrease the day_order of all days between oldIndex + 1 and newIndex by 1
+      await db.rawUpdate('''
+        UPDATE days
+        SET day_order = day_order - 1
+        WHERE program_id = ?
+          AND day_order > ?
+          AND day_order <= ?
+      ''', [programId, oldIndex, newIndex]);
+    }
+
+    // Finally, set the moved day to the newIndex
+    await db.update(
+      'days',
+      {'day_order': newIndex},
+      where: 'id = ?',
+      whereArgs: [oldDayId],
+    );
+  }
+
+  //fetches days for given program ID, ordered by day_order
   Future<List<Map<String, dynamic>>> fetchDays(int programId) async {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
       'days',
       where: 'program_id = ?',
       whereArgs: [programId],
+      orderBy: 'day_order ASC',
     );
   }
 

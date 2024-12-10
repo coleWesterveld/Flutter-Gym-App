@@ -9,7 +9,8 @@ import 'database/profile.dart';
 // whenever data is changed, update database in provider asynchronously
 // whenever we retrieve data from provider, we now have to user futurebuilder
 
-//TODO: in splitdaydata, make sure we have a dayID (could change from current uuid) so that i can manipulate database
+// A lot of the database functionality here could maybe be double checked...
+
 class Profile extends ChangeNotifier {
   static const List<Color> colors = [
     Colors.red,
@@ -35,11 +36,11 @@ class Profile extends ChangeNotifier {
   ];
 
   //information of each day of the split
-  Future<List<Day>> split;
+  List<Day> split = [];
   //excercises for each day
-  Future<List<List<Excercise>>> excercises;
+  List<List<Excercise>> excercises = [];
   //stores information on each set of each excercise of each day
-  Future<List<List<List<PlannedSet>>>> sets;
+  List<List<List<PlannedSet>>> sets = [];
 
   DatabaseHelper dbHelper;
 
@@ -54,95 +55,97 @@ class Profile extends ChangeNotifier {
   List<List<List<TextEditingController>>> reps2TEC;
 
   int splitLength;
-  int uuidCount;
   bool done;
+  //bool _initialized = false;
 
   Profile({
+    
     this.done = false,
-    required this.uuidCount,
-    required this.split,
-    required this.excercises,
-    required this.sets,
-    required this.controllers,
-    required this.rpeTEC,
-    required this.reps1TEC,
-    required this.reps2TEC,
-    required this.setsTEC,
+    this.split = const <Day>[],
+    this.excercises = const <List<Excercise>>[],
+    this.sets = const <List<List<PlannedSet>>>[],
+    this.controllers = const <ExpansionTileController>[],
+    this.rpeTEC = const <List<List<TextEditingController>>>[],
+    this.reps1TEC = const <List<List<TextEditingController>>>[],
+    this.reps2TEC = const <List<List<TextEditingController>>>[],
+    this.setsTEC = const <List<List<TextEditingController>>>[],
     required this.dbHelper,
     this.splitLength = 7,
-     
-  });
+
+  }){
+    _init();
+  }
+
+  Future<void> _init() async {
+    // Fetch data from DB and assign to in-memory lists
+    split = await dbHelper.initializeSplitList();
+    excercises = await dbHelper.initializeExcerciseList();
+    sets = await dbHelper.initializeSetList();
+    
+    //_initialized = true;
+    notifyListeners();
+  }
+
+  
   //I feel like there should be a better way to do all this instead of using a bunch of methods
   // but it works so thats a later problem
   void changeDone(bool val){
     done = val;
     notifyListeners();
   }
-  // void lengthUpdate() async {
-  //   if (split.length > 7) {
-  //     splitLength = split.length;
-  //   } else {
-  //     splitLength = 7;
-  //   }
-  //   notifyListeners();
-  // }
 
   // since this function is async, we will have to await it if we want a value
-  Future<void> updateSplitLength() async {
-    final resolvedSplit = await split; // Resolve the future
-    if (resolvedSplit.length > 7) {
-      splitLength = resolvedSplit.length;
+  void updateSplitLength() {
+    //final resolvedSplit = await split; // Resolve the future
+    if (split.length > 7) {
+      splitLength = split.length;
     } else {
       splitLength = 7;
     }
     notifyListeners();
   }
 
-  // this isnt used I should either use it or bye bye
-  void uuidInc() {
-    uuidCount += 1;
-    notifyListeners();
-  }
-
-
-  Future<void> splitAppend({
-    required String newDay,
-    required List<Excercise> newExcercises,
-    required List<List<PlannedSet>> newSets,
-    required List<List<TextEditingController>> newSetsTEC,
-    required List<List<TextEditingController>> newReps1TEC,
-    required List<List<TextEditingController>> newReps2TEC,
-    required List<List<TextEditingController>> newRpeTEC,
-  }) async {
+  void splitAppend(/*{
+  
+    // required String newDay,
+    // required List<Excercise> newExcercises,
+    // required List<List<PlannedSet>> newSets,
+    // required List<List<TextEditingController>> newSetsTEC,
+    // required List<List<TextEditingController>> newReps1TEC,
+    // required List<List<TextEditingController>> newReps2TEC,
+    // required List<List<TextEditingController>> newRpeTEC,
+  }*/) async {
     // this function resolves the data (waits for it to come in from future), mutates it and then reassigns it.
     // this is to ultimately add a day and update the future variables
 
-    final resolvedSplit = await split;
-    final resolvedExcercises = await excercises;
-    final resolvedSets = await sets;
+    //final resolvedSplit = await split;
+    //final resolvedExcercises = await excercises;
+    //final resolvedSets = await sets;
 
-    int id = await dbHelper.insertDay(1, "New Day", resolvedSplit.length);
+    int id = await dbHelper.insertDay(1, "New Day", split.length);
 
-    resolvedSplit.add(Day(
+    split.add(
+      Day(
+      dayOrder: split.length,
       dayTitle: "New Day", 
       programID: 1,
-      dayColor: colors[resolvedSplit.length + 1].value,
+      dayColor: colors[split.length + 1].value,
       dayID: id,
     ));
 
-    resolvedExcercises.add(newExcercises);
+    excercises.add([]);
 
-    resolvedSets.add(newSets);
+    sets.add([]);
 
-    setsTEC.add(newSetsTEC);
-    reps1TEC.add(newReps1TEC);
-    reps2TEC.add(newReps2TEC);
-    rpeTEC.add(newRpeTEC);
+    setsTEC.add([]);
+    reps1TEC.add([]);
+    reps2TEC.add([]);
+    rpeTEC.add([]);
 
 
-    split = Future.value(resolvedSplit);
-    excercises = Future.value(resolvedExcercises);
-    sets = Future.value(resolvedSets);
+    // split = Future.value(resolvedSplit);
+    // excercises = Future.value(resolvedExcercises);
+    // sets = Future.value(resolvedSets);
 
     updateSplitLength();
     notifyListeners();
@@ -153,15 +156,15 @@ class Profile extends ChangeNotifier {
   }) async {
     // this resolves to future variables, deletes a given day, and then updates them
     // also updates database to reflect
-    final resolvedSplit = await split;
-    final resolvedExcercises = await excercises;
-    final resolvedSets = await sets;
+    // final resolvedSplit = await split;
+    // final resolvedExcercises = await excercises;
+    // final resolvedSets = await sets;
     //int index = id - 1;
-    int id = resolvedSplit[index].dayID;
+    int id = split[index].dayID;
 
-    resolvedSplit.removeAt(index);
-    resolvedExcercises.removeAt(index);
-    resolvedSets.removeAt(index);
+    split.removeAt(index);
+    excercises.removeAt(index);
+    sets.removeAt(index);
 
     // these are not future and so can be updated directly, no need to resolve
     setsTEC.removeAt(index);
@@ -169,13 +172,12 @@ class Profile extends ChangeNotifier {
     reps2TEC.removeAt(index);
     rpeTEC.removeAt(index);
 
-    split = Future.value(resolvedSplit);
-    excercises = Future.value(resolvedExcercises);
-    sets = Future.value(resolvedSets);
+    // split = Future.value(resolvedSplit);
+    // excercises = Future.value(resolvedExcercises);
+    // sets = Future.value(resolvedSets);
 
 
     // this *should* cascade in database and delete all other associated excercises n stuff
-    //TODO: make sure index is actually what we want here, we might actually 
     dbHelper.deleteDay(id);
     
     //dbHelper.deleteExercisesByDayId(resolvedSplit[index].dayID);
@@ -185,36 +187,67 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  void moveDay({
+    required int oldIndex,
+    required int newIndex,
+    required int programID,
+  }){
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    Day moveDay = split[oldIndex];
+    List<Excercise> moveExcercise = excercises[oldIndex];
+    List<List<PlannedSet>> moveSet = sets[oldIndex];
+
+    List<List<TextEditingController>> moveReps1TEC = reps1TEC[oldIndex];
+    List<List<TextEditingController>> moveReps2TEC = reps2TEC[oldIndex];
+    List<List<TextEditingController>> moveSetsTEC = setsTEC[oldIndex];
+    List<List<TextEditingController>> moveRpeTEC = rpeTEC[oldIndex];
+
+    // this pops all sets and excercises accordingly
+    splitPop(index: oldIndex);
+
+    splitInsert(
+      index: newIndex, 
+      day: moveDay, 
+      excerciseList: moveExcercise, 
+      newSets: moveSet, 
+      newSetsTEC: moveSetsTEC, 
+      newReps1TEC: moveReps1TEC, 
+      newReps2TEC: moveReps2TEC, 
+      newRpeTEC: moveRpeTEC
+    );
+
+    // reorders day in database
+    dbHelper.reorderDay(programID, oldIndex, newIndex);
+  }
+
+  /* 
+  NOTE: THIS DOES NOT REASSIGN SETS OR EXCERCISES ASSOCIATED WITH THE DAY
+  Maybe that will be added later but for now, this simplifies the database queries and updates
+  also, I don't need it to do that at this point, so it improves performance
+  */
   void splitAssign({
-    required int id,
+    //required int id,
     required Day newDay,
     required int index,
-    required List<Excercise> newExcercises,
-    required List<List<PlannedSet>> newSets,
-    required List<List<TextEditingController>> newSetsTEC,
-    required List<List<TextEditingController>> newReps1TEC,
-    required List<List<TextEditingController>> newReps2TEC,
-    required List<List<TextEditingController>> newRpeTEC,
+    // required List<Excercise> newExcercises,
+    // required List<List<PlannedSet>> newSets,
+    // required List<List<TextEditingController>> newSetsTEC,
+    // required List<List<TextEditingController>> newReps1TEC,
+    // required List<List<TextEditingController>> newReps2TEC,
+    // required List<List<TextEditingController>> newRpeTEC,
   }) async {
-    final resolvedSplit = await split;
-    final resolvedExcercises = await excercises;
-    final resolvedSets = await sets;
+    // final resolvedSplit = await split;
+    // final resolvedExcercises = await excercises;
+    // final resolvedSets = await sets;
     //int index = id - 1;
+    dbHelper.updateDay(split[index].dayID, newDay.dayTitle);
+    split[index] = newDay;
 
-    resolvedSplit[index] = newDay;
-    resolvedExcercises[index] = newExcercises;
-    resolvedSets[index] = newSets;
 
-    rpeTEC[index] = newRpeTEC;
-    reps2TEC[index] = newReps2TEC;
-    reps1TEC[index] = newReps1TEC;
-    setsTEC[index] = newSetsTEC;
-
-    split = Future.value(resolvedSplit);
-    excercises = Future.value(resolvedExcercises);
-    sets = Future.value(resolvedSets);
-
-    dbHelper.updateDay(id, newDay.dayTitle);
+    //dbHelper.updateExercises();
     // should update other data here I think
 
     notifyListeners();
@@ -223,52 +256,66 @@ class Profile extends ChangeNotifier {
   //inserts data at index, pushes everythign after it back
   void splitInsert({
     required int index,
-    required SplitDayData days,
-    required List<SplitDayData> excerciseList,
-    required List<List<SplitDayData>> newSets,
-
-
+    required Day day,
+    required List<Excercise> excerciseList,
+    required List<List<PlannedSet>> newSets,
     required List<List<TextEditingController>> newSetsTEC,
-
     required List<List<TextEditingController>> newReps1TEC,
-
     required List<List<TextEditingController>> newReps2TEC,
-
-
     required List<List<TextEditingController>> newRpeTEC,
   }) async {
-    split.insert(index, days);
+    split.insert(index, day);
     excercises.insert(index, excerciseList);
     sets.insert(index, newSets);
-
     rpeTEC.insert(index, newRpeTEC);
-
     reps2TEC.insert(index, newReps2TEC);
-
     reps1TEC.insert(index, newReps1TEC);
-
     setsTEC.insert(index, newSetsTEC);
 
-    lengthUpdate();
+    dbHelper.insertDay(day.programID, day.dayTitle, index);
+
+    updateSplitLength();
     notifyListeners();
   }
 
   //adds new excercise to end of list of excercises at index
-  void excerciseAppend({
-    required SplitDayData newExcercise,
-    required List<SplitDayData> newSets,
-    required int index,
-    required List<TextEditingController> newSetsTEC,
-    required List<TextEditingController> newReps1TEC,
-    required List<TextEditingController> newReps2TEC,
-    required List<TextEditingController> newRpeTEC,
-  }) async {
-    excercises[index].add(newExcercise);
-    sets[index].add(newSets);
-    setsTEC[index].add(newSetsTEC);
-    reps1TEC[index].add(newReps1TEC);
-    reps2TEC[index].add(newReps2TEC);
-    rpeTEC[index].add(newRpeTEC);
+  void excerciseAppend(
+    {required int index}
+    /*{
+    // required Excercise newExcercise,
+    // required List<PlannedSet> newSets,
+    // required int index,
+    // required List<TextEditingController> newSetsTEC,
+    // required List<TextEditingController> newReps1TEC,
+    // required List<TextEditingController> newReps2TEC,
+    // required List<TextEditingController> newRpeTEC,
+  }*/) async {
+    // int dayID = split[index].dayID;
+    // excercises[index].add(newExcercise);
+    // sets[index].add(newSets);
+    // setsTEC[index].add(newSetsTEC);
+    // reps1TEC[index].add(newReps1TEC);
+    // reps2TEC[index].add(newReps2TEC);
+    // rpeTEC[index].add(newRpeTEC);//socks
+    int id = await dbHelper.insertExercise(split[index].dayID, "New Excercise");
+
+    excercises[index].add(
+      Excercise(
+        excerciseID: id,
+        dayID: split[index].dayID,
+        excerciseTitle: "New Excercise",
+    ));
+
+    excercises.add([]);
+
+    sets.add([]);
+
+    setsTEC.add([]);
+    reps1TEC.add([]);
+    reps2TEC.add([]);
+    rpeTEC.add([]);
+
+    
     notifyListeners();
   }
 
@@ -283,6 +330,8 @@ class Profile extends ChangeNotifier {
     reps1TEC[index1].removeAt(index2);
     reps2TEC[index1].removeAt(index2);
     rpeTEC[index1].removeAt(index2);
+
+    dbHelper.deleteExercise(excercises[index1][index2].excerciseID);
     notifyListeners();
   }
 
@@ -290,53 +339,49 @@ class Profile extends ChangeNotifier {
   void excerciseAssign({
     required int index1,
     required int index2,
-    required SplitDayData data,
-    required List<SplitDayData> newSets,
-    required List<TextEditingController> newSetsTEC,
-    required List<TextEditingController> newReps1TEC,
-    required List<TextEditingController> newReps2TEC,
-    required List<TextEditingController> newRpeTEC,
+    required Excercise data,
+    //required int id,//socks
+    //required List<PlannedSet> newSets,
+    // required List<TextEditingController> newSetsTEC,
+    // required List<TextEditingController> newReps1TEC,
+    // required List<TextEditingController> newReps2TEC,
+    // required List<TextEditingController> newRpeTEC,
 
   }) async {
+    dbHelper.updateExercise(excercises[index1][index2].excerciseID, data.excerciseTitle);
     excercises[index1][index2] = data;
-    sets[index1][index2] = newSets;
-      //socks
-  setsTEC[index1][index2] =  newSetsTEC;
+    //sets[index1][index2] = newSets;
+    // setsTEC[index1][index2] =  newSetsTEC;
+    // reps1TEC[index1][index2] =  newReps1TEC;
+    // reps2TEC[index1][index2] =  newReps2TEC;
+    // rpeTEC[index1][index2] =  newRpeTEC;
 
-  reps1TEC[index1][index2] =  newReps1TEC;
-
-  reps2TEC[index1][index2] =  newReps2TEC;
-
-  rpeTEC[index1][index2] =  newRpeTEC;
-  notifyListeners();
+    
+    notifyListeners();
   }
 
   //inserts excercise onto a specific day in list
   void excerciseInsert({
     required int index1,
     required int index2,
-    required SplitDayData data,
-    required List<SplitDayData> newSets,
+    required Excercise data,
+    required List<PlannedSet> newSets,
 
     required List<TextEditingController> newSetsTEC,
-
     required List<TextEditingController> newReps1TEC,
-
     required List<TextEditingController> newReps2TEC,
-
     required List<TextEditingController> newRpeTEC,
   }) async {
     excercises[index1].insert(index2, data);
     excercises[index1].insert(index2, data);
     sets[index1].insert(index2, newSets);
-
     setsTEC[index1].insert(index2, newSetsTEC);
-
     reps1TEC[index1].insert(index2, newReps1TEC);
-
     reps2TEC[index1].insert(index2, newReps2TEC);
-
     rpeTEC[index1].insert(index2, newRpeTEC);
+
+    dbHelper.insertExercise(excercises[index1][index2].dayID, data.excerciseTitle);
+
     notifyListeners();
   }
 
@@ -355,6 +400,8 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1][index2].removeAt(index3);
 
     rpeTEC[index1][index2].removeAt(index3);
+
+    dbHelper.deletePlannedSet(sets[index1][index2][index3].setID);
     notifyListeners();
   }
 
@@ -363,14 +410,11 @@ class Profile extends ChangeNotifier {
     required int index1,
     required int index2,
     required int index3,
-    required SplitDayData data,
+    required PlannedSet data,
 
     TextEditingController? newSetsTEC,
-
     TextEditingController? newRpeTEC,
-
     TextEditingController? newReps2TEC,
-
     TextEditingController? newReps1TEC,
 
   }) async {
@@ -382,12 +426,11 @@ class Profile extends ChangeNotifier {
     newRpeTEC = newRpeTEC ?? TextEditingController();
 
     setsTEC[index1][index2][index3] = newSetsTEC;
-
     reps1TEC[index1][index2][index3] = newReps1TEC;
-
     reps2TEC[index1][index2][index3] = newReps2TEC;
-
     rpeTEC[index1][index2][index3] = newRpeTEC;
+
+    dbHelper.updatePlannedSet(data.setID, data.numSets, data.setLower, data.setUpper ?? -1);
     notifyListeners();
   }
 
@@ -396,14 +439,11 @@ class Profile extends ChangeNotifier {
     required int index1,
     required int index2,
     required int index3,
-    required SplitDayData data,
+    required PlannedSet data,
 
     TextEditingController? newSetsTEC,
-
     TextEditingController? newRpeTEC,
-
     TextEditingController? newReps2TEC,
-
     TextEditingController? newReps1TEC,
   }) async {
     newSetsTEC = newSetsTEC ?? TextEditingController();
@@ -412,44 +452,48 @@ class Profile extends ChangeNotifier {
     newRpeTEC = newRpeTEC ?? TextEditingController();
 
     sets[index1][index2].insert(index3, data);
-
     setsTEC[index1][index2].insert(index3, newSetsTEC);
-
     reps1TEC[index1][index2].insert(index3, newReps1TEC);
-
     reps2TEC[index1][index2].insert(index3, newReps2TEC);
-
     rpeTEC[index1][index2].insert(index3, newRpeTEC);
+
+    dbHelper.insertPlannedSet(data.excerciseID, data.numSets, data.setLower, data.setUpper ?? -1);
     notifyListeners();
   }
 
   //adds new set to end of list of sets at [index1][index2]
   void setsAppend({
-    required SplitDayData newSets,
+    //required PlannedSet newSets,
     required int index1,
     required int index2,
-    TextEditingController? newSetsTEC,
 
-    TextEditingController? newRpeTEC,
-
-    TextEditingController? newReps2TEC,
-
-    TextEditingController? newReps1TEC,
+    // TextEditingController? newSetsTEC,
+    // TextEditingController? newRpeTEC,
+    // TextEditingController? newReps2TEC,
+    // TextEditingController? newReps1TEC,
 
   }) async {
-    newSetsTEC = newSetsTEC ?? TextEditingController();
-    newReps2TEC = newReps2TEC ?? TextEditingController();
-    newReps1TEC = newReps1TEC ?? TextEditingController();
-    newRpeTEC = newRpeTEC ?? TextEditingController();
+    int id = await dbHelper.insertPlannedSet(excercises[index1][index2].excerciseID, -1, -1, -1);
+    
+    sets[index1][index2].add(PlannedSet(
+      excerciseID: excercises[index1][index2].excerciseID,
+      setID: id,
+      numSets: 1,
+      setLower: -1,
+      setUpper: -1,
+      )
+      );
 
-    sets[index1][index2].add(newSets);
-    setsTEC[index1][index2].add(newSetsTEC);
+    // newSetsTEC = newSetsTEC ?? TextEditingController();
+    // newReps2TEC = newReps2TEC ?? TextEditingController();
+    // newReps1TEC = newReps1TEC ?? TextEditingController();
+    // newRpeTEC = newRpeTEC ?? TextEditingController();
 
-    reps1TEC[index1][index2].add(newReps1TEC);
-
-    reps2TEC[index1][index2].add(newReps2TEC);
-
-    rpeTEC[index1][index2].add(newRpeTEC);
+    
+    setsTEC[index1][index2].add(TextEditingController());
+    reps1TEC[index1][index2].add(TextEditingController());
+    reps2TEC[index1][index2].add(TextEditingController());
+    rpeTEC[index1][index2].add(TextEditingController());
     notifyListeners();
   }
 }

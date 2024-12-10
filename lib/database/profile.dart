@@ -26,8 +26,8 @@ class Program {
 
   factory Program.fromMap(Map<String, dynamic> map) {
     return Program(
-      programID: map['programID'],
-      programTitle: map['programTitle'],
+      programID: map['program_id'],
+      programTitle: map['program_title'],
     );
   }
   @override
@@ -43,24 +43,27 @@ class Day {
   final String dayTitle;
   final int programID;
   final int dayColor;
+  final int dayOrder;
 
-  Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor});
+  Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor, required this.dayOrder});
 
   Map<String, dynamic> toMap() {
     return {
-      'dayID': dayID,
-      'dayTitle': dayTitle,
-      'programID': programID,
-      'dayColor': dayColor,
+      'id': dayID,
+      'day_title': dayTitle,
+      'program_id': programID,
+      'day_color': dayColor,
+      'day_order': dayOrder,
     };
   }
 
   factory Day.fromMap(Map<String, dynamic> map) {
     return Day(
-      dayColor: map['dayColor'],
-      dayID: map['dayID'],
-      dayTitle: map['dayTitle'],
-      programID: map['programID'],
+      dayColor: map['day_color'],
+      dayID: map['day_id'],
+      dayTitle: map['day_title'],
+      programID: map['program_id'],
+      dayOrder: map['day_order'],
     );
   }
 
@@ -70,8 +73,9 @@ class Day {
   }
 
 
-  Day copyWith({int? newDayColor, int? newDayID, String? newDayTitle, int? newProgramID}) {
+  Day copyWith({int? newDayColor, int? newDayID, String? newDayTitle, int? newProgramID, int? newDayOrder}) {
     return Day(
+      dayOrder: newDayOrder ?? dayOrder,
       dayColor: newDayColor ?? dayColor,
       dayID: newDayID ?? dayID,
       dayTitle: newDayTitle ?? dayTitle,
@@ -99,23 +103,31 @@ class Excercise {
   Map<String, dynamic> toMap() {
     return {
       'id': excerciseID,
-      'dayID': dayID,
-      'excerciseTitle': excerciseTitle,
-      'persistentNote': persistentNote,
+      'day_id': dayID,
+      'excercise_title': excerciseTitle,
+      'persistent_note': persistentNote,
     };
   }
 
   factory Excercise.fromMap(Map<String, dynamic> map) {
     return Excercise(
       excerciseID: map['id'],
-      dayID: map['dayID'],
-      excerciseTitle: map['excerciseTitle'],
-      persistentNote: map['persistentNote'],
+      dayID: map['day_id'],
+      excerciseTitle: map['excercise_title'],
+      persistentNote: map['persistent_note'],
     );
   }
   @override
   String toString() {
     return 'Excercise{title: $excerciseTitle, id: $excerciseID, dayID: $dayID, persistNote: $persistentNote}';
+  }
+
+  Excercise copyWith({int? newDayID, int? newExcerciseID, String? newExcerciseTitle}) {
+    return Excercise(
+      excerciseID: newExcerciseID ?? excerciseID,
+      dayID: newDayID ?? dayID,
+      excerciseTitle: newExcerciseTitle ?? excerciseTitle,
+    );
   }
 }
 
@@ -138,26 +150,36 @@ class PlannedSet {
 
   Map<String, dynamic> toMap() {
     return {
-      'setID': setID,
-      'excerciseID': excerciseID,
-      'numSets': numSets,
-      'setLower': setUpper,
-      'setUpper': setUpper,
+      'set_id': setID,
+      'excercise_id': excerciseID,
+      'num_sets': numSets,
+      'set_lower': setUpper,
+      'set_upper': setUpper,
     };
   }
 
   factory PlannedSet.fromMap(Map<String, dynamic> map) {
     return PlannedSet(
-      setID: map['setID'],
-      excerciseID: map['excerciseID'],
-      numSets: map['numSets'],
-      setUpper: map['setUpper'],
-      setLower: map['setLower'],
+      setID: map['id'],
+      excerciseID: map['excercise_id'],
+      numSets: map['num_sets'],
+      setUpper: map['set_upper'],
+      setLower: map['set_lower'],
     );
   }
   @override
   String toString() {
     return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID}';
+  }
+
+  PlannedSet copyWith({int? newSetID, int? newExcerciseID, int? newNumSets, int? newSetUpper, int? newSetLower}) {
+    return PlannedSet(
+      setID: newSetID ?? setID,
+      excerciseID: newExcerciseID ?? excerciseID,
+      numSets: newNumSets ?? numSets,
+      setUpper: newSetUpper ?? setUpper,
+      setLower: newSetLower ?? setLower,
+    );
   }
 }
 
@@ -186,27 +208,27 @@ class SetRecord {
 
   Map<String, dynamic> toMap() {
     return {
-      'recordID': recordID,
-      'excerciseID': excerciseID,
+      'id': recordID,
+      'excercise_id': excerciseID,
       'date': date,
-      'numSets': numSets,
+      'num_sets': numSets,
       'reps': reps,
       'weight': weight,
       'rpe': rpe,
-      'historyNote': historyNote,
+      'history_note': historyNote,
     };
   }
 
   factory SetRecord.fromMap(Map<String, dynamic> map) {
     return SetRecord(
-      recordID: map['recordID'],
-      excerciseID: map['excerciseID'],
+      recordID: map['record_id'],
+      excerciseID: map['excercise_id'],
       date: map['date'],
-      numSets: map['numSets'],
+      numSets: map['num_sets'],
       reps: map['reps'],
       weight: map['weight'],
       rpe: map['rpe'],
-      historyNote: map['historyNote'],
+      historyNote: map['history_note'],
     );
   }
   @override

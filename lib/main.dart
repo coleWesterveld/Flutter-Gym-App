@@ -28,8 +28,8 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
+  // sqfliteFfiInit();
+  // databaseFactory = databaseFactoryFfi;
   runApp(NavigationBarApp());
 }
 
@@ -48,9 +48,9 @@ class NavigationBarApp extends StatefulWidget {
 }
 
 class _MainPage extends State<NavigationBarApp> {
-  Future<List<Day>> split = Future.value([]);
-  Future<List<List<Excercise>>> excercises = Future.value([]);
-  Future<List<List<List<PlannedSet>>>> sets = Future.value([]);
+  // Future<List<Day>> split = Future.value([]);
+  // Future<List<List<Excercise>>> excercises = Future.value([]);
+  // Future<List<List<List<PlannedSet>>>> sets = Future.value([]);
 
 //  default split, gets overwridden by user choices
   // List<SplitDayData> split = [
@@ -75,9 +75,9 @@ class _MainPage extends State<NavigationBarApp> {
   @override
   void initState() {
 
-    split = dbHelper.initializeSplitList();
-    excercises = dbHelper.initializeExcerciseList();
-    sets = dbHelper.initializeSetList();
+    // split = dbHelper.initializeSplitList();
+    // excercises = dbHelper.initializeExcerciseList();
+    // sets = dbHelper.initializeSetList();
     super.initState();
   }
 
@@ -101,22 +101,20 @@ class _MainPage extends State<NavigationBarApp> {
         ChangeNotifierProvider(
           create: (context) => Profile(
             dbHelper: dbHelper,
-            split: split,
+            //split: split,
             controllers: [],//setControllers()
             // this is temporairy while i figure out persistence for the split,
             // so that i dont run into index out of range on the excercises
             //with sets this is atrocious lol
-            // TODO: fix
-            excercises: excercises,
+            //excercises: excercises,
 
-            sets: sets,
+            //sets: sets,
 
             reps1TEC: [],
             reps2TEC: [],
             rpeTEC: [],
             setsTEC: [],
 
-            uuidCount: 0,
           ),
         ),
       ],
@@ -155,7 +153,10 @@ class NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
 
   void changeColor(Color newColor, int index) =>
-      setState(() => context.watch<Profile>().split[index].dayColor = newColor);
+      setState(() => context.watch<Profile>().splitAssign(
+        newDay: context.watch<Profile>().split[index].copyWith(newDayColor: newColor.value), 
+        index: index,
+        ));
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
