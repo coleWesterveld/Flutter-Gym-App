@@ -21,7 +21,6 @@ my goal is to make tappable things blue
 editable things orange 
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
-// TODO: lots of overhaul to convert all builders to future builders 
 // implement copywith methods to make it easy to change just one value
 // to work with database data retrieval
 
@@ -48,51 +47,18 @@ class NavigationBarApp extends StatefulWidget {
 }
 
 class _MainPage extends State<NavigationBarApp> {
-  // Future<List<Day>> split = Future.value([]);
-  // Future<List<List<Excercise>>> excercises = Future.value([]);
-  // Future<List<List<List<PlannedSet>>>> sets = Future.value([]);
-
-//  default split, gets overwridden by user choices
-  // List<SplitDayData> split = [
-  //   SplitDayData(
-  //     data: "Push",
-  //     dayColor: const Color.fromRGBO(106, 92, 185, 1),
-  //   ),
-  //   SplitDayData(
-  //     data: "Pull",
-  //     dayColor: const Color.fromRGBO(150, 50, 50, 1),
-  //   ),
-  //   SplitDayData(
-  //     data: "Legs",
-  //     dayColor: const Color.fromRGBO(61, 101, 167, 1),
-  //   )
-  // ];
 
   final dbHelper = DatabaseHelper.instance;
-
-  //Future<List<ExpansionTileController>> controllers;
 
   @override
   void initState() {
 
-    // split = dbHelper.initializeSplitList();
-    // excercises = dbHelper.initializeExcerciseList();
-    // sets = dbHelper.initializeSetList();
     super.initState();
   }
 
-  // List<ExpansionTileController> setControllers() {
-  //   return List<ExpansionTileController>.filled(
-  //               growable: true);
-  // }
-
-
-  // List<ExpansionTileController>.filled(
-  //               split.length, ExpansionTileController(),
-  //               growable: true),
-
   @override
   Widget build(BuildContext context) {
+    
     //sets =sets ;//sets;
 
     //provider for global variable information

@@ -13,7 +13,7 @@ Still Todo on this page:
 - Change look of calendar, right now big blocks of colour are too much
 - stop bottom from being like stuck too low
 - DONE I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
-
+- fix double digit days - they dont show up well
 - LATER: add sidebar, user can have multiple different programs to swap between
 */
 
@@ -205,45 +205,13 @@ class _MyListState extends State<ProgramPage> {
               onReorder: (oldIndex, newIndex){
                 HapticFeedback.heavyImpact();
                 setState(() {
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
-
-                  // move day from oldIndex to newIndex
-                  //move day at oldindex to newindex
+                  // if (newIndex > oldIndex) {
+                  //   newIndex -= 1;
+                  // }
                   context.read<Profile>().moveDay(oldIndex: oldIndex, newIndex: newIndex, programID: 1);
 
 
-                //   //Day x = Provider.of<Profile>(context, listen: false).split[oldIndex];
-                //   List<Excercise> y = context.read<Profile>().excercises[oldIndex];
-                //   List<List<PlannedSet>> z = context.read<Profile>().sets[oldIndex];
-                  
-                 
-                //   List<List<TextEditingController>> b = context.read<Profile>().setsTEC[oldIndex];
-                //   List<List<TextEditingController>> d = context.read<Profile>().reps1TEC[oldIndex];
-                //   List<List<TextEditingController>> f = context.read<Profile>().reps2TEC[oldIndex];
-                //   List<List<TextEditingController>> h = context.read<Profile>().rpeTEC[oldIndex];
-      
-                //   context.read<Profile>().splitPop(index: oldIndex);
-      
-                //   context.read<Profile>().splitInsert(
-                //     // TODO: this and other code blocks like this are a bit opaque imo, could use some refactoring/cleanup
-                //     index: newIndex, 
-                //     day: x, 
-                //     excerciseList: y, 
-                //     newSets: z,
-                    
-                //     newSetsTEC: b,
-                   
-                //     newReps1TEC: d,
-                   
-                //     newReps2TEC: f,
-                    
-                //     newRpeTEC: h,
-                //   );
-                // });
-                //widget.writePrefs();
-              });
+                });
               },
             
               //button at bottom to add a new day to split
@@ -275,7 +243,6 @@ class _MyListState extends State<ProgramPage> {
                 ),
               ),
         
-              //TODO: fix same globalkey error when reordering excercises
               // building the rest of the tiles, one for each day from split list stored in user
               //dismissable and reorderable: each child for dismissable needs to have a unique key
               itemCount: context.watch<Profile>().split.length,
@@ -519,32 +486,8 @@ class _MyListState extends State<ProgramPage> {
                                   onReorder: (oldIndex, newIndex){
                                     HapticFeedback.heavyImpact();
                                     setState(() {
-                                      if (newIndex > oldIndex) {
-                                        newIndex -= 1;
-                                      }
-                                      //swap excercise list
-                                      Excercise x = Provider.of<Profile>(context, listen: false).excercises[index][oldIndex];
-                                      
-                                      List<PlannedSet> y = Provider.of<Profile>(context, listen: false).sets[index][oldIndex];
-      
-                                      List<TextEditingController> b = Provider.of<Profile>(context, listen: false).setsTEC[index][oldIndex];
-                                      List<TextEditingController> d = Provider.of<Profile>(context, listen: false).reps1TEC[index][oldIndex];
-                                      List<TextEditingController> f = Provider.of<Profile>(context, listen: false).reps2TEC[index][oldIndex];
-                                      List<TextEditingController> h = Provider.of<Profile>(context, listen: false).rpeTEC[index][oldIndex];
-                                      
-                                      context.read<Profile>().excercisePop(index1: index, index2: oldIndex);
-                                      
-                                      context.read<Profile>().excerciseInsert(
-                                        index1: index, 
-                                        index2: newIndex, 
-                                        data: x, 
+                                      context.read<Profile>().moveExcercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
 
-                                        newSets: y,
-                                        newSetsTEC: b,
-                                        newReps1TEC: d,
-                                        newReps2TEC: f,
-                                        newRpeTEC: h,
-                                      );
                                     });
                                   },
                                   
@@ -560,20 +503,10 @@ class _MyListState extends State<ProgramPage> {
                                         child: TextButton.icon(
                                           onPressed: () {
                                             HapticFeedback.heavyImpact();
-                                            setState(() {//socks
+                                            setState(() {
                                               context.read<Profile>().excerciseAppend(
-                                                //  newExcercise: 
-                                                // Excercise(excercise: "New Excercise", dayColor: Colors.black), 
                                                 index: index,
-                                                // newSets: [],
-                                             
-                                                // newReps1TEC: [],
-                                            
-                                                // newReps2TEC: [],
-                                               
-                                                // newRpeTEC: [],
-                                               
-                                                // newSetsTEC: [],
+                                                
                                               );
                                             });  
                                           },
@@ -724,7 +657,7 @@ class _MyListState extends State<ProgramPage> {
                                                               HapticFeedback.heavyImpact();
                                                               setState(() {
                                                                 context.read<Profile>().setsAppend(
-                                                                  // newSets: //socks
+                                                                  // newSets: 
                                                                   // SplitDayData(data: "New Set", dayColor: Colors.black), 
                                                                   index1: index,
                                                                   index2: excerciseIndex,
@@ -798,24 +731,7 @@ class _MyListState extends State<ProgramPage> {
                                                   onReorder: (oldIndex, newIndex){
                                                     HapticFeedback.heavyImpact();
                                                     setState(() {
-                                                      if (newIndex > oldIndex) {
-                                                        newIndex -= 1;
-                                                      }
-                                                      //swap excercise list
-                                                      PlannedSet x = Provider.of<Profile>(context, listen: false).sets[index][excerciseIndex][oldIndex];
-                                          
-                                                      context.read<Profile>().setsPop(
-                                                        index1: index, 
-                                                        index2: excerciseIndex, 
-                                                        index3: oldIndex
-                                                      );
-                                          
-                                                      context.read<Profile>().setsInsert(
-                                                        index1: index, 
-                                                        index2: excerciseIndex, 
-                                                        index3: newIndex, 
-                                                        data: x
-                                                      );
+                                                      context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, excerciseIndex: excerciseIndex);
                                                     });
                                                   },
                                           

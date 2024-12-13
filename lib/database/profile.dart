@@ -91,12 +91,14 @@ class Excercise {
   final int dayID;
   final String excerciseTitle;
   final String? persistentNote;
+  final int excerciseOrder;
 
 
   Excercise({
     required this.excerciseID, 
     required this.dayID, 
     required this.excerciseTitle, 
+    required this.excerciseOrder,
     this.persistentNote
   });
 
@@ -106,6 +108,7 @@ class Excercise {
       'day_id': dayID,
       'excercise_title': excerciseTitle,
       'persistent_note': persistentNote,
+      'excercise_order': excerciseOrder,
     };
   }
 
@@ -115,6 +118,7 @@ class Excercise {
       dayID: map['day_id'],
       excerciseTitle: map['excercise_title'],
       persistentNote: map['persistent_note'],
+      excerciseOrder: map['excercise_order']
     );
   }
   @override
@@ -122,11 +126,12 @@ class Excercise {
     return 'Excercise{title: $excerciseTitle, id: $excerciseID, dayID: $dayID, persistNote: $persistentNote}';
   }
 
-  Excercise copyWith({int? newDayID, int? newExcerciseID, String? newExcerciseTitle}) {
+  Excercise copyWith({int? newDayID, int? newExcerciseID, String? newExcerciseTitle, int? newExcerciseOrder}) {
     return Excercise(
       excerciseID: newExcerciseID ?? excerciseID,
       dayID: newDayID ?? dayID,
       excerciseTitle: newExcerciseTitle ?? excerciseTitle,
+      excerciseOrder: newExcerciseOrder ?? excerciseOrder,
     );
   }
 }
@@ -138,6 +143,8 @@ class PlannedSet {
   final int numSets;
   final int setLower;
   final int? setUpper;
+  final int? rpe;
+  final int setOrder;
 
 
   PlannedSet({
@@ -145,7 +152,9 @@ class PlannedSet {
     required this.excerciseID, 
     required this.numSets, 
     required this.setLower, 
-    this.setUpper
+    this.setUpper,
+    required this.setOrder,
+    this.rpe,
   });
 
   Map<String, dynamic> toMap() {
@@ -155,6 +164,8 @@ class PlannedSet {
       'num_sets': numSets,
       'set_lower': setUpper,
       'set_upper': setUpper,
+      'set_order': setOrder,
+      'rpe': rpe,
     };
   }
 
@@ -165,20 +176,24 @@ class PlannedSet {
       numSets: map['num_sets'],
       setUpper: map['set_upper'],
       setLower: map['set_lower'],
+      setOrder: map['set_order'],
+      rpe: map['rpe']
     );
   }
   @override
   String toString() {
-    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID}';
+    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID, setOrder: $setOrder}';
   }
 
-  PlannedSet copyWith({int? newSetID, int? newExcerciseID, int? newNumSets, int? newSetUpper, int? newSetLower}) {
+  PlannedSet copyWith({int? newSetID, int? newExcerciseID, int? newNumSets, int? newSetUpper, int? newSetLower, int? newSetOrder, int? newRpe}) {
     return PlannedSet(
       setID: newSetID ?? setID,
       excerciseID: newExcerciseID ?? excerciseID,
       numSets: newNumSets ?? numSets,
       setUpper: newSetUpper ?? setUpper,
       setLower: newSetLower ?? setLower,
+      setOrder: newSetOrder ?? setOrder,
+      rpe: newRpe ?? rpe
     );
   }
 }

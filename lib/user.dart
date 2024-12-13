@@ -47,7 +47,7 @@ class Profile extends ChangeNotifier {
 
   //for expansion tiles in workout page
 
-  //this feels awful but idk a better way to do it rn so...
+  //this feels a bit inefficient but idk a better way to do it rn so...
   //this is for all the textboxes in program page
   List<ExpansionTileController> controllers;
   List<List<List<TextEditingController>>> setsTEC;
@@ -106,6 +106,11 @@ class Profile extends ChangeNotifier {
           reps1TEC[i][j].add(TextEditingController());
           reps2TEC[i][j].add(TextEditingController());
           rpeTEC[i][j].add(TextEditingController());
+
+          setsTEC[i][j][k].text = sets[i][j][k].numSets.toString();
+          reps1TEC[i][j][k].text = sets[i][j][k].setLower.toString();
+          reps2TEC[i][j][k].text = sets[i][j][k].setUpper.toString();
+          rpeTEC[i][j][k].text = sets[i][j][k].rpe.toString();
           
         }
       }
@@ -170,6 +175,7 @@ class Profile extends ChangeNotifier {
     reps1TEC.add([]);
     reps2TEC.add([]);
     rpeTEC.add([]);
+    controllers.add(ExpansionTileController());
 
 
     // split = Future.value(resolvedSplit);
@@ -211,6 +217,7 @@ class Profile extends ChangeNotifier {
     
     //dbHelper.deleteExercisesByDayId(resolvedSplit[index].dayID);
     //dbHelper.deletePlannedSet(plannedSetId);
+    updateDaysOrderInDatabase();
 
     updateSplitLength();
     notifyListeners();
@@ -221,36 +228,205 @@ class Profile extends ChangeNotifier {
     required int oldIndex,
     required int newIndex,
     required int programID,
-  }){
+  }){   
+
     if (newIndex > oldIndex) {
       newIndex -= 1;
-    }
-    Day moveDay = split[oldIndex];
-    List<Excercise> moveExcercise = excercises[oldIndex];
-    List<List<PlannedSet>> moveSet = sets[oldIndex];
+    } 
+    // remove the day from its old index in split
+    // insert the day into its new index in the list 
+    // do the same for excercises, sets and controllers
+    // this should be able to be done with the remove and insert functions I made, 
+    // right now idk if they work so Ill do it like this
+    // TODO: use insert/delete to do this
+    final moveDay = split[oldIndex];
+    split.removeAt(oldIndex);
+    split.insert(newIndex, moveDay);
 
-    List<List<TextEditingController>> moveReps1TEC = reps1TEC[oldIndex];
-    List<List<TextEditingController>> moveReps2TEC = reps2TEC[oldIndex];
-    List<List<TextEditingController>> moveSetsTEC = setsTEC[oldIndex];
-    List<List<TextEditingController>> moveRpeTEC = rpeTEC[oldIndex];
+    final moveExcercises = excercises[oldIndex];
+    excercises.removeAt(oldIndex);
+    excercises.insert(newIndex, moveExcercises);
 
-    // this pops all sets and excercises accordingly
-    splitPop(index: oldIndex);
+    final moveSets = sets[oldIndex];
+    sets.removeAt(oldIndex);
+    sets.insert(newIndex, moveSets);
 
-    splitInsert(
-      index: newIndex, 
-      day: moveDay, 
-      excerciseList: moveExcercise, 
-      newSets: moveSet, 
-      newSetsTEC: moveSetsTEC, 
-      newReps1TEC: moveReps1TEC, 
-      newReps2TEC: moveReps2TEC, 
-      newRpeTEC: moveRpeTEC
-    );
+    final moveSetsTEC = setsTEC[oldIndex];
+    setsTEC.removeAt(oldIndex);
+    setsTEC.insert(newIndex, moveSetsTEC);
 
-    // reorders day in database
-    dbHelper.reorderDay(programID, oldIndex, newIndex);
+    final moveControllers = controllers[oldIndex];
+    controllers.removeAt(oldIndex);
+    controllers.insert(newIndex, moveControllers);
+
+    final moveRpeTEC = rpeTEC[oldIndex];
+    rpeTEC.removeAt(oldIndex);
+    rpeTEC.insert(newIndex, moveRpeTEC);
+
+    final moveReps1TEC = reps1TEC[oldIndex];
+    reps1TEC.removeAt(oldIndex);
+    reps1TEC.insert(newIndex, moveReps1TEC);
+
+    final moveReps2TEC = reps2TEC[oldIndex];
+    reps2TEC.removeAt(oldIndex);
+    reps2TEC.insert(newIndex, moveReps2TEC);
+    
+    updateDaysOrderInDatabase();
+    notifyListeners();
+
+    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // This is async 
+    // loop through each day in split, set its day_order equal to its index
+        // reorders day in database
+    //dbHelper.reorderDay(programID, oldIndex, newIndex);
+
+    //update: i did decide to move this
   }
+
+  Future<void> updateDaysOrderInDatabase() async {
+    // Loop through _split and update day_order based on the new index
+    for (int i = 0; i < split.length; i++) {
+      final day = split[i];
+      if (day.dayOrder != i) { // If the current order differs
+        split[i] = split[i].copyWith(newDayOrder: i);
+        await dbHelper.updateDayOrder(day.dayID, i);
+      }
+    }
+    //probably dont need this, and could be done after notify in other function
+    // do performance check, later
+    notifyListeners();
+  }
+
+
+  void moveExcercise({
+    required int oldIndex,
+    required int newIndex,
+    required int dayIndex,
+  }){   
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    } 
+    // remove the day from its old index in split
+    // insert the day into its new index in the list 
+    // do the same for excercises, sets and controllers
+    // this should be able to be done with the remove and insert functions I made, 
+    // right now idk if they work so Ill do it like this
+    // TODO: use insert/delete to do this
+    final moveExcercises = excercises[dayIndex][oldIndex];
+    excercises[dayIndex].removeAt(oldIndex);
+    excercises[dayIndex].insert(newIndex, moveExcercises);
+
+    final moveSets = sets[dayIndex][oldIndex];
+    sets[dayIndex].removeAt(oldIndex);
+    sets[dayIndex].insert(newIndex, moveSets);
+
+    final moveSetsTEC = setsTEC[dayIndex][oldIndex];
+    setsTEC[dayIndex].removeAt(oldIndex);
+    setsTEC[dayIndex].insert(newIndex, moveSetsTEC);
+
+    final moveRpeTEC = rpeTEC[dayIndex][oldIndex];
+    rpeTEC[dayIndex].removeAt(oldIndex);
+    rpeTEC[dayIndex].insert(newIndex, moveRpeTEC);
+
+    final moveReps1TEC = reps1TEC[dayIndex][oldIndex];
+    reps1TEC[dayIndex].removeAt(oldIndex);
+    reps1TEC[dayIndex].insert(newIndex, moveReps1TEC);
+
+    final moveReps2TEC = reps2TEC[dayIndex][oldIndex];
+    reps2TEC[dayIndex].removeAt(oldIndex);
+    reps2TEC[dayIndex].insert(newIndex, moveReps2TEC);
+    
+    updateExcerciseOrderInDatabase(dayIndex);
+    notifyListeners();
+
+    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // This is async 
+    // loop through each day in split, set its day_order equal to its index
+        // reorders day in database
+    //dbHelper.reorderDay(programID, oldIndex, newIndex);
+
+    //update: i did decide to move this
+  }
+
+  Future<void> updateExcerciseOrderInDatabase(int dayIndex) async {
+    // Loop through _split and update day_order based on the new index
+    for (int i = 0; i < excercises[dayIndex].length; i++) {
+      final excercise = excercises[dayIndex][i];
+      if (excercise.excerciseOrder != i) { // If the current order differs
+        excercises[dayIndex][i] = excercises[dayIndex][i].copyWith(newExcerciseOrder: i);
+        await dbHelper.updateExcercise(excercise.excerciseID, {'excercise_order' : i});
+      }
+    }
+    //probably dont need this, and could be done after notify in other function
+    // do performance check, later
+    notifyListeners();
+  }
+
+
+    void moveSet({
+    required int oldIndex,
+    required int newIndex,
+    required int dayIndex,
+    required int excerciseIndex,
+  }){   
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    } 
+    // remove the day from its old index in split
+    // insert the day into its new index in the list 
+    // do the same for excercises, sets and controllers
+    // this should be able to be done with the remove and insert functions I made, 
+    // right now idk if they work so Ill do it like this
+    // TODO: use insert/delete to do this
+    final moveSets = sets[dayIndex][excerciseIndex][oldIndex];
+    sets[dayIndex][excerciseIndex].removeAt(oldIndex);
+    sets[dayIndex][excerciseIndex].insert(newIndex, moveSets);
+
+    final moveSetsTEC = setsTEC[dayIndex][excerciseIndex][oldIndex];
+    setsTEC[dayIndex][excerciseIndex].removeAt(oldIndex);
+    setsTEC[dayIndex][excerciseIndex].insert(newIndex, moveSetsTEC);
+
+    final moveRpeTEC = rpeTEC[dayIndex][excerciseIndex][oldIndex];
+    rpeTEC[dayIndex][excerciseIndex].removeAt(oldIndex);
+    rpeTEC[dayIndex][excerciseIndex].insert(newIndex, moveRpeTEC);
+
+    final moveReps1TEC = reps1TEC[dayIndex][excerciseIndex][oldIndex];
+    reps1TEC[dayIndex][excerciseIndex].removeAt(oldIndex);
+    reps1TEC[dayIndex][excerciseIndex].insert(newIndex, moveReps1TEC);
+
+    final moveReps2TEC = reps2TEC[dayIndex][excerciseIndex][oldIndex];
+    reps2TEC[dayIndex][excerciseIndex].removeAt(oldIndex);
+    reps2TEC[dayIndex][excerciseIndex].insert(newIndex, moveReps2TEC);
+    
+    updateExcerciseOrderInDatabase(dayIndex);
+    notifyListeners();
+
+    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // This is async 
+    // loop through each day in split, set its day_order equal to its index
+        // reorders day in database
+    //dbHelper.reorderDay(programID, oldIndex, newIndex);
+
+    //update: i did decide to move this
+  }
+
+    Future<void> updateSetOrderInDatabase(int dayIndex, int excerciseIndex) async {
+    // Loop through _split and update day_order based on the new index
+    for (int i = 0; i < sets[dayIndex][excerciseIndex].length; i++) {
+      final plannedSet = sets[dayIndex][excerciseIndex][i];
+      if (plannedSet.setOrder != i) { // If the current order differs
+        sets[dayIndex][excerciseIndex][i] = sets[dayIndex][excerciseIndex][i].copyWith(newSetOrder: i);
+        await dbHelper.updateExcercise(plannedSet.setID, {'set_order' : i});
+      }
+    }
+    //probably dont need this, and could be done after notify in other function
+    // do performance check, later
+    notifyListeners();
+  }
+
+
 
   /* 
   NOTE: THIS DOES NOT REASSIGN SETS OR EXCERCISES ASSOCIATED WITH THE DAY
@@ -272,7 +448,7 @@ class Profile extends ChangeNotifier {
     // final resolvedExcercises = await excercises;
     // final resolvedSets = await sets;
     //int index = id - 1;
-    dbHelper.updateDay(split[index].dayID, newDay.dayTitle);
+    dbHelper.updateDay(split[index].dayID, newDay.toMap());
     split[index] = newDay;
 
 
@@ -283,6 +459,7 @@ class Profile extends ChangeNotifier {
   }
 
   //inserts data at index, pushes everythign after it back
+  // i dont trust this function after updating database, it needs testing
   void splitInsert({
     required int index,
     required Day day,
@@ -325,14 +502,15 @@ class Profile extends ChangeNotifier {
     // setsTEC[index].add(newSetsTEC);
     // reps1TEC[index].add(newReps1TEC);
     // reps2TEC[index].add(newReps2TEC);
-    // rpeTEC[index].add(newRpeTEC);//socks
-    int id = await dbHelper.insertExcercise(dayId: split[index].dayID, excerciseTitle: "New Excercise");
+    // rpeTEC[index].add(newRpeTEC);
+    int id = await dbHelper.insertExcercise(dayId: split[index].dayID, excerciseTitle: "New Excercise", excerciseOrder: excercises[index].length);
 
     excercises[index].add(
       Excercise(
         excerciseID: id,
         dayID: split[index].dayID,
         excerciseTitle: "New Excercise",
+        excerciseOrder: excercises[index].length,
     ));
 
     //excercises.add([]);
@@ -360,6 +538,7 @@ class Profile extends ChangeNotifier {
     reps1TEC[index1].removeAt(index2);
     reps2TEC[index1].removeAt(index2);
     rpeTEC[index1].removeAt(index2);
+    updateExcerciseOrderInDatabase(index1); 
 
     
     notifyListeners();
@@ -370,7 +549,7 @@ class Profile extends ChangeNotifier {
     required int index1,
     required int index2,
     required Excercise data,
-    //required int id,//socks
+    //required int id,
     //required List<PlannedSet> newSets,
     // required List<TextEditingController> newSetsTEC,
     // required List<TextEditingController> newReps1TEC,
@@ -378,7 +557,7 @@ class Profile extends ChangeNotifier {
     // required List<TextEditingController> newRpeTEC,
 
   }) async {
-    dbHelper.updateExercise(excercises[index1][index2].excerciseID, data.excerciseTitle);
+    dbHelper.updateExcercise(excercises[index1][index2].excerciseID, {'excercise_title': data.excerciseTitle});
     excercises[index1][index2] = data;
     //sets[index1][index2] = newSets;
     // setsTEC[index1][index2] =  newSetsTEC;
@@ -410,7 +589,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1].insert(index2, newReps2TEC);
     rpeTEC[index1].insert(index2, newRpeTEC);
 
-    dbHelper.insertExcercise(dayId: excercises[index1][index2].dayID, excerciseTitle: data.excerciseTitle);
+    dbHelper.insertExcercise(dayId: excercises[index1][index2].dayID, excerciseTitle: data.excerciseTitle, excerciseOrder: index2);
 
     notifyListeners();
   }
@@ -428,7 +607,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1][index2].removeAt(index3);
     rpeTEC[index1][index2].removeAt(index3);
 
-    
+    updateSetOrderInDatabase(index1, index2);
     notifyListeners();
   }
 
@@ -484,7 +663,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1][index2].insert(index3, newReps2TEC);
     rpeTEC[index1][index2].insert(index3, newRpeTEC);
 
-    dbHelper.insertPlannedSet(data.excerciseID, data.numSets, data.setLower, data.setUpper ?? -1);
+    dbHelper.insertPlannedSet(data.excerciseID, data.numSets, data.setLower, data.setUpper ?? -1, index3, data.rpe);
     notifyListeners();
   }
 
@@ -500,7 +679,7 @@ class Profile extends ChangeNotifier {
     // TextEditingController? newReps1TEC,
 
   }) async {
-    int id = await dbHelper.insertPlannedSet(excercises[index1][index2].excerciseID, -1, -1, -1);
+    int id = await dbHelper.insertPlannedSet(excercises[index1][index2].excerciseID, -1, -1, -1, sets[index1][index2].length, -1);
     
     sets[index1][index2].add(PlannedSet(
       excerciseID: excercises[index1][index2].excerciseID,
@@ -508,6 +687,7 @@ class Profile extends ChangeNotifier {
       numSets: 1,
       setLower: -1,
       setUpper: -1,
+      setOrder: sets[index1][index2].length,
       )
       );
 

@@ -6,15 +6,18 @@ import 'package:firstapp/user.dart';
 import 'profile.dart';
 import 'dart:async';
 import 'dart:io';
+//import 'package:logger/logger.dart/';
 // import 'package:path_provider/path_provider.dart';
 // import 'package:flutter_app/models/note.dart';
 // import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
+//TODO; Day order not saving properly 
+// when reordering or inserting or something make sure to update all day orders
+// also daycolour not saving properly, set initialzier not working properly
 //import 'profile.dart';
 
 //TODO: add order to days, as theyre not implicity stored that way 
 // it is in the table but I need to include functionality
-// need to use "ORDER BY" SQL command when retrieving days so I get them in the right order
+// need to use 'ORDER BY' SQL command when retrieving days so I get them in the right order
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -31,6 +34,7 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
+    debugPrint('path: $path');
 
     return await openDatabase(
       path,
@@ -72,6 +76,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         excercise_title TEXT NOT NULL,
         persistent_note TEXT NOT NULL,
+        excercise_order INTEGER NOT NULL,
         day_id INTEGER NOT NULL,
         FOREIGN KEY (day_id) REFERENCES days (id) ON DELETE CASCADE
       );
@@ -86,6 +91,8 @@ class DatabaseHelper {
         set_lower INTEGER NOT NULL,
         set_upper INTEGER NOT NULL,
         excercise_id INTEGER NOT NULL,
+        set_order INTEGER NOT NULL,
+        rpe INTEGER NOT NULL,
         FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
       );
     '''
@@ -128,25 +135,25 @@ class DatabaseHelper {
 
     //insert initial excercises for program
     //Push
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press', 'persistent_note': '', 'excercise_order': 1});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown', 'persistent_note': '', 'excercise_order': 2});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise', 'persistent_note': '', 'excercise_order': 3});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press', 'persistent_note': '', 'excercise_order': 4});
+    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly', 'persistent_note': '', 'excercise_order': 5});
 
     //pull  
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups', 'persistent_note': '', 'excercise_order': 1});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows', 'persistent_note': '', 'excercise_order': 2});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies', 'persistent_note': '', 'excercise_order': 3});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls', 'persistent_note': '', 'excercise_order': 4});
+    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows', 'persistent_note': '', 'excercise_order': 5});
 
     //legs
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl', 'persistent_note': ''});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension', 'persistent_note': ''});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats', 'persistent_note': '', 'excercise_order': 1});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift', 'persistent_note': '', 'excercise_order': 2});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises', 'persistent_note': '', 'excercise_order': 3});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl', 'persistent_note': '', 'excercise_order': 4});
+    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension', 'persistent_note': '', 'excercise_order': 5});
 
     // sets for each excercise
     // each will just start off with 3 sets, 5-8 reps
@@ -156,6 +163,8 @@ class DatabaseHelper {
       'num_sets': 3,
       'set_lower': 5,
       'set_upper': 8,
+      'rpe' : 8,
+      'set_order': i % 5,
     });
     }
   }
@@ -174,7 +183,7 @@ class DatabaseHelper {
       return Day(
         dayOrder: day['day_order'],
         programID: 1,
-        dayColor: Profile.colors[day['id'] - 1].value,
+        dayColor: day['day_color'],
         dayTitle: day['day_title'], 
         dayID: day['id'],// Assuming 'day_title' is the column name in the database
         //dayColor: Profile.colors[day['day_id'] - 1],
@@ -193,16 +202,17 @@ class DatabaseHelper {
     List<Map<String, dynamic>> days = await fetchDays(1);
 
     for (var day in days){
-      List<Map<String, dynamic>> excerciseData = await fetchExercises(day["id"]);
+      List<Map<String, dynamic>> excerciseData = await fetchExercises(day['id']);
 
       List<Excercise> excerciseDataList = excerciseData.map((excercise) {
         // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
 
         return Excercise(
           excerciseID: excercise['id'],
-          dayID: excercise["day_id"],
-          excerciseTitle: excercise["excercise_title"],
-          persistentNote: excercise["persistent_note"],
+          dayID: excercise['day_id'],
+          excerciseTitle: excercise['excercise_title'],
+          persistentNote: excercise['persistent_note'],
+          excerciseOrder: excercise['excercise_order'],
         );
       }).toList();
 
@@ -221,21 +231,23 @@ class DatabaseHelper {
 
     for (int i = 0; i < days.length; i++){//(var day in days){
       setList.add([]);
-      List<Map<String, dynamic>> excercises = await fetchExercises(days[i]["id"]);
+      List<Map<String, dynamic>> excercises = await fetchExercises(days[i]['id']);
       for (int j = 0; j < excercises.length; j++){//(var excercise in excercises){
-        List<Map<String, dynamic>> setData = await fetchPlannedSets(excercises[j]["id"]);
+        List<Map<String, dynamic>> setData = await fetchPlannedSets(excercises[j]['id']);
 
-        List<PlannedSet> setDataList = setData.map((set) {
+        List<PlannedSet> setDataList = setData.map((aSet) {
 
           return PlannedSet(
 
-            excerciseID: set["excercise_id"],
-            numSets: set["num_sets"],
-            setLower: set["set_lower"],
-            setUpper: set["set_upper"],
-            setID: set['id']
-            //excerciseTitle: excercise["excercise_title"],
-            // persistentNote: excercise["persistent_note"],
+            excerciseID: aSet['excercise_id'],
+            numSets: aSet['num_sets'],
+            setLower: aSet['set_lower'],
+            setUpper: aSet['set_upper'],
+            setID: aSet['id'],
+            setOrder: aSet['set_order'],
+            rpe: aSet['rpe'],
+            //excerciseTitle: excercise['excercise_title'],
+            // persistentNote: excercise['persistent_note'],
           );
         }).toList();
 
@@ -294,57 +306,18 @@ class DatabaseHelper {
       'day_title': dayTitle,
       'day_order': dayOrder,
       // CAREFUL HERE TODO: user could have a ton of days, more than colours, then crash.
-      'day_color': Profile.colors[dayOrder].value
+      // fixed with mod (i think), it resets back 
+      'day_color': Profile.colors[dayOrder % (Profile.colors.length - 1)].value
     });
   }
 
-  Future<void> reorderDay(int programId, int oldIndex, int newIndex) async {
-    final db = await database;
-
-    // Find the day_id for the day currently at oldIndex
-    final oldDayResult = await db.query(
+  Future<int> updateDayOrder(int dayId, int newOrder) async {
+    final db = await DatabaseHelper.instance.database;
+    return await db.update(
       'days',
-      columns: ['id'],
-      where: 'program_id = ? AND day_order = ?',
-      whereArgs: [programId, oldIndex],
-    );
-
-    if (oldDayResult.isEmpty) {
-      // No day at oldIndex, nothing to reorder
-      return;
-    }
-
-    final oldDayId = oldDayResult.first['id'];
-
-    if (newIndex < oldIndex) {
-      // Moving the day upwards in the list
-      // Increase the day_order of all days between newIndex and oldIndex - 1 by 1
-      await db.rawUpdate('''
-        UPDATE days
-        SET day_order = day_order + 1
-        WHERE program_id = ?
-          AND day_order >= ?
-          AND day_order < ?
-      ''', [programId, newIndex, oldIndex]);
-
-    } else if (newIndex > oldIndex) {
-      // Moving the day downwards in the list
-      // Decrease the day_order of all days between oldIndex + 1 and newIndex by 1
-      await db.rawUpdate('''
-        UPDATE days
-        SET day_order = day_order - 1
-        WHERE program_id = ?
-          AND day_order > ?
-          AND day_order <= ?
-      ''', [programId, oldIndex, newIndex]);
-    }
-
-    // Finally, set the moved day to the newIndex
-    await db.update(
-      'days',
-      {'day_order': newIndex},
+      {'day_order': newOrder},
       where: 'id = ?',
-      whereArgs: [oldDayId],
+      whereArgs: [dayId],
     );
   }
 
@@ -359,15 +332,25 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> updateDay(int dayId, String newTitle) async {
+  //takes update values and will update them with the given value
+  Future<int> updateDay(int dayId, Map<String, dynamic> updatedValues) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
       'days',
-      {'day_title': newTitle},
+      updatedValues,
       where: 'id = ?',
       whereArgs: [dayId],
     );
-  }
+  } 
+  // Future<int> updateDay(int dayId, String newTitle) async {
+  //   final db = await DatabaseHelper.instance.database;
+  //   return await db.update(
+  //     'days',
+  //     {'day_title': newTitle},
+  //     where: 'id = ?',
+  //     whereArgs: [dayId],
+  //   );
+  // }
 
   Future<int> deleteDay(int dayId) async {
     final db = await DatabaseHelper.instance.database;
@@ -381,12 +364,13 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // EXCERCISE TABLE CRUD
 
-  Future<int> insertExcercise({required int dayId, required String excerciseTitle, String persistentNote = ''}) async {
+  Future<int> insertExcercise({required int dayId, required String excerciseTitle, String persistentNote = '', required int excerciseOrder}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('excercises', {
       'day_id': dayId,
       'excercise_title': excerciseTitle,
       'persistent_note': persistentNote,
+      'excercise_order': excerciseOrder,
     });
   }
 
@@ -396,18 +380,19 @@ class DatabaseHelper {
       'excercises',
       where: 'day_id = ?',
       whereArgs: [dayId],
+      orderBy: 'excercise_order ASC',
     );
   }
 
-  Future<int> updateExercise(int exerciseId, String newTitle) async {
+  Future<int> updateExcercise(int excerciseID, Map<String, dynamic> updatedValues) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
       'excercises',
-      {'excercise_title': newTitle},
+      updatedValues,
       where: 'id = ?',
-      whereArgs: [exerciseId],
+      whereArgs: [excerciseID],
     );
-  }
+  } 
 
   Future<int> deleteExercise(int exerciseId) async {
     final db = await DatabaseHelper.instance.database;
@@ -421,13 +406,15 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // PLANNED SET TABLE CRUD
 
-  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper) async {
+  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('plannedSets', {
       'excercise_id': exerciseId,
       'num_sets': numSets,
       'set_lower': setLower,
       'set_upper': setUpper,
+      'set_order': setOrder,
+      'rpe': rpe ?? -1,
     });
   }
 
