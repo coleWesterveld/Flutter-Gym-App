@@ -179,8 +179,8 @@ class _WorkoutPageState extends State<WorkoutPage>
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    context.watch<Profile>().split[index].dayColor,
-                    context.watch<Profile>().split[index].dayColor,
+                    Color(context.watch<Profile>().split[index].dayColor),
+                    Color(context.watch<Profile>().split[index].dayColor),
                     const Color(0xFF1e2025),
                   ],
                   stops: const [
@@ -192,14 +192,14 @@ class _WorkoutPageState extends State<WorkoutPage>
               boxShadow: [
                 todaysWorkout
                     ? BoxShadow(
-                        color: context.watch<Profile>().split[index].dayColor,
+                        color: Color(context.watch<Profile>().split[index].dayColor),
                         offset: const Offset(0.0, 0.0),
                         blurRadius: 8.0,
                       )
                     : const BoxShadow(),
               ],
               color: todaysWorkout
-                  ? context.watch<Profile>().split[index].dayColor
+                  ? Color(context.watch<Profile>().split[index].dayColor)
                   : const Color(0xFF1e2025),
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -256,10 +256,10 @@ class _WorkoutPageState extends State<WorkoutPage>
                                     style: TextStyle(
                                       height: 0.6,
                                       color: darken(
-                                          context
+                                          Color(context
                                               .watch<Profile>()
                                               .split[index]
-                                              .dayColor,
+                                              .dayColor),
                                           70),
                                       fontSize: 50,
                                       fontWeight: FontWeight.w900,
@@ -272,7 +272,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                 Padding(
                                   padding: const EdgeInsets.only(left: 16.0),
                                   child: Text(
-                                    context.watch<Profile>().split[index].data,
+                                    context.watch<Profile>().split[index].dayTitle,
                                     style: const TextStyle(
                                       color: Color.fromARGB(255, 255, 255, 255),
                                       fontSize: 18,
@@ -431,6 +431,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                             SizedBox(
+                                              // TODO: fix error here, setsTEC is not getting updated as it should
                                               height: max(45,context.watch<Profile>().setsTEC[index][excerciseIndex].length * 20 + 16),
                                               //color: Colors.red,s
                                               child: Align(
@@ -442,7 +443,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                                         .watch<Profile>()
                                                         .excercises[index]
                                                             [excerciseIndex]
-                                                        .data,
+                                                        .excerciseTitle,
                                                     style: const TextStyle(
                                                       color: Color.fromARGB(
                                                           255, 255, 255, 255),

@@ -3,7 +3,7 @@
 
 /*
 Still Todo on this page:
-- change colours, make customizeable by user
+- DONE change colours, make customizeable by user
 - move random functions to their own files
 - make more modular, this file feels unnecessarily long 
 - ability to add notes per excercise
@@ -12,12 +12,14 @@ Still Todo on this page:
   - either through shared preferences or local SQLite database
 - Change look of calendar, right now big blocks of colour are too much
 - stop bottom from being like stuck too low
-- I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
-
+- DONE I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
+- fix double digit days - they dont show up well
 - LATER: add sidebar, user can have multiple different programs to swap between
 */
 
 //import 'package:firstapp/main.dart';
+import 'package:firstapp/database/database_helper.dart';
+import 'package:firstapp/database/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -25,12 +27,7 @@ import 'package:provider/provider.dart';
 import 'user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'data_saving.dart';
-
-
-
 //import 'package:flutter/cupertino.dart';
-
-
 
 //TODO: gradient background
 
@@ -79,9 +76,10 @@ Color lighten(Color c, [int percent = 10]) {
 //program page, where user defines the overall program by days,
 // then excercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
-  Function writePrefs;
+  //Function writePrefs;
+  final DatabaseHelper dbHelper;
   
-  ProgramPage({Key? programkey, required this.writePrefs,}) : super(key: programkey);
+  const ProgramPage({Key? programkey, required this.dbHelper,}) : super(key: programkey);
   @override
   _MyListState createState() => _MyListState();
 }
@@ -147,13 +145,13 @@ class _MyListState extends State<ProgramPage> {
   // adds day to split
   _addItem() {
       context.read<Profile>().splitAppend(
-        newDay: "New Day", 
-        newExcercises: [], 
-        newSets: [],
-        newReps1TEC: [],
-        newReps2TEC: [],
-        newRpeTEC: [],
-        newSetsTEC: [],
+        // newDay: "New Day", 
+        // newExcercises: [], 
+        // newSets: [],
+        // newReps1TEC: [],
+        // newReps2TEC: [],
+        // newRpeTEC: [],
+        // newSetsTEC: [],
         );
   }
 
@@ -182,104 +180,8 @@ class _MyListState extends State<ProgramPage> {
             ),
             ),
         ),
-        
       
-        bottomSheet: context.read<Profile>().done
-            ? Container(
-                
-                decoration: BoxDecoration(
-                  border:
-                  Border(top: BorderSide(
-                    color:  lighten(Color(0xFF141414), 20),
-                  )),
-          
-            
-      
-              
-                  color: Color(0xFF1e2025),
-                  //borderRadius: BorderRadius.circular(12.0),
-                ),
-      
-                height: 50,
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        //when clicked, it splashes a lighter purple to show that button was clicked
-                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                
-                          borderRadius: BorderRadius.circular(4))),
-                        backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),), 
-               
-                      ),
-                        
-                      onPressed: () {
-                        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                        context.read<Profile>().done = false;
-                        setState((){});
-                      },
-                      child: Text(
-                        'Done',
-                        style: TextStyle(color: Colors.white),
-                        ),
-                    ),
-                  ],
-                ),
-              )
-            : 
-      
-            Container(
-                color: Color(0xFF1e2025),
-                padding: const EdgeInsets.all(8.0),
-                height: 82,
-          child: TableCalendar(
-            headerVisible: false,
-            calendarStyle: CalendarStyle(
-              
-              
-            ),
-            calendarFormat: CalendarFormat.week,
-                    calendarBuilders: CalendarBuilders(
-                      
-                  defaultBuilder: (context, day, focusedDay) {
-                    
-                    DateTime origin = DateTime(2024, 1, 7);
-                    for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-          
-                      int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
-                      if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: context.watch<Profile>().split[splitDay].dayColor,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(8.0),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${day.day}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        );
-                      }
-                    }
-                    
-                    return null;
-                  },
-                ),
-                    rowHeight: 50,
-                    focusedDay: today, 
-                    firstDay: DateTime.utc(2010, 10, 16), 
-                    lastDay: DateTime.utc(2030, 3, 14),
-                    daysOfWeekStyle: DaysOfWeekStyle(
-                      weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
-                       weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
-                      ),
-                  ),
-              ),
+        bottomSheet: buildBottomSheet(),
       
       
       
@@ -303,44 +205,13 @@ class _MyListState extends State<ProgramPage> {
               onReorder: (oldIndex, newIndex){
                 HapticFeedback.heavyImpact();
                 setState(() {
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
-                  SplitDayData x = Provider.of<Profile>(context, listen: false).split[oldIndex];
-                  List<SplitDayData> y = context.read<Profile>().excercises[oldIndex];
-                  List<List<SplitDayData>> z = context.read<Profile>().sets[oldIndex];
-                  
-                 
-                  List<List<TextEditingController>> b = context.read<Profile>().setsTEC[oldIndex];
-      
-                 
-                  List<List<TextEditingController>> d = context.read<Profile>().reps1TEC[oldIndex];
-      
-                 
-                  List<List<TextEditingController>> f = context.read<Profile>().reps2TEC[oldIndex];
-      
-                  
-                  List<List<TextEditingController>> h = context.read<Profile>().rpeTEC[oldIndex];
-      
-      
-                  context.read<Profile>().splitPop(index: oldIndex);
-      
-                  context.read<Profile>().splitInsert(
-                    index: newIndex, 
-                    days: x, 
-                    excerciseList: y, 
-                    newSets: z,
-                    
-                    newSetsTEC: b,
-                   
-                    newReps1TEC: d,
-                   
-                    newReps2TEC: f,
-                    
-                    newRpeTEC: h,
-                  );
+                  // if (newIndex > oldIndex) {
+                  //   newIndex -= 1;
+                  // }
+                  context.read<Profile>().moveDay(oldIndex: oldIndex, newIndex: newIndex, programID: 1);
+
+
                 });
-                widget.writePrefs();
               },
             
               //button at bottom to add a new day to split
@@ -359,7 +230,8 @@ class _MyListState extends State<ProgramPage> {
                       setState(() {
                         _addItem();
                       });
-                      widget.writePrefs();
+                      
+                      //insertDay(context, 1, 'Day 1 - Upper Body');
                       
                     },
                     child: SizedBox(
@@ -371,7 +243,6 @@ class _MyListState extends State<ProgramPage> {
                 ),
               ),
         
-              //TODO: fix same globalkey error when reordering excercises
               // building the rest of the tiles, one for each day from split list stored in user
               //dismissable and reorderable: each child for dismissable needs to have a unique key
               itemCount: context.watch<Profile>().split.length,
@@ -391,7 +262,7 @@ class _MyListState extends State<ProgramPage> {
                     setState(() {
                       context.read<Profile>().splitPop(index: index);    
                     });
-                    widget.writePrefs();
+                    //widget.writePrefs();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -418,8 +289,8 @@ class _MyListState extends State<ProgramPage> {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: [
-                            context.watch<Profile>().split[index].dayColor,
-                            context.watch<Profile>().split[index].dayColor,
+                            Color(context.watch<Profile>().split[index].dayColor),
+                            Color(context.watch<Profile>().split[index].dayColor),
                           const Color(0xFF1e2025),
                           ],
                       stops: const [
@@ -479,7 +350,7 @@ class _MyListState extends State<ProgramPage> {
                                                 style: TextStyle(
                                                    height: 0.6,
                                           
-                                          color: darken(context.watch<Profile>().split[index].dayColor, 70),
+                                          color: darken(Color(context.watch<Profile>().split[index].dayColor), 70),
                                           fontSize: 50,
                                                   fontWeight: FontWeight.w900,
                                                 ),
@@ -490,7 +361,7 @@ class _MyListState extends State<ProgramPage> {
                                             Padding(
                                               padding: const EdgeInsets.only(left : 16.0),
                                               child: Text(
-                                                context.watch<Profile>().split[index].data,
+                                                context.watch<Profile>().split[index].dayTitle,
                                                 style: TextStyle(
                                                   color: Color.fromARGB(255, 255, 255, 255),
                                                   fontSize: 18,
@@ -548,20 +419,23 @@ class _MyListState extends State<ProgramPage> {
                                                       setState( () {
                                                         Provider.of<Profile>(context, listen: false).splitAssign(
                                                           index: index, 
-                                                          newExcercises: context.read<Profile>().excercises[index],
-                                                          newSets: context.read<Profile>().sets[index],
+                                                          //id: context.read<Profile>().split[index].dayID,
+                                                          newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
+
+                                                          // newExcercises: context.read<Profile>().excercises[index],
+                                                          // newSets: context.read<Profile>().sets[index],
       
-                                                          newSetsTEC: context.read<Profile>().setsTEC[index],
+                                                          // newSetsTEC: context.read<Profile>().setsTEC[index],
       
-                                                          newReps1TEC: context.read<Profile>().reps1TEC[index],
+                                                          // newReps1TEC: context.read<Profile>().reps1TEC[index],
       
-                                                          newReps2TEC: context.read<Profile>().reps2TEC[index],
+                                                          // newReps2TEC: context.read<Profile>().reps2TEC[index],
       
-                                                          newRpeTEC: context.read<Profile>().rpeTEC[index],
+                                                          // newRpeTEC: context.read<Profile>().rpeTEC[index],
       
-                                                          newDay: SplitDayData(
-                                                            data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                                          )
+                                                          // newDay: SplitDayData(
+                                                          //   data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                                          // )
                                                         );
                                                       });} //
                                                       Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -577,7 +451,7 @@ class _MyListState extends State<ProgramPage> {
                                         },
                                       );
                                     
-                                      widget.writePrefs();
+                                      //widget.writePrefs();
                                     },
         
                                     icon: Icon(Icons.edit_outlined),
@@ -612,38 +486,8 @@ class _MyListState extends State<ProgramPage> {
                                   onReorder: (oldIndex, newIndex){
                                     HapticFeedback.heavyImpact();
                                     setState(() {
-                                      if (newIndex > oldIndex) {
-                                        newIndex -= 1;
-                                      }
-                                      //swap excercise list
-                                      SplitDayData x = Provider.of<Profile>(context, listen: false).excercises[index][oldIndex];
-                                      
-                                      List<SplitDayData> y = Provider.of<Profile>(context, listen: false).sets[index][oldIndex];
-      
-                                      List<TextEditingController> b = Provider.of<Profile>(context, listen: false).setsTEC[index][oldIndex];
-      
-                                      List<TextEditingController> d = Provider.of<Profile>(context, listen: false).reps1TEC[index][oldIndex];
-      
-                                      List<TextEditingController> f = Provider.of<Profile>(context, listen: false).reps2TEC[index][oldIndex];
-      
-                                      List<TextEditingController> h = Provider.of<Profile>(context, listen: false).rpeTEC[index][oldIndex];
-                                      
-                                      context.read<Profile>().excercisePop(index1: index, index2: oldIndex);
-                                      
-                                      context.read<Profile>().excerciseInsert(
-                                        index1: index, 
-                                        index2: newIndex, 
-                                        data: x, 
-                                        newSets: y,
-                            
-                                        newSetsTEC: b,
-                              
-                                        newReps1TEC: d,
-                                  
-                                        newReps2TEC: f,
-                                  
-                                        newRpeTEC: h,
-                                      );
+                                      context.read<Profile>().moveExcercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
+
                                     });
                                   },
                                   
@@ -660,18 +504,9 @@ class _MyListState extends State<ProgramPage> {
                                           onPressed: () {
                                             HapticFeedback.heavyImpact();
                                             setState(() {
-                                              context.read<Profile>().excerciseAppend( newExcercise: 
-                                                SplitDayData(data: "New Excercise", dayColor: Colors.black), 
+                                              context.read<Profile>().excerciseAppend(
                                                 index: index,
-                                                newSets: [],
-                                             
-                                                newReps1TEC: [],
-                                            
-                                                newReps2TEC: [],
-                                               
-                                                newRpeTEC: [],
-                                               
-                                                newSetsTEC: [],
+                                                
                                               );
                                             });  
                                           },
@@ -767,7 +602,7 @@ class _MyListState extends State<ProgramPage> {
                                                       child: Padding(
                                                         padding: const EdgeInsets.all(8.0),
                                                         child: Text(
-                                                          context.watch<Profile>().excercises[index][excerciseIndex].data,
+                                                          context.watch<Profile>().excercises[index][excerciseIndex].excerciseTitle,
                                                                                                 
                                                           style: TextStyle(
                                                             color: Color.fromARGB(255, 255, 255, 255),
@@ -822,8 +657,8 @@ class _MyListState extends State<ProgramPage> {
                                                               HapticFeedback.heavyImpact();
                                                               setState(() {
                                                                 context.read<Profile>().setsAppend(
-                                                                  newSets: 
-                                                                  SplitDayData(data: "New Set", dayColor: Colors.black), 
+                                                                  // newSets: 
+                                                                  // SplitDayData(data: "New Set", dayColor: Colors.black), 
                                                                   index1: index,
                                                                   index2: excerciseIndex,
                                                                 );
@@ -855,7 +690,7 @@ class _MyListState extends State<ProgramPage> {
                                                         
                                                       HapticFeedback.heavyImpact();
                                                         //print(context.read<Profile>().split[index].data);
-                                                        alertTEC = TextEditingController(text: context.read<Profile>().excercises[index][excerciseIndex].data);
+                                                        alertTEC = TextEditingController(text: context.read<Profile>().excercises[index][excerciseIndex].excerciseTitle);
                                                         String? excerciseTitle = await openDialog();
                                                         if (excerciseTitle == null || excerciseTitle.isEmpty) return;
                                                             
@@ -863,22 +698,23 @@ class _MyListState extends State<ProgramPage> {
                                                           Provider.of<Profile>(context, listen: false).excerciseAssign(
                                                             index1: index, 
                                                             index2: excerciseIndex,
-                                                            data: SplitDayData(
-                                                              data: excerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                                            ),
+                                                            data: Provider.of<Profile>(context, listen: false).excercises[index][excerciseIndex].copyWith(newExcerciseTitle: excerciseTitle)
+                                                            // data: SplitDayData(
+                                                            //   data: excerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                                            // ),
                                                             
-                                                            newSets: context.read<Profile>().sets[index][excerciseIndex],
+                                                            // newSets: context.read<Profile>().sets[index][excerciseIndex],
                                                    
-                                                            newSetsTEC: context.read<Profile>().setsTEC[index][excerciseIndex],
+                                                            // newSetsTEC: context.read<Profile>().setsTEC[index][excerciseIndex],
       
       
-                                                            newRpeTEC: context.read<Profile>().rpeTEC[index][excerciseIndex],
+                                                            // newRpeTEC: context.read<Profile>().rpeTEC[index][excerciseIndex],
       
                                                       
-                                                            newReps1TEC: context.read<Profile>().reps1TEC[index][excerciseIndex],
+                                                            // newReps1TEC: context.read<Profile>().reps1TEC[index][excerciseIndex],
       
       
-                                                            newReps2TEC: context.read<Profile>().reps2TEC[index][excerciseIndex],
+                                                            // newReps2TEC: context.read<Profile>().reps2TEC[index][excerciseIndex],
                                                           );
                                                         });
                                                       }, 
@@ -895,24 +731,7 @@ class _MyListState extends State<ProgramPage> {
                                                   onReorder: (oldIndex, newIndex){
                                                     HapticFeedback.heavyImpact();
                                                     setState(() {
-                                                      if (newIndex > oldIndex) {
-                                                        newIndex -= 1;
-                                                      }
-                                                      //swap excercise list
-                                                      SplitDayData x = Provider.of<Profile>(context, listen: false).sets[index][excerciseIndex][oldIndex];
-                                          
-                                                      context.read<Profile>().setsPop(
-                                                        index1: index, 
-                                                        index2: excerciseIndex, 
-                                                        index3: oldIndex
-                                                      );
-                                          
-                                                      context.read<Profile>().setsInsert(
-                                                        index1: index, 
-                                                        index2: excerciseIndex, 
-                                                        index3: newIndex, 
-                                                        data: x
-                                                      );
+                                                      context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, excerciseIndex: excerciseIndex);
                                                     });
                                                   },
                                           
@@ -1142,70 +961,165 @@ class _MyListState extends State<ProgramPage> {
     );
   }
 
-  // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
-  // its jarring when it bounces around
-  Widget editBuilder(index){
-    alertTEC = TextEditingController(text: context.read<Profile>().split[index].data);
-    if(_sliding == 0){
-      //Value = MediaQuery.sizeOf(context).height - 450;
-    return SizedBox(
-      height: 100,
-      width: 300,
-      child: TextFormField(
-          onFieldSubmitted: (value){
-            HapticFeedback.heavyImpact();
-            Navigator.of(context).pop(alertTEC.text);
-          },
-          autofocus: true,
-          controller: alertTEC,
-          decoration: InputDecoration(
-            hintText: "Enter Text",
-          )
+
+  Widget buildBottomSheet(){
+    // if we should be displaying done button for numeric keyboard, then create.
+    // else display calendar
+  if (context.read<Profile>().done){ 
+    //return done bottom sheet
+    return Container(
+      decoration: BoxDecoration(
+
+        border: Border(
+          top: BorderSide(
+            color:  lighten(Color(0xFF141414), 20),
+          ),
         ),
-    );
-
-
         
-    }else{
-          //alertInsetValue = MediaQuery.sizeOf(context).height - 300;
-          return SizedBox(
-            height: 250,
-            width: 300,
-            child: SingleChildScrollView(
-              
-              child: BlockPicker(
-                pickerColor: context.watch<Profile>().split[index].dayColor,
-                onColorChanged: (Color color) {
-                  context.read<Profile>().splitAssign(
-                    index: index,
-                    newDay: SplitDayData(data: context.read<Profile>().split[index].data, dayColor: color),
-                    newExcercises: context.read<Profile>().excercises[index],
-                    newSets: context.read<Profile>().sets[index],
+        color: Color(0xFF1e2025),
+          //borderRadius: BorderRadius.circular(12.0),
+        ),
 
-                  
-                    newSetsTEC: context.read<Profile>().setsTEC[index],
-
-             
-                    newRpeTEC: context.read<Profile>().rpeTEC[index],
-
-            
-                    newReps1TEC: context.read<Profile>().reps1TEC[index],
-
-                   
-                    newReps2TEC: context.read<Profile>().reps2TEC[index],
-                  );
-                  setState(() {});
-                },
-                  
+        height: 50,
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                //when clicked, it splashes a lighter purple to show that button was clicked
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4)
+                  ),
+                ),
+                backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),),
+              ),
                 
-                availableColors: Profile.colors,
-                layoutBuilder: pickerLayoutBuilder,
-                itemBuilder: pickerItemBuilder,
+              onPressed: () {
+                WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                context.read<Profile>().done = false;
+                setState((){});
+              },
+
+              child: Text(
+                'Done',
+                style: TextStyle(color: Colors.white),
               ),
             ),
-          );
-    }
+          ],
+        ),
+      );
+
+      }else{
+        // return calendary bottom sheet
+
+
+              return Container(
+                color: Color(0xFF1e2025),
+                padding: const EdgeInsets.all(8.0),
+                height: 82,
+                child: TableCalendar(
+                  headerVisible: false,
+                  calendarFormat: CalendarFormat.week,
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, day, focusedDay) {
+                      DateTime origin = DateTime(2024, 1, 7);
+
+                      for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
+                        int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
+                        if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Color(context.watch<Profile>().split[splitDay].dayColor),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8.0),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                      
+                      return null;
+                    },
+                  ),
+
+                  rowHeight: 50,
+                  focusedDay: today, 
+                  firstDay: DateTime.utc(2010, 10, 16), 
+                  lastDay: DateTime.utc(2030, 3, 14),
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
+                      weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
+                ),
+              ),
+            );
+      }
   }
+
+  // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
+  // its jarring when it bounces around
+  Widget editBuilder(index){ 
+          alertTEC = TextEditingController(text: context.watch<Profile>().split[index].dayTitle);
+          if(_sliding == 0){
+            //Value = MediaQuery.sizeOf(context).height - 450;
+            return SizedBox(
+              height: 100,
+              width: 300,
+              child: TextFormField(
+                  onFieldSubmitted: (value){
+                    HapticFeedback.heavyImpact();
+                    Navigator.of(context).pop(alertTEC.text);
+                  },
+                  autofocus: true,
+                  controller: alertTEC,
+                  decoration: InputDecoration(
+                    hintText: "Enter Text",
+                  )
+                ),
+            );
+
+          }else{
+                //alertInsetValue = MediaQuery.sizeOf(context).height - 300;
+                return SizedBox(
+                  height: 250,
+                  width: 300,
+                  child: SingleChildScrollView(
+                    
+                    child: BlockPicker(
+                      pickerColor: Color(context.watch<Profile>().split[index].dayColor),
+                      onColorChanged: (Color color) {
+                        context.read<Profile>().splitAssign(
+                          
+                          index: index,
+                          newDay: context.read<Profile>().split[index].copyWith(newDayColor: color.value),
+                          // newExcercises: context.read<Profile>().excercises[index],
+                          // newSets: context.read<Profile>().sets[index],
+
+                          // newSetsTEC: context.read<Profile>().setsTEC[index],
+                          // newRpeTEC: context.read<Profile>().rpeTEC[index],
+                          // newReps1TEC: context.read<Profile>().reps1TEC[index],
+                          // newReps2TEC: context.read<Profile>().reps2TEC[index],
+                        );
+                        setState(() {});
+                      },
+                        
+                      
+                      availableColors: Profile.colors,
+                      layoutBuilder: pickerLayoutBuilder,
+                      itemBuilder: pickerItemBuilder,
+                    ),
+                  ),
+                );
+          }
+  }
+
 
 
 // Color _listColorFlop({required int index, Color bgColor = const Color(0xFF151218)}){

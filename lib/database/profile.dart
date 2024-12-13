@@ -11,10 +11,11 @@
 // PROGRAM TABLE
 // (one program -> many days)
 class Program {
-  final int? programID;
+
+  final int programID;
   final String programTitle;
 
-  Program({this.programID, required this.programTitle});
+  Program({required this.programID, required this.programTitle});
 
   Map<String, dynamic> toMap() {
     return {
@@ -25,34 +26,60 @@ class Program {
 
   factory Program.fromMap(Map<String, dynamic> map) {
     return Program(
-      programID: map['programID'],
-      programTitle: map['programTitle'],
+      programID: map['program_id'],
+      programTitle: map['program_title'],
     );
+  }
+  @override
+  String toString() {
+    return 'Program{title: $programTitle, id: $programID}';
   }
 }
 
 // DAY TABLE
 // (one day -> many excercises)
 class Day {
-  final int? dayID;
+  final int dayID;
   final String dayTitle;
   final int programID;
+  final int dayColor;
+  final int dayOrder;
 
-  Day({this.dayID, required this.dayTitle, required this.programID});
+  Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor, required this.dayOrder});
 
   Map<String, dynamic> toMap() {
     return {
-      'dayID': dayID,
-      'dayTitle': dayTitle,
-      'programID': programID,
+      'id': dayID,
+      'day_title': dayTitle,
+      'program_id': programID,
+      'day_color': dayColor,
+      'day_order': dayOrder,
     };
   }
 
   factory Day.fromMap(Map<String, dynamic> map) {
     return Day(
-      dayID: map['dayID'],
-      dayTitle: map['dayTitle'],
-      programID: map['programID'],
+      dayColor: map['day_color'],
+      dayID: map['day_id'],
+      dayTitle: map['day_title'],
+      programID: map['program_id'],
+      dayOrder: map['day_order'],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Day{title: $dayTitle, id: $dayID, prgmID: $programID}';
+  }
+
+
+  Day copyWith({int? newDayColor, int? newDayID, String? newDayTitle, int? newProgramID, int? newDayOrder}) {
+    return Day(
+      dayOrder: newDayOrder ?? dayOrder,
+      dayColor: newDayColor ?? dayColor,
+      dayID: newDayID ?? dayID,
+      dayTitle: newDayTitle ?? dayTitle,
+      programID: newProgramID ?? programID,
     );
   }
 }
@@ -60,79 +87,120 @@ class Day {
 // EXCERCISE TABLE
 // (one excercise -> many planned sets, many set records)
 class Excercise {
-  final int? excerciseID;
+  final int excerciseID;
   final int dayID;
   final String excerciseTitle;
   final String? persistentNote;
+  final int excerciseOrder;
 
 
   Excercise({
-    this.excerciseID, 
+    required this.excerciseID, 
     required this.dayID, 
     required this.excerciseTitle, 
+    required this.excerciseOrder,
     this.persistentNote
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'excerciseID': excerciseID,
-      'dayID': dayID,
-      'excerciseTitle': excerciseTitle,
-      'persistentNote': persistentNote,
+      'id': excerciseID,
+      'day_id': dayID,
+      'excercise_title': excerciseTitle,
+      'persistent_note': persistentNote,
+      'excercise_order': excerciseOrder,
     };
   }
 
   factory Excercise.fromMap(Map<String, dynamic> map) {
     return Excercise(
-      excerciseID: map['excerciseID'],
-      dayID: map['dayID'],
-      excerciseTitle: map['excerciseTitle'],
-      persistentNote: map['persistentNote'],
+      excerciseID: map['id'],
+      dayID: map['day_id'],
+      excerciseTitle: map['excercise_title'],
+      persistentNote: map['persistent_note'],
+      excerciseOrder: map['excercise_order']
+    );
+  }
+  @override
+  String toString() {
+    return 'Excercise{title: $excerciseTitle, id: $excerciseID, dayID: $dayID, persistNote: $persistentNote}';
+  }
+
+  Excercise copyWith({int? newDayID, int? newExcerciseID, String? newExcerciseTitle, int? newExcerciseOrder}) {
+    return Excercise(
+      excerciseID: newExcerciseID ?? excerciseID,
+      dayID: newDayID ?? dayID,
+      excerciseTitle: newExcerciseTitle ?? excerciseTitle,
+      excerciseOrder: newExcerciseOrder ?? excerciseOrder,
     );
   }
 }
 
 // PLANNED SET TABLE
 class PlannedSet {
-  final int? setID;
+  final int setID;
   final int excerciseID;
   final int numSets;
   final int setLower;
   final int? setUpper;
+  final int? rpe;
+  final int setOrder;
 
 
   PlannedSet({
-    this.setID, 
+    required this.setID, 
     required this.excerciseID, 
     required this.numSets, 
     required this.setLower, 
-    this.setUpper
+    this.setUpper,
+    required this.setOrder,
+    this.rpe,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'setID': setID,
-      'excerciseID': excerciseID,
-      'numSets': numSets,
-      'setLower': setUpper,
-      'setUpper': setUpper,
+      'set_id': setID,
+      'excercise_id': excerciseID,
+      'num_sets': numSets,
+      'set_lower': setUpper,
+      'set_upper': setUpper,
+      'set_order': setOrder,
+      'rpe': rpe,
     };
   }
 
   factory PlannedSet.fromMap(Map<String, dynamic> map) {
     return PlannedSet(
-      setID: map['setID'],
-      excerciseID: map['excerciseID'],
-      numSets: map['numSets'],
-      setUpper: map['setUpper'],
-      setLower: map['setLower'],
+      setID: map['id'],
+      excerciseID: map['excercise_id'],
+      numSets: map['num_sets'],
+      setUpper: map['set_upper'],
+      setLower: map['set_lower'],
+      setOrder: map['set_order'],
+      rpe: map['rpe']
+    );
+  }
+  @override
+  String toString() {
+    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID, setOrder: $setOrder}';
+  }
+
+  PlannedSet copyWith({int? newSetID, int? newExcerciseID, int? newNumSets, int? newSetUpper, int? newSetLower, int? newSetOrder, int? newRpe}) {
+    return PlannedSet(
+      setID: newSetID ?? setID,
+      excerciseID: newExcerciseID ?? excerciseID,
+      numSets: newNumSets ?? numSets,
+      setUpper: newSetUpper ?? setUpper,
+      setLower: newSetLower ?? setLower,
+      setOrder: newSetOrder ?? setOrder,
+      rpe: newRpe ?? rpe
     );
   }
 }
 
 // SET RECORD TABLE
 class SetRecord {
-  final int? recordID;
+  final int recordID;
   final int excerciseID;
   final String date;
   final int numSets;
@@ -143,7 +211,7 @@ class SetRecord {
 
 
   SetRecord({
-    this.recordID, 
+    required this.recordID, 
     required this.excerciseID, 
     required this.date, 
     required this.numSets, 
@@ -155,27 +223,31 @@ class SetRecord {
 
   Map<String, dynamic> toMap() {
     return {
-      'recordID': recordID,
-      'excerciseID': excerciseID,
+      'id': recordID,
+      'excercise_id': excerciseID,
       'date': date,
-      'numSets': numSets,
+      'num_sets': numSets,
       'reps': reps,
       'weight': weight,
       'rpe': rpe,
-      'historyNote': historyNote,
+      'history_note': historyNote,
     };
   }
 
   factory SetRecord.fromMap(Map<String, dynamic> map) {
     return SetRecord(
-      recordID: map['recordID'],
-      excerciseID: map['excerciseID'],
+      recordID: map['record_id'],
+      excerciseID: map['excercise_id'],
       date: map['date'],
-      numSets: map['numSets'],
+      numSets: map['num_sets'],
       reps: map['reps'],
       weight: map['weight'],
       rpe: map['rpe'],
-      historyNote: map['historyNote'],
+      historyNote: map['history_note'],
     );
+  }
+  @override
+  String toString() {
+    return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $excerciseID}';
   }
 }
