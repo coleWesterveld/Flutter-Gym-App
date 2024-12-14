@@ -271,12 +271,16 @@ class _WorkoutPageState extends State<WorkoutPage>
 
                                 Padding(
                                   padding: const EdgeInsets.only(left: 16.0),
-                                  child: Text(
-                                    context.watch<Profile>().split[index].dayTitle,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
+                                  child: SizedBox(
+                                    width:  MediaQuery.sizeOf(context).width - 138,
+                                    child: Text(
+                                      overflow: TextOverflow.ellipsis,
+                                      context.watch<Profile>().split[index].dayTitle,
+                                      style: const TextStyle(
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
                                 ),

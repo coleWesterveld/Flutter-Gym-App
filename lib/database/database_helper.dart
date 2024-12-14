@@ -1,41 +1,32 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:firstapp/data_saving.dart';
 import 'package:flutter/material.dart';
 import 'package:firstapp/user.dart';
 import 'profile.dart';
 import 'dart:async';
-import 'dart:io';
-//import 'package:logger/logger.dart/';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:flutter_app/models/note.dart';
-// import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-//TODO; Day order not saving properly 
-// when reordering or inserting or something make sure to update all day orders
-// also daycolour not saving properly, set initialzier not working properly
-//import 'profile.dart';
 
-//TODO: add order to days, as theyre not implicity stored that way 
-// it is in the table but I need to include functionality
-// need to use 'ORDER BY' SQL command when retrieving days so I get them in the right order
+// database helper for interfacing with SQLite database
+// setup tables, CRUD operations, initialization
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
 
   DatabaseHelper._init();
 
+  // get path
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('programs.db');
     return _database!;
   }
 
-  //create a setup database
+  // setup database
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
     debugPrint('path: $path');
 
+    // open database at path, create tables if first time opening
     return await openDatabase(
       path,
       version: 1,
@@ -47,7 +38,9 @@ class DatabaseHelper {
   }
 
   // create initial tables on startup
+  // this runs once, on first opening app after download
   Future _createDB(Database db, int version) async {
+
     await db.execute(
     '''
       CREATE TABLE programs (
@@ -98,7 +91,9 @@ class DatabaseHelper {
     '''
     );
 
-    // might want to remove on delete cascade
+    // might want to remove on delete cascade, or make another way to save data even if typo, or used in different workouts
+    // basically, this may become a many-to-many table and we may have to have a large table of all excercises saved 
+    // but for now this works
     await db.execute(
     '''
       CREATE TABLE setRecord (
@@ -115,48 +110,45 @@ class DatabaseHelper {
     '''
     );
 
-    // Insert initial data
+    // Insert initial data - simple push pull legs split on run after download, easily editable by user
     await _insertInitialData(db);
 
   }
 
   // Add initial data to program in startup
   Future<void> _insertInitialData(Database db) async {
-    // Insert initial program
+    // Insert initial program, for now we just have one program
     await db.insert('programs', {'program_title': 'Program1'});
 
-    // the following manually creates an initial program, so the user can see 
-    // an example of how managing a program might be structured on opening the app
-    // for the first time
-    // insert initial days for program
+    // Insert initial days for program
     await db.insert('days', {'program_id': 1, 'day_title': 'Push', 'day_order': 1, 'day_color': Profile.colors[0].value});
     await db.insert('days', {'program_id': 1, 'day_title': 'Pull', 'day_order' : 2, 'day_color': Profile.colors[1].value});
     await db.insert('days', {'program_id': 1, 'day_title': 'Legs', 'day_order' : 3, 'day_color': Profile.colors[2].value});
 
-    //insert initial excercises for program
-    //Push
+    // Insert initial excercises for program
+    // Push
     await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press', 'persistent_note': '', 'excercise_order': 1});
     await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown', 'persistent_note': '', 'excercise_order': 2});
     await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise', 'persistent_note': '', 'excercise_order': 3});
     await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press', 'persistent_note': '', 'excercise_order': 4});
     await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly', 'persistent_note': '', 'excercise_order': 5});
 
-    //pull  
+    // Pull  
     await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups', 'persistent_note': '', 'excercise_order': 1});
     await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows', 'persistent_note': '', 'excercise_order': 2});
     await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies', 'persistent_note': '', 'excercise_order': 3});
     await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls', 'persistent_note': '', 'excercise_order': 4});
     await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows', 'persistent_note': '', 'excercise_order': 5});
 
-    //legs
+    // Legs
     await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats', 'persistent_note': '', 'excercise_order': 1});
     await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift', 'persistent_note': '', 'excercise_order': 2});
     await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises', 'persistent_note': '', 'excercise_order': 3});
     await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl', 'persistent_note': '', 'excercise_order': 4});
     await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension', 'persistent_note': '', 'excercise_order': 5});
 
-    // sets for each excercise
-    // each will just start off with 3 sets, 5-8 reps
+    // Sets for each excercise
+    // Each will just start off with 3 sets, 5-8 reps, RPE 8
     for (int i = 1; i <= 15; i++){
       await db.insert('plannedSets', {
       'excercise_id': i, 
@@ -169,24 +161,27 @@ class DatabaseHelper {
     }
   }
 
+  /////////////////////////////////////////////
+  // INITIAL LIST POPULATING
+  // the following functions run every app opening, retrieve data from database and populates lists in memory
   Future<List<Day>> initializeSplitList() async {
     
     // TODO: allow more than one program
-    // irght now, we are just allowing 1 program, but in the future, 
+    // Right now, we are just allowing 1 program, but in the future, 
     // I want to expand to allow user to have multiple programs saved
+
     // Fetch days from the database
     final List<Map<String, dynamic>> daysData = await fetchDays(1);
-    // Map the database rows to SplitDayData objects
+
+    // Map the database rows to day objects
     final List<Day> splitList = daysData.map((day) {
-      // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
 
       return Day(
         dayOrder: day['day_order'],
         programID: 1,
         dayColor: day['day_color'],
         dayTitle: day['day_title'], 
-        dayID: day['id'],// Assuming 'day_title' is the column name in the database
-        //dayColor: Profile.colors[day['day_id'] - 1],
+        dayID: day['id'],
       );
     }).toList();
 
@@ -195,17 +190,16 @@ class DatabaseHelper {
 
   Future<List<List<Excercise>>> initializeExcerciseList() async {
     List<List<Excercise>> excerciseList = [];
-    // TODO: allow more than one program
-    // irght now, we are just allowing 1 program, but in the future, 
-    // I want to expand to allow user to have multiple programs saved
+
     // Fetch days from the database
     List<Map<String, dynamic>> days = await fetchDays(1);
 
     for (var day in days){
+      // for each day, fetch its corresponding excercises
       List<Map<String, dynamic>> excerciseData = await fetchExercises(day['id']);
 
+      // map each excercise to an excercise object, return 2d list of excercises
       List<Excercise> excerciseDataList = excerciseData.map((excercise) {
-        // Example: Set `dayColor` dynamically based on the data (default to a color if none specified)
 
         return Excercise(
           excerciseID: excercise['id'],
@@ -218,17 +212,17 @@ class DatabaseHelper {
 
       excerciseList.add(excerciseDataList);
     }
-    return Future.value(excerciseList);
+
+    // 2d list indexed excerciseList[day][excercise] to retrieve data
+    return excerciseList;
   }
 
   Future<List<List<List<PlannedSet>>>> initializeSetList() async {
     List<List<List<PlannedSet>>> setList = [];
-    // TODO: allow more than one program
-    // irght now, we are just allowing 1 program, but in the future, 
-    // I want to expand to allow user to have multiple programs saved
-    // Fetch days from the database
+
     List<Map<String, dynamic>> days = await fetchDays(1);
 
+    // initialize 3d list indexed setList[day][excercise][set] to get data
     for (int i = 0; i < days.length; i++){//(var day in days){
       setList.add([]);
       List<Map<String, dynamic>> excercises = await fetchExercises(days[i]['id']);
@@ -246,15 +240,14 @@ class DatabaseHelper {
             setID: aSet['id'],
             setOrder: aSet['set_order'],
             rpe: aSet['rpe'],
-            //excerciseTitle: excercise['excercise_title'],
-            // persistentNote: excercise['persistent_note'],
+
           );
         }).toList();
 
         setList[i].add(setDataList);
       }
     }
-    return Future.value(setList);
+    return setList;
   }
   
 
@@ -424,6 +417,7 @@ class DatabaseHelper {
       'plannedSets',
       where: 'excercise_id = ?',
       whereArgs: [exerciseId],
+      orderBy: 'set_order ASC',
     );
   }
 
@@ -473,6 +467,7 @@ class DatabaseHelper {
       'setRecord',
       where: 'excercise_id = ?',
       whereArgs: [exerciseId],
+      //TODO: parse date and order by date
     );
   }
 

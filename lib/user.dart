@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'data_saving.dart';
+//import 'data_saving.dart';
 import 'database/database_helper.dart';
 import 'database/profile.dart';
-import 'dart:math';
+//import 'dart:math';
 // split, sets, etc in provider
 // on opening app, set split data and other data to whatever is in database
 // database is initialized with values but is then changed by user
@@ -20,20 +20,10 @@ class Profile extends ChangeNotifier {
     Colors.deepPurple,
     Colors.indigo,
     Colors.blue,
-    Colors.lightBlue,
     Colors.cyan,
     Colors.teal,
     Colors.green,
-    Colors.lightGreen,
-    Colors.lime,
     Colors.yellow,
-    Colors.amber,
-    Colors.orange,
-    Colors.deepOrange,
-    Colors.brown,
-    Colors.grey,
-    Colors.blueGrey,
-    Colors.black,
   ];
 
   //information of each day of the split
@@ -163,7 +153,7 @@ class Profile extends ChangeNotifier {
       dayOrder: split.length,
       dayTitle: "New Day", 
       programID: 1,
-      dayColor: colors[split.length + 1].value,
+      dayColor: colors[(split.length + 1) % (colors.length)].value,
       dayID: id,
     ));
 

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 //import 'package:/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+//import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
 //import 'package:shared_preferences/shared_preferences.dart';
@@ -12,9 +12,9 @@ import 'schedule_page.dart';
 import 'program_page.dart';
 import 'analytics_page.dart';
 import 'user.dart';
-import 'data_saving.dart';
+//import 'data_saving.dart';
 import 'database/database_helper.dart';
-import 'database/profile.dart';
+//import 'database/profile.dart';
 
 /* colour choices:
 my goal is to make tappable things blue

@@ -1,9 +1,12 @@
 // schedule page
 //not updated
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
+import 'database/profile.dart';
 
 class Event{
   final String title;
@@ -68,6 +71,52 @@ class _MyScheduleState extends State<SchedulePage> {
     }
   }
 
+  Widget buildLegend(){
+    Orientation orientation = MediaQuery.of(context).orientation;
+    return SizedBox(
+      width: double.infinity,
+      height: orientation == Orientation.portrait ? 20*(context.watch<Profile>().split.length).toDouble() : 50,
+      child: GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: orientation == Orientation.portrait ?  2: 1,
+        //crossAxisSpacing: 5,
+        //mainAxisSpacing: 5,
+        childAspectRatio: 6,
+        children: legendLabels(),
+      ),
+    );
+  }
+
+  List<Widget> legendLabels(){
+    List<Widget> labels = [];
+    for (Day day in context.watch<Profile>().split){
+      labels.add(
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 20,
+            child: Row(
+            children: [
+              Container(
+                width: 15,
+                height: 15, 
+                decoration: BoxDecoration(
+                  color: Color(day.dayColor),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Expanded(child: Text(" ${day.dayTitle}",overflow: TextOverflow.ellipsis,)),
+            ],
+            ),
+          ),
+        )
+        );
+
+      //labels.add(label);
+    }
+    return labels;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -94,19 +143,10 @@ class _MyScheduleState extends State<SchedulePage> {
           ),
       ),
  
-
-      
-
-      //bottomNavigationBar: weekView(),
-      body: Container(
-        //color: const Color(0xFF180c12),
-        // decoration: const BoxDecoration( 
-          
-        //     // Image set to background of the body
-        //     image: DecorationImage( 
-        //         image: AssetImage("darkbg.png"), fit: BoxFit.cover),
-        //   ),
+      body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+        
           children: [
             Padding(
               padding: const EdgeInsets.all(14.0),
@@ -114,95 +154,101 @@ class _MyScheduleState extends State<SchedulePage> {
                 
                 decoration: BoxDecoration(
                   
-                  color: const Color(0xFF2b2b2b),
+                  color: const Color(0xFF1e2025),
                   //border: Border
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TableCalendar(
-                    selectedDayPredicate: (day) {
-                      return _selectedDay!.year == day.year &&
-                      _selectedDay!.month == day.month &&
-                      _selectedDay!.day == day.day;
-                    },
-                    onDaySelected: _onDaySelected,
-                    eventLoader: _getEventsForDay,
-                    
-                    calendarBuilders: CalendarBuilders(
-                  defaultBuilder: (context, day, focusedDay) {
-                      DateTime origin = DateTime(2024, 1, 7);
-                      for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-                  
+                child: Column(
+                  children: [
+                     buildLegend(),
+        
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TableCalendar(
+                        selectedDayPredicate: (day) {
+                          return _selectedDay!.year == day.year &&
+                          _selectedDay!.month == day.month &&
+                          _selectedDay!.day == day.day;
+                        },
+                        onDaySelected: _onDaySelected,
+                        eventLoader: _getEventsForDay,
+                        
+                        calendarBuilders: CalendarBuilders(
+                      defaultBuilder: (context, day, focusedDay) {
+                          DateTime origin = DateTime(2024, 1, 7);
+                          for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
                       
-                        if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Color(context.watch<Profile>().split[splitDay].dayColor),
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(8.0),
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${day.day}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    
-                    return null;
-                  },
-                              ),
-                    rowHeight: 90,
-                    focusedDay: _selectedDay!, 
-                    firstDay: DateTime.utc(2010, 10, 16), 
-                    lastDay: DateTime.utc(2030, 3, 14)
-                  ),
+                          
+                            if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                              return Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Color(context.watch<Profile>().split[splitDay].dayColor),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(16.0),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${day.day}',
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        
+                        return null;
+                      },
+                    ),
+                        rowHeight: 70,
+                        focusedDay: _selectedDay!, 
+                        firstDay: DateTime.utc(2010, 10, 16), 
+                        lastDay: DateTime.utc(2030, 3, 14)
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            Expanded(
-              child: ValueListenableBuilder<List<Event>>(
-                valueListenable: _selectedEvents, 
-                builder: (context, value, _){
-                  return ListView.builder(
-                    itemCount: value.length,
-                    itemBuilder: (context, index){
-                      return Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12, 
-                          vertical: 4,
-                        ),
+            ValueListenableBuilder<List<Event>>(
+              valueListenable: _selectedEvents, 
+              builder: (context, value, _){
+                if (value.length > 0){
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12, 
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(),
+                          color: const Color(0xFF2b2b2b),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            //color: context.watch<Profile>().split[index].dayColor,
+                          
+                        ),),
+                        child: ListTile(
+                          //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
+                          title: Text(value[0].title)
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2b2b2b),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              //color: context.watch<Profile>().split[index].dayColor,
-                            
-                          ),),
-                          child: ListTile(
-                            //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
-                            title: Text(value[index].title)
-                          ),
-                        
-                        ),
-                      );
-                    },
-                  );
-                }
-              ),
+                      
+                      ),
+                    );
+                  }else{
+                    return const SizedBox(height: 0);
+                  }
+                
+              }
             )
           ],
-        ),
-      ),
+        ),),
 
       
     );
