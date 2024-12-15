@@ -1,6 +1,6 @@
 // schedule page
 //not updated
-import 'dart:ffi';
+//import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -10,7 +10,31 @@ import 'database/profile.dart';
 
 class Event{
   final String title;
-  Event(this.title);
+  final int index;
+  Event(this.title, this.index);
+}
+
+// these need to be moved, they are repasted everywhere as of now
+Color lighten(Color c, [int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var p = percent / 100;
+    return Color.fromARGB(
+        c.alpha,
+        c.red + ((255 - c.red) * p).round(),
+        c.green + ((255 - c.green) * p).round(),
+        c.blue + ((255 - c.blue) * p).round()
+    );
+}
+
+Color darken(Color c, [int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var f = 1 - percent / 100;
+    return Color.fromARGB(
+        c.alpha,
+        (c.red * f).round(),
+        (c.green  * f).round(),
+        (c.blue * f).round()
+    );
 }
 
 int daysBetween(DateTime from, DateTime to) {
@@ -54,7 +78,7 @@ class _MyScheduleState extends State<SchedulePage> {
   List<Event> _getEventsForDay (DateTime day){
     for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
       if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * splitDay) {
-        return [Event(context.read<Profile>().split[splitDay].dayTitle)];
+        return [Event(context.read<Profile>().split[splitDay].dayTitle, splitDay)];
       }
     }
     return [];
@@ -64,7 +88,7 @@ class _MyScheduleState extends State<SchedulePage> {
     if (!isSameDay(_selectedDay, selectedDay)){
       setState((){
         _selectedDay = selectedDay;
-        today = focusedDay;
+        //today = focusedDay;
         _selectedEvents.value = _getEventsForDay(selectedDay);
       });
       
@@ -72,13 +96,17 @@ class _MyScheduleState extends State<SchedulePage> {
   }
 
   Widget buildLegend(){
+    int crossCount = 2;
+    int numLabels = context.watch<Profile>().split.length;
+    
     Orientation orientation = MediaQuery.of(context).orientation;
     return SizedBox(
+      //color: Colors.red,
       width: double.infinity,
-      height: orientation == Orientation.portrait ? 20*(context.watch<Profile>().split.length).toDouble() : 50,
+      height: orientation == Orientation.portrait ? 34*(numLabels / crossCount).ceilToDouble() : 50,
       child: GridView.count(
         physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: orientation == Orientation.portrait ?  2: 1,
+        crossAxisCount: orientation == Orientation.portrait ?  crossCount: 1,
         //crossAxisSpacing: 5,
         //mainAxisSpacing: 5,
         childAspectRatio: 6,
@@ -92,7 +120,7 @@ class _MyScheduleState extends State<SchedulePage> {
     for (Day day in context.watch<Profile>().split){
       labels.add(
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(left: 8.0, right: 8.0),
           child: SizedBox(
             height: 20,
             child: Row(
@@ -117,6 +145,47 @@ class _MyScheduleState extends State<SchedulePage> {
     return labels;
   }
 
+  BoxDecoration _buildToday(){
+    final events = _getEventsForDay(today);
+    if (events.isNotEmpty){
+      return BoxDecoration(
+        border: Border.all(color: Colors.white, width: 3),
+        borderRadius: const BorderRadius.all(Radius.circular(14)),
+        color: darken(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
+        shape: BoxShape.rectangle, 
+      );
+    }
+
+    return  BoxDecoration(
+        color:  darken(const Color(0xFF1e2025), 20),
+        border: Border.all(color: Colors.white, width: 3),
+        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        shape: BoxShape.rectangle, 
+      );
+    
+    
+  }
+
+  BoxDecoration _buildSelected(){
+    final events = _getEventsForDay(_selectedDay!);
+    if (events.isNotEmpty){
+      return BoxDecoration(
+        border: Border.all(color: Color(0xFF1e2025), width: 3),
+        borderRadius: const BorderRadius.all(Radius.circular(14)),
+        color: lighten(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
+        shape: BoxShape.rectangle, 
+      );
+    }
+
+    return  BoxDecoration(
+        color:  lighten(const Color(0xFF1e2025), 20),
+        border: Border.all(color: Color(0xFF1e2025), width: 3),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        shape: BoxShape.rectangle, 
+      );
+    
+    
+  }
+//TODO: fix error where clicking on day in next month scrolls to next month and throws an error
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -159,32 +228,51 @@ class _MyScheduleState extends State<SchedulePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                     buildLegend(),
         
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TableCalendar(
-                        selectedDayPredicate: (day) {
-                          return _selectedDay!.year == day.year &&
-                          _selectedDay!.month == day.month &&
-                          _selectedDay!.day == day.day;
-                        },
-                        onDaySelected: _onDaySelected,
-                        eventLoader: _getEventsForDay,
-                        
-                        calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) {
-                          DateTime origin = DateTime(2024, 1, 7);
-                          for (var splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-                      
+                      padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                      child: Container(
+                        //color: Colors.red,
+                        child: TableCalendar(
+
+//TODO: add button in header to take user back to today
+                          // limit to only monthview
+                          availableCalendarFormats: const {
+                            CalendarFormat.month: 'Month',
+                          },
+
+                          // will return true if seected day is same as day, will highlight day as selected
+                          selectedDayPredicate: (day) {
+                            return _selectedDay!.year == day.year &&
+                              _selectedDay!.month == day.month &&
+                              _selectedDay!.day == day.day;
+                          },
+
+                          // manage when a day gets tapped
+                          onDaySelected: _onDaySelected,
+
+                          // given a day, load its events
+                          eventLoader: _getEventsForDay,
                           
-                            if (daysBetween(origin , day) % context.watch<Profile>().splitLength == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                              return Padding(
-                                padding: const EdgeInsets.all(4.0),
+                          
+                          // build by day
+                          
+                          calendarBuilders: CalendarBuilders(
+                          defaultBuilder: (context, day, focusedDay) {
+                            var events = _getEventsForDay(day);
+                          
+                            //DateTime origin = DateTime(2024, 1, 7);
+                            
+                            if (events.isNotEmpty){
+                              return  Padding(
+                                padding: const EdgeInsets.all(6.0),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Color(context.watch<Profile>().split[splitDay].dayColor),
+                                    color: today.isBefore(day) ? 
+                                      Color(context.watch<Profile>().split[events[0].index].dayColor): 
+                                      darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 40),
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(16.0),
                                     ),
@@ -198,17 +286,36 @@ class _MyScheduleState extends State<SchedulePage> {
                                 ),
                               );
                             }
-                          }
-                        
-                        return null;
-                      },
-                    ),
-                        rowHeight: 70,
-                        focusedDay: _selectedDay!, 
-                        firstDay: DateTime.utc(2010, 10, 16), 
-                        lastDay: DateTime.utc(2030, 3, 14)
+                            
+                          
+                            return null;
+                          },
+                                            ),
+                          rowHeight: 70,
+                          focusedDay: _selectedDay!, 
+                          firstDay: DateTime.utc(2010, 10, 16), 
+                          lastDay: DateTime.utc(2030, 3, 14),
+                          calendarStyle: CalendarStyle(
+                            markerDecoration: const BoxDecoration(),
+                            defaultDecoration: BoxDecoration(
+                              //color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            
+                            //cellMargin: const EdgeInsets.all(1.0),
+                            
+                            selectedDecoration: _buildSelected(),
+                            todayDecoration: _buildToday(),
+
+                            selectedTextStyle: const TextStyle(
+                              color: Colors.white, 
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
+                    buildLegend(),
                   ],
                 ),
               ),
@@ -216,21 +323,22 @@ class _MyScheduleState extends State<SchedulePage> {
             ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents, 
               builder: (context, value, _){
-                if (value.length > 0){
+                if (value.isNotEmpty){
                     return Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 12, 
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12),
+                        
+                        border: Border.all(color: const Color(0xFF1e2025)),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2b2b2b),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
+                          color: const Color(0xFF1e2025),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF1e2025)
                             //color: context.watch<Profile>().split[index].dayColor,
                           
                         ),),
