@@ -24,23 +24,25 @@ Color darken(Color c, [int percent = 10]) {
 /// Lighten a color by [percent] amount (100 = white)
 // ........................................................
 Color lighten(Color c, [int percent = 10]) {
+  // not very fond of this solution, it seems to work though. 
+  // will have to migrate from previous solution as colors is moving from 0-255 to 0-1
   assert(1 <= percent && percent <= 100);
   var p = percent / 100;
-  return Color.fromARGB(
-      c.alpha,
-      c.red + ((255 - c.red) * p).round(),
-      c.green + ((255 - c.green) * p).round(),
-      c.blue + ((255 - c.blue) * p).round());
+  return Color.lerp(
+  c, Colors.white, p
+  )!;
+      
 }
 
-Color _listColorFlop(
-    {required int index, Color bgColor = const Color(0xFF151218)}) {
-  if (index % 2 == 0) {
-    return lighten(bgColor, 5);
-  } else {
-    return bgColor;
-  }
-}
+// Color _listColorFlop(
+//     {required int index, Color bgColor = const Color(0xFF151218)}) {
+//   if (index % 2 == 0) {
+//     return lighten(bgColor, 5);
+//   } else {
+
+//     return bgColor;
+//   }
+// }
 
 //TODO: gradient background
 
@@ -118,7 +120,7 @@ class _WorkoutPageState extends State<WorkoutPage>
         ),
       ),
       body: SizedBox(
-        height: MediaQuery.of(context).size.height - (265),
+        //height: MediaQuery.of(context).size.height - (265),
         child: ListView.builder(
           // building the rest of the tiles, one for each day from split list stored in user
           //dismissable and reorderable: each child for dismissable needs to have a unique key
@@ -171,7 +173,6 @@ class _WorkoutPageState extends State<WorkoutPage>
               right: 15,
               top: (!todaysWorkout && index == 0) ? 5 : 15),
 
-          //following shadows are what gives neumorphism effect
           child: Container(
             // TODO: dont like how this goes all the way down under "start workout" button and stuff,
             decoration: BoxDecoration(
@@ -363,6 +364,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                               }),
                                             ),
                                             onPressed: () {
+                                              context.read<Profile>().setActiveDay(index);
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -403,6 +405,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                             }),
                                           ),
                                           onPressed: () {
+                                            context.read<Profile>().setActiveDay(index);
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

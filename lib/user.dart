@@ -34,6 +34,8 @@ class Profile extends ChangeNotifier {
   List<List<List<PlannedSet>>> sets = [];
 
   DatabaseHelper dbHelper;
+  int? activeDayIndex;
+  Day? activeDay;
 
   //for expansion tiles in workout page
 
@@ -62,6 +64,8 @@ class Profile extends ChangeNotifier {
     this.setsTEC = const <List<List<TextEditingController>>>[],
     required this.dbHelper,
     this.splitLength = 7,
+    this.activeDayIndex,
+    this.activeDay,
 
   }){
     _init();
@@ -115,6 +119,12 @@ class Profile extends ChangeNotifier {
   // but it works so thats a later problem
   void changeDone(bool val){
     done = val;
+    notifyListeners();
+  }
+
+  void setActiveDay(int? index){
+    activeDayIndex = (index != null && index >= 0 && index < split.length) ? index: null;
+    activeDay = (index != null && index >= 0 && index < split.length) ? split[index]: null;
     notifyListeners();
   }
 

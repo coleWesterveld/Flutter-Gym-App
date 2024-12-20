@@ -7,6 +7,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'user.dart';
 import 'database/profile.dart';
+import 'edit_schedule.dart';
 
 class Event{
   final String title;
@@ -59,7 +60,7 @@ class SchedulePage extends StatefulWidget {
 class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};
-  DateTime startDay = DateTime(2024, 8, 10);
+  DateTime startDay = DateTime.now();
   DateTime? _selectedDay;
   late final ValueNotifier<List<Event>> _selectedEvents;
 
@@ -77,7 +78,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
   List<Event> _getEventsForDay (DateTime day){
     for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
-      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * splitDay) {
+      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * context.read<Profile>().split[splitDay].dayOrder) {
         return [Event(context.read<Profile>().split[splitDay].dayTitle, splitDay)];
       }
     }
@@ -217,8 +218,25 @@ class _MyScheduleState extends State<SchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
         
           children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                child: TextButton(
+                  onPressed: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditSchedule(),
+                      ));
+                  }, 
+                  child: const Text("Edit Schedule")),
+              ),
+            ),
+
             Padding(
-              padding: const EdgeInsets.all(14.0),
+              padding: const EdgeInsets.only(bottom: 14, left: 14, right: 14),
               child: Container(
                 
                 decoration: BoxDecoration(
@@ -236,6 +254,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       child: Container(
                         //color: Colors.red,
                         child: TableCalendar(
+
 
 //TODO: add button in header to take user back to today
                           // limit to only monthview
@@ -260,6 +279,39 @@ class _MyScheduleState extends State<SchedulePage> {
                           // build by day
                           
                           calendarBuilders: CalendarBuilders(
+                          outsideBuilder: (context, day, focusedDay) {
+                            var events = _getEventsForDay(day);
+                          
+                            //DateTime origin = DateTime(2024, 1, 7);
+                            
+                            if (events.isNotEmpty){
+                              return  Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: today.isBefore(day) ? 
+                                      Color(context.watch<Profile>().split[events[0].index].dayColor): 
+                                      darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 40),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(16.0),
+                                    ),
+                                    shape: BoxShape.rectangle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${day.day}',
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                          
+                            return null;
+                          },
+
+
                           defaultBuilder: (context, day, focusedDay) {
                             var events = _getEventsForDay(day);
                           
@@ -276,6 +328,7 @@ class _MyScheduleState extends State<SchedulePage> {
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(16.0),
                                     ),
+                                    shape: BoxShape.rectangle,
                                   ),
                                   child: Center(
                                     child: Text(
@@ -300,6 +353,7 @@ class _MyScheduleState extends State<SchedulePage> {
                             defaultDecoration: BoxDecoration(
                               //color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
+                              shape: BoxShape.rectangle,
                             ),
                             
                             //cellMargin: const EdgeInsets.all(1.0),

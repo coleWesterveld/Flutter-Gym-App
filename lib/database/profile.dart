@@ -69,7 +69,7 @@ class Day {
 
   @override
   String toString() {
-    return 'Day{title: $dayTitle, id: $dayID, prgmID: $programID}';
+    return 'Day{title: $dayTitle, id: $dayID, prgmID: $programID, order: $dayOrder}';
   }
 
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'user.dart';
 
 class Workout extends StatefulWidget {
   const Workout({super.key});
@@ -10,29 +12,34 @@ class Workout extends StatefulWidget {
 class _WorkoutState extends State<Workout> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1e2025),
-        centerTitle: true,
-        title: const Text(
-          "Workout2",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) => context.read<Profile>().setActiveDay(null),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF1e2025),
+          centerTitle: true,
+          title: Text(
+            context.read<Profile>().activeDay?.dayTitle ?? "titleError",
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ),
+        body: Center(
+            child: _buildList()),
       ),
-      body: const Center(
-          child: Column(
-        children: [
-          Text("Workout Page"),
-          // BackButton(
-
-          //   onPressed: (){
-          //     Navigator.pop(context);
-          //   },
-          // ),
-        ],
-      )),
     );
+  }
+
+  Widget _buildList() {
+
+    //stump for now
+    return Text("workout");
+
+    // activeDay 
+    // return ListView.builder(
+    //   itemCount: context.watch<Profile>()excercises[activeDayInde],
+    //   itemBuilder: itemBuilder
+    //   );
   }
 }

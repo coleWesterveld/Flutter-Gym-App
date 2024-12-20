@@ -46,6 +46,7 @@ dependencies:
   keyboard_actions: ^4.2.0
   path: ^1.9.0
   sqflite_common_ffi: any
+  dotted_border: ^2.1.0
 
 dev_dependencies:
   flutter_test:
