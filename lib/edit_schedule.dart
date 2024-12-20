@@ -3,7 +3,8 @@ import 'user.dart';
 import 'database/profile.dart';
 import 'package:provider/provider.dart';
 
-// TODO: first things first, this needs to work as intended
+// TODO: make pretty
+
 // but also it needs to allow user to customize splitlength and choose day of week to start split
 // also, like much of the code, could probably use a refactor at the end of it all
 
@@ -28,19 +29,20 @@ class EditSchedule extends StatefulWidget {
 
 class _EditScheduleState extends State<EditSchedule> {
   // List of days with initial content
+  List<Day?> _days = [];
   
 
   @override
-  Widget build(BuildContext context) {
-    List<Day?> _days = context.watch<Profile>().split;
-    debugPrint(_days.toString());
-
-
+  void initState() {
     List<Day?> _newDays = [];
+    _days = context.read<Profile>().split;
+    //debugPrint(_days.toString());
+
+    
 
     int oldIdx = 0;
     if (_days.isNotEmpty){
-      for (int i = 0; i <= context.watch<Profile>().splitLength; i++){
+      for (int i = 0; i < context.read<Profile>().splitLength; i++){
         if (oldIdx < _days.length &&_days[oldIdx]!.dayOrder == i){
           _newDays.add(_days[oldIdx]);
 
@@ -52,8 +54,17 @@ class _EditScheduleState extends State<EditSchedule> {
         }
       }
     }
-    debugPrint(_newDays.toString());
+    
     _days = _newDays;
+    debugPrint(_days.toString());
+    super.initState();
+  }
+  
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint(_days.toString());
+
 
     return Scaffold(
       appBar: AppBar(
@@ -83,60 +94,108 @@ class _EditScheduleState extends State<EditSchedule> {
         ),
       )
       :
-      Column(
-        children: _days.asMap().entries.map((entry) {
-          final index = entry.key;
-          final content = entry.value;
+      ListView.builder(
+        itemCount: _days.length,
+
+        itemBuilder: (context, index){
 
           return DragTarget<Day>(
-
-            onAcceptWithDetails: (incoming) {
+            onAcceptWithDetails:(details) {
               setState(() {
-                final oldIndex = _days.indexOf(incoming.data);
+                final oldIndex = _days.indexOf(details.data);
                 final targetContent = _days[index];
 
-                if (targetContent == null) {
-                  // If the slot is empty, just move the day
+
+                if (targetContent == null || oldIndex == index) {
                   _days[oldIndex] = null;
-                  _days[index] = incoming.data;
+                  _days[index] = details.data;
                 } else {
-                  // Push the existing day to the next available slot
-                  final nextIndex = _days.indexWhere((slot) => slot == null);
+                  _days[oldIndex] = null;
+
+                  int closestIndex = -1;
+                  int minDistance = _days.length; // Start with the maximum possible distance
+
+                  for (int i = 0; i < _days.length; i++) {
+                    if (_days[i] == null) {
+                      int distance = (i - index).abs(); // Calculate distance to oldIndex
+                      if (distance < minDistance) {
+                        closestIndex = i; // Update closest index
+                        minDistance = distance;
+                      }
+                    }
+                  }
+
+                  final nextIndex = closestIndex; // Set the closest available index
                   if (nextIndex != -1) {
                     _days[oldIndex] = null;
                     _days[nextIndex] = targetContent;
-                    _days[index] = incoming.data;
+                    _days[index] = details.data;
                   } else {
-                    // No available slot; reject the move
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("No available slot to move the existing day.")),
                     );
                   }
                 }
               });
+              
             },
 
             builder: (context, candidateData, rejectedData) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: content != null
-                    ? Draggable<Day>(
-                        data: content,
-                        feedback: Material(
-                          color: Colors.transparent,
-                          child: _buildDayWidget(content),
-                        ),
-                        childWhenDragging: Opacity(
-                          opacity: 0.5,
-                          child: _buildDayWidget(content),
-                        ),
-                        child: _buildDayWidget(content),
-                      )
-                    : _buildRestDayWidget(index),
+              final isActive = candidateData.isNotEmpty;
+              if (_days[index] != null) {
+                return Draggable(
+                data: _days[index]!,
+                child: Container(
+                  height: 50,
+                  width: 100,
+                  color: Profile.colors[index % Profile.colors.length], // temporary
+                  child: Text(_days[index]!.dayTitle)
+                ),
+
+                feedback: Material(
+                  child: Container(
+                    height: 50,
+                    width: 100,
+                    color: Colors.red,
+                    child: Text(
+                      "Dragging",
+                      style: TextStyle(decoration: TextDecoration.none,)
+                      
+                    ),
+                  ),
+                ),
+
+                childWhenDragging: Container(
+                  child: Container(
+                    height: 50,
+                    width: 100, 
+                    color: Colors.green,
+                    child: Text("Slot here")
+                  )
+                ),
+                );
+
+              } else {
+                return Container(
+                height: 50,
+                width: 100,
+                
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.blue : Colors.grey,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Text("Rest Day")
               );
+              }
+              // for draggable: 
+              // child is initial state, before dragging
+              // feedback is widget as it is dragged
+              // child when dragging is what is displayed at anchor (origin) during dragging
+              // data is data transmitted to dragtarget on drop (will be a day)
             },
           );
-        }).toList(),
+        }
+        
       ),
     );
   }
