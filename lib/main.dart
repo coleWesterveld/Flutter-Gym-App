@@ -23,6 +23,7 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 */
 // implement copywith methods to make it easy to change just one value
 // to work with database data retrieval
+// i think i should extract some of my widgets for performance and change methods to widgets where possible
 
 void main() async {
 

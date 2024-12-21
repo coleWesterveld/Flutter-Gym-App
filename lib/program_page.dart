@@ -15,6 +15,8 @@ Still Todo on this page:
 - DONE I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
 - fix double digit days - they dont show up well
 - LATER: add sidebar, user can have multiple different programs to swap between
+- the day indices should be their own container, not gradients
+    this will prevent doubvle digit num overflow, be more flexible for multiple devices and is just better
 */
 
 //import 'package:firstapp/main.dart';
