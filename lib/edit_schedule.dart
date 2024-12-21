@@ -7,7 +7,8 @@ import 'user.dart';
 import 'database/profile.dart';
 import 'package:provider/provider.dart';
 
-// TODO: make pretty
+// TODO: make pretty - notably, when a day hovers another day, preview changes 
+// if dropped, wheere days will end up but with lower opacity
 
 // but also it needs to allow user to customize splitlength and choose day of week to start split
 // also, like much of the code, could probably use a refactor at the end of it all
@@ -69,14 +70,14 @@ class _EditScheduleState extends State<EditSchedule> {
     }
     
     _days = _newDays;
-    debugPrint(_days.toString());
+    //debugPrint(_days.toString());
     super.initState();
   }
   
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(_days.toString());
+    //debugPrint(_days.toString());
 
 
     return Scaffold(
@@ -210,7 +211,7 @@ class _RestDay extends StatelessWidget {
         
         
         child: Container(
-        height: 50,
+        height: 70,
         width: double.infinity,
         
         decoration: BoxDecoration(
@@ -221,7 +222,7 @@ class _RestDay extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 50,
+              width: 60,
               decoration: BoxDecoration(
                 // border: Border(
                 //   right: BorderSide(
@@ -241,7 +242,7 @@ class _RestDay extends StatelessWidget {
                       daysOfWeek[index % 7],
                       style: TextStyle(
                         height: 1.0,
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -252,7 +253,7 @@ class _RestDay extends StatelessWidget {
                     
                       style: TextStyle(
                         height: 1.0,
-                        fontSize: 14,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                         color: lighten(const Color(0xFF1e2025), 60)
                       ),
@@ -286,6 +287,7 @@ class _RestDay extends StatelessWidget {
 }
 
 class _DraggableDay extends StatelessWidget {
+  // this widget isnt exactly following DRY, could use refactor
   const _DraggableDay({
     //super.key,
     required List<Day?> days,
@@ -300,24 +302,204 @@ class _DraggableDay extends StatelessWidget {
     return Draggable(
     data: _days[_index]!,
     
-    feedback: Material(
-      child: Container(
-        height: 50,
-        width: MediaQuery.sizeOf(context).width,
-        color: Colors.red,
-        child: Text(
-          "Dragging",
-          style: TextStyle(decoration: TextDecoration.none,)
+    feedback: Container(
+      decoration: BoxDecoration(
+      boxShadow: [
+              BoxShadow(
+                blurStyle: BlurStyle.normal,
+                color: Colors.black.withValues(alpha: 0.6), // Shadow color
+                offset: Offset(0, 4), // Horizontal and ßvertical offset
+                blurRadius: 8, // Blur effect
+                spreadRadius: 12, // Spread effect
+              ),
+            ],
+      ),
+
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Material(
+          child: Container(
+              height: 70,
+              width: MediaQuery.sizeOf(context).width,
+              
+              decoration: BoxDecoration(
+                
+      
+                border: Border.all(
+                  color: Color(_days[_index]!.dayColor),
+                  
+                  width: 3.0,
+                ),
           
+                borderRadius: BorderRadius.circular(13),
+                //border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(10.0),
+                        topLeft: Radius.circular(10.0),
+                        ),
+                      // border: Border(
+                      //   right: BorderSide(
+                      //     color: Colors.grey,
+                      //     width: 2.0,
+                      //   ),
+                      // ),
+          
+                      color: Color(_days[_index]!.dayColor),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+          
+                           
+                            _RestDay.daysOfWeek[_index % 7],
+                            style: TextStyle(
+                              //color: darken(const Color(0xFF1e2025), 60),
+                              height: 1.0,
+                              fontSize: 20,
+                              color: darken(Color(_days[_index]!.dayColor), 70),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+          
+                          Text(
+                           
+                            "${_index + 1}",
+                          
+                            style: TextStyle(
+                              height: 1.0,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: darken(Color(_days[_index]!.dayColor), 50)
+                            ),
+                          ),
+                        ],
+                      )
+                    ),
+          
+                  ),
+          
+                  Expanded(
+                    //width: double.infinity,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _days[_index]!.dayTitle,
+                          style: TextStyle(
+                            fontSize: 18,
+                        
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
         ),
       ),
     ),
     
-    childWhenDragging: Container(
-      height: 50,
-      width: 100, 
-      color: Colors.green,
-      child: Text("Slot here")
+    childWhenDragging: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Container(
+          height: 70,
+          width: double.infinity,
+          
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Color(0xFF1e2025),
+              //width: 2.0,
+            ),
+
+            borderRadius: BorderRadius.circular(12),
+            //border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(10.0),
+                    topLeft: Radius.circular(10.0),
+                    ),
+                  // border: Border(
+                  //   right: BorderSide(
+                  //     color: Colors.grey,
+                  //     width: 2.0,
+                  //   ),
+                  // ),
+      
+                  color: darken(Color(_days[_index]!.dayColor), 50),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+
+                       
+                        _RestDay.daysOfWeek[_index % 7],
+                        style: TextStyle(
+                          //color: darken(const Color(0xFF1e2025), 60),
+                          height: 1.0,
+                          fontSize: 20,
+                          color: darken(Color(_days[_index]!.dayColor), 80),
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+      
+                      Text(
+                       
+                        "${_index + 1}",
+                      
+                        style: TextStyle(
+                          height: 1.0,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: darken(Color(_days[_index]!.dayColor), 60)
+                        ),
+                      ),
+                    ],
+                  )
+                ),
+      
+              ),
+      
+              Expanded(
+                //width: double.infinity,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      _days[_index]!.dayTitle,
+                      style: TextStyle(
+                        fontSize: 18,
+                        // this is ugly but works for now
+                        color: (Theme.of(context).textTheme.bodyMedium != null && Theme.of(context).textTheme.bodyMedium!.color != null) 
+                          ? darken(Theme.of(context).textTheme.bodyMedium!.color!, 30) : Colors.white,
+                    
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
     ),
 
     child: Padding(
@@ -364,7 +546,7 @@ class _DraggableDay extends StatelessWidget {
                         style: TextStyle(
                           //color: darken(const Color(0xFF1e2025), 60),
                           height: 1.0,
-                          fontSize: 24,
+                          fontSize: 20,
                           color: darken(Color(_days[_index]!.dayColor), 70),
                           fontWeight: FontWeight.w900,
                         ),
@@ -376,7 +558,7 @@ class _DraggableDay extends StatelessWidget {
                       
                         style: TextStyle(
                           height: 1.0,
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w900,
                           color: darken(Color(_days[_index]!.dayColor), 50)
                         ),

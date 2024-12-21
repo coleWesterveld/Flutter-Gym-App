@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firstapp/user.dart';
 import 'profile.dart';
 import 'dart:async';
-
+//TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
 class DatabaseHelper {
