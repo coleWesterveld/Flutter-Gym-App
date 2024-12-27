@@ -62,7 +62,7 @@ class _MyScheduleState extends State<SchedulePage> {
   Map<DateTime, List<Event>> events = {};
   DateTime startDay = DateTime.now();
   DateTime? _selectedDay;
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  late ValueNotifier<List<Event>> _selectedEvents;
 
   void loadEvents(){
     //
@@ -72,7 +72,7 @@ class _MyScheduleState extends State<SchedulePage> {
   void initState(){
     super.initState();
     _selectedDay = today;
-    //_selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
     //loadEvents();
   }
 
@@ -146,6 +146,12 @@ class _MyScheduleState extends State<SchedulePage> {
     return labels;
   }
 
+    @override
+  void dispose() {
+    _selectedEvents.dispose(); // Dispose the ValueNotifier to avoid memory leaks
+    super.dispose();
+  }
+
   BoxDecoration _buildToday(){
     final events = _getEventsForDay(today);
     if (events.isNotEmpty){
@@ -191,8 +197,8 @@ class _MyScheduleState extends State<SchedulePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Safe to access context.watch<Profile>() here
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
-    loadEvents(); // You can call loadEvents() here as well, if needed
+    _selectedEvents.value = _getEventsForDay(_selectedDay!);
+    loadEvents();
   }
 
   @override

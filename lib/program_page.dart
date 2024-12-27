@@ -17,6 +17,8 @@ Still Todo on this page:
 - LATER: add sidebar, user can have multiple different programs to swap between
 - the day indices should be their own container, not gradients
     this will prevent doubvle digit num overflow, be more flexible for multiple devices and is just better
+
+I think the not saving problem is because i am unfocusing but not saving when I click done or scaffold
 */
 
 //import 'package:firstapp/main.dart';
