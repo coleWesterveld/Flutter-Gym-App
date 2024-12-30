@@ -43,7 +43,7 @@ class Day {
   final String dayTitle;
   final int programID;
   final int dayColor;
-  final int dayOrder;
+  int dayOrder;
 
   Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor, required this.dayOrder});
 

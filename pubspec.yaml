@@ -47,6 +47,7 @@ dependencies:
   path: ^1.9.0
   sqflite_common_ffi: any
   dotted_border: ^2.1.0
+  fl_chart: ^0.70.0
 
 dev_dependencies:
   flutter_test:

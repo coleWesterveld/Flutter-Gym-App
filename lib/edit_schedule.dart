@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 // better dropdown - match OS?
 // undo button on drag and drop, in case of accidental drag when trying to scroll
 // find out what a good length is fro long press draggable
+// could add a save and cancel button, so that user can easily undo any reordering that they did if they dont like
 
 // TODO: on reorder, we need to actually update the dayOrder
 // therefore, either the min list is the highest dayorder, 
@@ -25,6 +26,9 @@ import 'package:provider/provider.dart';
 // splitLength auto resets when we add days on split, we should fix how that works
 
 // basically, atp the UI is mostly done, business logic is only probably 1/3 done
+
+// This page mostly works IN ISOLATION, but not fully with everything
+// i am not saving origin 
 
 Color darken(Color c, [int percent = 10]) {
     assert(1 <= percent && percent <= 100);
@@ -63,6 +67,8 @@ class _EditScheduleState extends State<EditSchedule> {
 
   @override
   void initState() {
+    startDay = context.read<Profile>().origin.weekday - 1;
+
     splitLenTEC.text = context.read<Profile>().splitLength.toString();
 
     generateDays();
@@ -281,6 +287,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                 if (newValue != null) {
                                   setState(() {
                                     startDay = newValue;
+                                    context.read<Profile>().origin = getDayOfCurrentWeek(startDay + 1);
                                   });
                                   }
                                 
@@ -328,21 +335,20 @@ class _EditScheduleState extends State<EditSchedule> {
           itemBuilder: (context, index){
         
             return DragTarget<Day>(
-              onAcceptWithDetails:(details) {
+              onAcceptWithDetails: (details) {
                 setState(() {
                   final oldIndex = _days.indexOf(details.data);
                   final targetContent = _days[index];
-        
-        
+
                   if (targetContent == null || oldIndex == index) {
                     _days[oldIndex] = null;
                     _days[index] = details.data;
                   } else {
                     _days[oldIndex] = null;
-        
+
                     int closestIndex = -1;
                     int minDistance = _days.length; // Start with the maximum possible distance
-        
+
                     for (int i = 0; i < _days.length; i++) {
                       if (_days[i] == null) {
                         int distance = (i - index).abs(); // Calculate distance to oldIndex
@@ -352,7 +358,7 @@ class _EditScheduleState extends State<EditSchedule> {
                         }
                       }
                     }
-        
+
                     final nextIndex = closestIndex; // Set the closest available index
                     if (nextIndex != -1) {
                       _days[oldIndex] = null;
@@ -364,8 +370,24 @@ class _EditScheduleState extends State<EditSchedule> {
                       );
                     }
                   }
+
+                  // Update dayOrder for all days in both _days and split
+                  for (int i = 0; i < _days.length; i++) {
+                    if (_days[i] != null) {
+                      // Update the dayOrder property directly
+                      _days[i]!.dayOrder = i;
+
+                      // Find the index in the split list and update there as well
+                      int splitIndex = context.read<Profile>().split.indexWhere((day) => day.dayID == _days[i]!.dayID);
+                      if (splitIndex != -1) {
+                        context.read<Profile>().splitAssign(newDay: _days[i]!, index: splitIndex);
+                      }
+                    }
+                  }
                 });
-                
+
+                //ebugPrint(context.read<Profile>().split[2].toString());
+                //debugPrint(context.read<Profile>().origin.toString());
               },
         
               builder: (context, candidateData, rejectedData) {
@@ -475,7 +497,7 @@ class _RestDay extends StatelessWidget {
       child: DottedBorder(
         strokeWidth: 2,
         // [strokelength, spacelength]
-        dashPattern: [15, 10],
+        dashPattern: const [15, 10],
         borderType: BorderType.RRect, // Rounded rectangle border
         radius: Radius.circular(12),
         
@@ -483,7 +505,7 @@ class _RestDay extends StatelessWidget {
         
         
         child: Container(
-        height: 70,
+        height: 56,
         width: double.infinity,
         
         decoration: BoxDecoration(
@@ -554,7 +576,8 @@ class _RestDay extends StatelessWidget {
                   )
                 ),
               ),
-            )
+            ),
+            
           ],
         ),
       ),
@@ -702,7 +725,7 @@ class _DraggableDay extends StatelessWidget {
     childWhenDragging: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Container(
-          height: 70,
+          height: 60,//socks
           width: double.infinity,
           
           decoration: BoxDecoration(
@@ -794,7 +817,7 @@ class _DraggableDay extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Container(
-          height: 70,
+          height: 60,
           width: double.infinity,
           
           decoration: BoxDecoration(
@@ -874,7 +897,11 @@ class _DraggableDay extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(Icons.drag_handle),
+              ),
             ],
           ),
         ),

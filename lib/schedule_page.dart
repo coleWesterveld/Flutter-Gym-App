@@ -2,6 +2,9 @@
 //not updated
 //import 'dart:ffi';
 
+// TODO: these indicators are not very clear, i need to make the design more intuitive
+// ie. what days have passed, what indicates today vs. indicates selected day
+
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +63,12 @@ class SchedulePage extends StatefulWidget {
 class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};
+
+  // this becomes origin from profile class in initializer
+  // origin is some day of this week, specified by user
+  // this may need to be changed for longer startdays and saved in database
   DateTime startDay = DateTime.now();
+
   DateTime? _selectedDay;
   late ValueNotifier<List<Event>> _selectedEvents;
 
@@ -70,6 +78,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
   @override
   void initState(){
+    
     super.initState();
     _selectedDay = today;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
@@ -78,7 +87,9 @@ class _MyScheduleState extends State<SchedulePage> {
 
   List<Event> _getEventsForDay (DateTime day){
     for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
-      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == (context.read<Profile>().splitLength ~/ context.read<Profile>().split.length) * context.read<Profile>().split[splitDay].dayOrder) {
+      // if days between origin and day is equal to dayorder
+
+      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == context.read<Profile>().split[splitDay].dayOrder) {
         return [Event(context.read<Profile>().split[splitDay].dayTitle, splitDay)];
       }
     }
@@ -202,10 +213,10 @@ class _MyScheduleState extends State<SchedulePage> {
   }
 
   @override
+  
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
-
-    
+    startDay = context.watch<Profile>().origin;
 
     return Scaffold(
       appBar: AppBar(
