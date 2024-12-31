@@ -1,8 +1,43 @@
 // analyitcs page
 // not updated
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+
+// overall goal of this page:
+// metrics for motivation/acccountability
+// insights into effective excercises or routines 
+// (effectiveness measured by increased strength, or other metric)
+// fun for workout and data geeks :)
+
+
+// maybe cool idea: allow easy export as CSV
+// goal is to have analytics on a few things, namely: 
+// DOTS or other powerlifting scoring scores based off of SBD and bodyweight
+// bodyweight
+// estimated 1RM in lift of choice**
+// training frequency by month/week or some kind of volume tracker?
+// maybe something to do a spotify wrapped type thing
+// should clearly show markers like stocks do or something ie. ^5% 
+// show gains for this week and then long term
+// maybe good to have a smart feature which puts graphs that are important at the top automatically
+//  important could be "progressing exceptionally well/poorly"
+
+// for this, I may need to adjust my approach that I am taking currently: 
+// I may need a list of all excercises possible, otherwise for example:
+// "Dumbbell Press" would be different to "dumbbell press" to "dumbbell chest press"
+// which proably mean all the same thing
+
+
+Color darken(Color c, [int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var f = 1 - percent / 100;
+    return Color.fromARGB(
+        c.alpha,
+        (c.red * f).round(),
+        (c.green  * f).round(),
+        (c.blue * f).round()
+    );
+}
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -18,6 +53,7 @@ class AnalyticsPage extends StatefulWidget {
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
 
+  // these should be taken from database
   final List<FlSpot> dataPoints = const [
     FlSpot(0, 50),
     FlSpot(1, 52),
@@ -42,9 +78,26 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ),
 
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
+
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: SearchBar(
+                hintText: "Search excercise",
+
+                onTapOutside:(event) => WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
+                constraints: BoxConstraints(
+                  minHeight: 40, // Set the minimum height
+                  maxHeight: 40, // Set the maximum height
+                ),
+
+                backgroundColor: WidgetStateProperty.all( Color(0xFF1e2025)),
+                leading: Icon(Icons.search, color: Color(0xFFdee3e5)),
+              ),
+            ),
+
             const Center(
               child: Text(
                 "Example Graph",
@@ -129,9 +182,46 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               ),
             ),
+
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Color(0xFF1e2025),  
+              ),
+
+              
+              //height: 200,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Text("This Week")
+                    ),
+
+                    Column(children: [
+                      // good start make it look better and needs more metrics in the week view but overall good
+                      // maybe have an arrow for each excercise to take the user to see the full graph
+                      Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
+                      Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
+                      Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
+
+                    
+                    ],)
+
+                  ],
+                )
+              )
+            ),
+
           ],
         ),
       ),
     );
   }
 }
+
+

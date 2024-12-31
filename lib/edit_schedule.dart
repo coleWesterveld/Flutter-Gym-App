@@ -63,7 +63,6 @@ class _EditScheduleState extends State<EditSchedule> {
   // List of days with initial content
   List<Day?> _days = [];
   TextEditingController splitLenTEC = TextEditingController();
-  
 
   @override
   void initState() {
