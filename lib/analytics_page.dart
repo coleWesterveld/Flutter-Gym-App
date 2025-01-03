@@ -2,13 +2,16 @@
 // not updated
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-
+import "user.dart";
+import 'package:provider/provider.dart';
+import 'dart:math';
 // overall goal of this page:
 // metrics for motivation/acccountability
 // insights into effective excercises or routines 
 // (effectiveness measured by increased strength, or other metric)
 // fun for workout and data geeks :)
 
+// To continue I should add mock history to plot and test
 
 // maybe cool idea: allow easy export as CSV
 // goal is to have analytics on a few things, namely: 
@@ -26,7 +29,16 @@ import 'package:fl_chart/fl_chart.dart';
 // I may need a list of all excercises possible, otherwise for example:
 // "Dumbbell Press" would be different to "dumbbell press" to "dumbbell chest press"
 // which proably mean all the same thing
-
+Color lighten(Color c, [int percent = 10]) {
+  // not very fond of this solution, it seems to work though. 
+  // will have to migrate from previous solution as colors is moving from 0-255 to 0-1
+  assert(1 <= percent && percent <= 100);
+  var p = percent / 100;
+  return Color.lerp(
+  c, Colors.white, p
+  )!;
+      
+}
 
 Color darken(Color c, [int percent = 10]) {
     assert(1 <= percent && percent <= 100);
@@ -109,7 +121,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
 
             SizedBox(
-              height: 300,
+              height: 200,
               width: double.infinity,
               child: LineChart(
                 
@@ -184,7 +196,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
 
             Container(
-              height: 200,
+              height: 325,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -193,24 +205,62 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
               
               //height: 200,
-              child: Align(
+              child:  Align(
                 alignment: Alignment.topCenter,
                 child: Column(
                   children: [
-                    Align(
+                    const Align(
                       alignment: Alignment.topCenter,
-                      child: Text("This Week")
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "This Week",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
                     ),
 
-                    Column(children: [
-                      // good start make it look better and needs more metrics in the week view but overall good
-                      // maybe have an arrow for each excercise to take the user to see the full graph
-                      Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
-                      Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
-                      Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                        child: Row(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Icon(Icons.arrow_back_ios),
+                            ),
+                        
+                            Expanded(
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: context.read<Profile>().split.length,
+                                itemBuilder: (context, index) {
+                                  return DayProgress(index: index);
+                                }
+                              
+                              ),
+                            ),
+                        
+                            Icon(Icons.arrow_forward_ios)
+                          ],
+                        ),
+                      ),
+                    ),
+            
+                    
+                    
+                    // Column(children: [
+                    //   // good start make it look better and needs more metrics in the week view but overall good
+                    //   // maybe have an arrow for each excercise to take the user to see the full graph
+                    //   Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
+                    //   Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
+                    //   Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
 
                     
-                    ],)
+                    // ],)
 
                   ],
                 )
@@ -220,6 +270,125 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class DayProgress extends StatefulWidget {
+   const DayProgress({
+    super.key,
+    required this.index,
+  });
+
+  final int index;
+
+  @override
+  State<DayProgress> createState() => _DayProgressState();
+}
+
+class _DayProgressState extends State<DayProgress> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: lighten(Color(0xFF1e2025), 10),
+        ),
+        
+        
+      
+        width: 200,
+        height: 200,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    context.read<Profile>().split[widget.index].dayTitle,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+
+
+                  // TODO: this should be read from database as actual date
+                  Text("Mon, 13/01")
+                ],
+              ),
+            
+
+            Expanded(
+              child: ListView.builder(
+              
+                  itemCount: context.read<Profile>().excercises[widget.index].length,
+                  itemBuilder: (context, excerciseIndex) {
+                    return Container(
+                      
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(1)),
+                        border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 30)/*Theme.of(context).dividerColor*/, width: 0.5),),
+                      ),
+
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: 100,
+                                ),
+                              
+                                child: Text(
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: true,
+                                  maxLines: 2,
+                                  context.read<Profile>().excercises[widget.index][excerciseIndex].excerciseTitle,
+                                ),
+                              ),
+                            ),
+                        
+                            Row(
+                              children:[
+                                buildTick(), 
+                                  
+                                Text("5lbs")
+                              ]
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  
+                ),
+            ),
+            ],
+          ),
+        )
+                    
+      ),
+    );
+  }
+
+  Icon buildTick() {
+    // random for mock for now but will eventually be based off of real data
+    int random = Random().nextInt(3);
+    const List<Color> colors = [Colors.red, Colors.green, Colors.grey];
+    const List<IconData> icons = [Icons.arrow_drop_down, Icons.arrow_drop_up, Icons.remove];
+    
+    return Icon(
+      icons[random], 
+      color: colors[random],
     );
   }
 }
