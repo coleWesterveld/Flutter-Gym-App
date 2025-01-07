@@ -47,6 +47,7 @@ dependencies:
   sqflite_common_ffi: any
   dotted_border: ^2.1.0
   fl_chart: ^0.70.0
+  smooth_page_indicator: ^1.2.0+3
 
 dev_dependencies:
   flutter_test:
