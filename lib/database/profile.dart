@@ -202,7 +202,10 @@ class PlannedSet {
 class SetRecord {
   final int recordID;
   final int excerciseID;
+
+  // Will use ISO 8601 format to store dates, yyyy-MM-ddTHH:mm:ss
   final String date;
+
   final int numSets;
   final int reps;
   final int weight;
@@ -246,6 +249,40 @@ class SetRecord {
       historyNote: map['history_note'],
     );
   }
+
+
+  // Convert the string 'date' field to a DateTime object
+  DateTime get dateAsDateTime {
+    return DateTime.parse(date);
+  }
+
+  // Factory constructor to create a SetRecord with a DateTime object
+  factory SetRecord.fromDateTime({
+    required int recordID,
+    required int excerciseID,
+
+    required DateTime date,
+
+    required int numSets,
+    required int reps,
+    required int weight,
+    required int rpe,
+    String? historyNote,
+  }) {
+    return SetRecord(
+      recordID: recordID,
+      excerciseID: excerciseID,
+
+      date: date.toIso8601String(),
+      
+      numSets: numSets,
+      reps: reps,
+      weight: weight,
+      rpe: rpe,
+      historyNote: historyNote,
+    );
+  }
+
   @override
   String toString() {
     return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $excerciseID}';

@@ -76,6 +76,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     FlSpot(4, 70),
     FlSpot(5, 72),
   ];
+
+    final List<Map<String, dynamic>> _goals = [
+    {'title': 'Bench Press', 'current': 275, 'goal': 315},
+  ];
+
+  void _addGoal() {
+    setState(() {
+      _goals.add({'title': 'New Goal', 'current': 0, 'goal': 100});
+    });
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -277,7 +287,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Container(
-                  height: 325,
+                  //height: 325,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
@@ -312,7 +322,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                     //height: 130,
                                     child: TextButton.icon(
                                       onPressed: () {
-                                        
+                                        _addGoal();
                                       },
                                     
                                       style: ButtonStyle(
@@ -347,70 +357,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                           ),
                         ),
 
-                        Row(
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: lighten(Color(0xFF1e2025), 10),
-                                  ),
-                                  
-                                  
-                                
-                                  width: 200,
-                                  //height: 250,
-                                  // TODO: make customzeable
-                                  // right now this is a mockup but I need values to be able to be added
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          "Bench Press",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                    
-                                        GoalProgress(
-                                          current: 275,
-                                          goal: 315
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                              
-                                ),
-                              ),
-                            ),
-
-
-                        // Align(
-                        //   alignment: Alignment.topLeft,
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        //     child: Container(
-                        //       decoration: BoxDecoration(
-                        //         borderRadius: BorderRadius.circular(16),
-                        //         color: lighten(Color(0xFF1e2025), 10),
-                        //       ),
-                              
-                              
-                            
-                        //       width: 200,
-                        //       height: 200,
-                        //       child: GoalProgress(),
-                                          
-                        //     ),
-                        //   ),
-                        // ),
-
-                        ],
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            //alignment: WrapAlignment.start,
+                            children: _buildGoalList(),
+                          ),
                         ),
                         
                       ],
@@ -424,6 +376,55 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildGoalList() {
+    //debugPrint('${(MediaQuery.sizeOf(context).width - 48)/2}');
+    List<Widget> goalList = [];
+    for (var goal in _goals){
+      goalList.add(
+        Padding(
+          padding: const EdgeInsets.only(left:  8.0, right: 8.0, bottom: 8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                // goal has title, current, goal
+                    "${goal['title']}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: lighten(Color(0xFF1e2025), 10),
+                ),
+                
+                
+                // TODO: currently the conainer resizes, but the child does not, this must be fixed or it will overlap on smaller screens
+                width:  (MediaQuery.sizeOf(context).width - 48)/2,
+                //height: 250,
+                // TODO: make customzeable
+                // right now this is a mockup but I need values to be able to be added
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: GoalProgress(
+                    current: goal['current'],
+                    goal: goal['goal']
+                  ),
+                ),
+                            
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return goalList;
+     
   }
 }
 
@@ -451,7 +452,7 @@ class _GoalProgressState extends State<GoalProgress> {
         children: [
             Center(
               child: ThickCircularProgress(
-                progress: 0.75, // Example progress (75%)
+                progress: widget.current/widget.goal, // Example progress (75%)
                 completedStrokeWidth: 25.0,
                 backgroundStrokeWidth: 18.0,
                 completedColor: Color(0XFF1A78EB),
@@ -489,8 +490,8 @@ class _GoalProgressState extends State<GoalProgress> {
                   height: 5,
                   color: Colors.grey, // Line color
                   thickness: 2.0,    // Line thickness
-                  indent: 40.0,      // Left padding
-                  endIndent: 40.0,   // Right padding
+                  indent: 60.0,      // Left padding
+                  endIndent: 60.0,   // Right padding
                 ),
                                 
                 Text(
