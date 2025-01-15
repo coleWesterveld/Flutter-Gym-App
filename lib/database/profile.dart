@@ -37,7 +37,7 @@ class Program {
 }
 
 // DAY TABLE
-// (one day -> many excercises)
+// (one day -> many exercises)
 class Day {
   final int dayID;
   final String dayTitle;
@@ -84,54 +84,54 @@ class Day {
   }
 }
 
-// EXCERCISE TABLE
-// (one excercise -> many planned sets, many set records)
-class Excercise {
-  final int excerciseID;
+// exercise TABLE
+// (one exercise -> many planned sets, many set records)
+class Exercise {
+  final int exerciseID;
   final int dayID;
-  final String excerciseTitle;
+  final String exerciseTitle;
   final String? persistentNote;
-  final int excerciseOrder;
+  final int exerciseOrder;
 
 
-  Excercise({
-    required this.excerciseID, 
+  Exercise({
+    required this.exerciseID, 
     required this.dayID, 
-    required this.excerciseTitle, 
-    required this.excerciseOrder,
+    required this.exerciseTitle, 
+    required this.exerciseOrder,
     this.persistentNote
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'id': excerciseID,
+      'id': exerciseID,
       'day_id': dayID,
-      'excercise_title': excerciseTitle,
+      'exercise_title': exerciseTitle,
       'persistent_note': persistentNote,
-      'excercise_order': excerciseOrder,
+      'exercise_order': exerciseOrder,
     };
   }
 
-  factory Excercise.fromMap(Map<String, dynamic> map) {
-    return Excercise(
-      excerciseID: map['id'],
+  factory Exercise.fromMap(Map<String, dynamic> map) {
+    return Exercise(
+      exerciseID: map['id'],
       dayID: map['day_id'],
-      excerciseTitle: map['excercise_title'],
+      exerciseTitle: map['exercise_title'],
       persistentNote: map['persistent_note'],
-      excerciseOrder: map['excercise_order']
+      exerciseOrder: map['exercise_order']
     );
   }
   @override
   String toString() {
-    return 'Excercise{title: $excerciseTitle, id: $excerciseID, dayID: $dayID, persistNote: $persistentNote}';
+    return 'exercise{title: $exerciseTitle, id: $exerciseID, dayID: $dayID, persistNote: $persistentNote}';
   }
 
-  Excercise copyWith({int? newDayID, int? newExcerciseID, String? newExcerciseTitle, int? newExcerciseOrder}) {
-    return Excercise(
-      excerciseID: newExcerciseID ?? excerciseID,
+  Exercise copyWith({int? newDayID, int? newexerciseID, String? newexerciseTitle, int? newexerciseOrder}) {
+    return Exercise(
+      exerciseID: newexerciseID ?? exerciseID,
       dayID: newDayID ?? dayID,
-      excerciseTitle: newExcerciseTitle ?? excerciseTitle,
-      excerciseOrder: newExcerciseOrder ?? excerciseOrder,
+      exerciseTitle: newexerciseTitle ?? exerciseTitle,
+      exerciseOrder: newexerciseOrder ?? exerciseOrder,
     );
   }
 }
@@ -139,7 +139,7 @@ class Excercise {
 // PLANNED SET TABLE
 class PlannedSet {
   final int setID;
-  final int excerciseID;
+  final int exerciseID;
   final int numSets;
   final int setLower;
   final int? setUpper;
@@ -149,7 +149,7 @@ class PlannedSet {
 
   PlannedSet({
     required this.setID, 
-    required this.excerciseID, 
+    required this.exerciseID, 
     required this.numSets, 
     required this.setLower, 
     this.setUpper,
@@ -160,7 +160,7 @@ class PlannedSet {
   Map<String, dynamic> toMap() {
     return {
       'set_id': setID,
-      'excercise_id': excerciseID,
+      'exercise_id': exerciseID,
       'num_sets': numSets,
       'set_lower': setUpper,
       'set_upper': setUpper,
@@ -172,7 +172,7 @@ class PlannedSet {
   factory PlannedSet.fromMap(Map<String, dynamic> map) {
     return PlannedSet(
       setID: map['id'],
-      excerciseID: map['excercise_id'],
+      exerciseID: map['exercise_id'],
       numSets: map['num_sets'],
       setUpper: map['set_upper'],
       setLower: map['set_lower'],
@@ -182,13 +182,13 @@ class PlannedSet {
   }
   @override
   String toString() {
-    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $excerciseID, setOrder: $setOrder}';
+    return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $exerciseID, setOrder: $setOrder}';
   }
 
-  PlannedSet copyWith({int? newSetID, int? newExcerciseID, int? newNumSets, int? newSetUpper, int? newSetLower, int? newSetOrder, int? newRpe}) {
+  PlannedSet copyWith({int? newSetID, int? newexerciseID, int? newNumSets, int? newSetUpper, int? newSetLower, int? newSetOrder, int? newRpe}) {
     return PlannedSet(
       setID: newSetID ?? setID,
-      excerciseID: newExcerciseID ?? excerciseID,
+      exerciseID: newexerciseID ?? exerciseID,
       numSets: newNumSets ?? numSets,
       setUpper: newSetUpper ?? setUpper,
       setLower: newSetLower ?? setLower,
@@ -201,7 +201,7 @@ class PlannedSet {
 // SET RECORD TABLE
 class SetRecord {
   final int recordID;
-  final int excerciseID;
+  final int exerciseID;
 
   // Will use ISO 8601 format to store dates, yyyy-MM-ddTHH:mm:ss
   final String date;
@@ -215,7 +215,7 @@ class SetRecord {
 
   SetRecord({
     required this.recordID, 
-    required this.excerciseID, 
+    required this.exerciseID, 
     required this.date, 
     required this.numSets, 
     required this.reps,
@@ -227,7 +227,7 @@ class SetRecord {
   Map<String, dynamic> toMap() {
     return {
       'id': recordID,
-      'excercise_id': excerciseID,
+      'exercise_id': exerciseID,
       'date': date,
       'num_sets': numSets,
       'reps': reps,
@@ -240,7 +240,7 @@ class SetRecord {
   factory SetRecord.fromMap(Map<String, dynamic> map) {
     return SetRecord(
       recordID: map['record_id'],
-      excerciseID: map['excercise_id'],
+      exerciseID: map['exercise_id'],
       date: map['date'],
       numSets: map['num_sets'],
       reps: map['reps'],
@@ -259,7 +259,7 @@ class SetRecord {
   // Factory constructor to create a SetRecord with a DateTime object
   factory SetRecord.fromDateTime({
     required int recordID,
-    required int excerciseID,
+    required int exerciseID,
 
     required DateTime date,
 
@@ -271,7 +271,7 @@ class SetRecord {
   }) {
     return SetRecord(
       recordID: recordID,
-      excerciseID: excerciseID,
+      exerciseID: exerciseID,
 
       date: date.toIso8601String(),
       
@@ -285,6 +285,6 @@ class SetRecord {
 
   @override
   String toString() {
-    return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $excerciseID}';
+    return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $exerciseID}';
   }
 }

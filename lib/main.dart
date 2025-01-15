@@ -71,9 +71,9 @@ class _MainPage extends State<NavigationBarApp> {
             //split: split,
             controllers: [],//setControllers()
             // this is temporairy while i figure out persistence for the split,
-            // so that i dont run into index out of range on the excercises
+            // so that i dont run into index out of range on the exercises
             //with sets this is atrocious lol
-            //excercises: excercises,
+            //exercises: exercises,
 
             //sets: sets,
 
@@ -128,7 +128,7 @@ class NavigationExampleState extends State<NavigationExample> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     //var list = ['Legs', 'Push', 'Pull'];
-    //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
+    //var exercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
       resizeToAvoidBottomInset: true,
 

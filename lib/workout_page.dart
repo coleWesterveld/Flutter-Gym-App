@@ -38,7 +38,7 @@ class _WorkoutState extends State<Workout> {
 
     // activeDay 
     // return ListView.builder(
-    //   itemCount: context.watch<Profile>()excercises[activeDayInde],
+    //   itemCount: context.watch<Profile>()exercises[activeDayInde],
     //   itemBuilder: itemBuilder
     //   );
   }

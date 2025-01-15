@@ -2,7 +2,7 @@
 // TODO: this shoudl come back just for now it was everywhere and annoying
 
 import 'package:dotted_border/dotted_border.dart';
-import 'package:firstapp/schedule_page.dart';
+//import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
 import 'user.dart';
 import 'database/profile.dart';
@@ -218,7 +218,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                 child: TextFormField(
                                   controller: splitLenTEC,
                                                                         
-                                  //controller: context.watch<Profile>().rpeTEC[index][excerciseIndex][setIndex],
+                                  //controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
                                   
                                   keyboardType: TextInputType. numberWithOptions(decimal: true),
                                                                       

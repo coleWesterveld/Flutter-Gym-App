@@ -59,7 +59,7 @@ class SchedulePage extends StatefulWidget {
 }
 
 // this class contains the list view of expandable card tiles 
-// title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
+// title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};

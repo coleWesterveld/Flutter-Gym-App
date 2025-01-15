@@ -6,9 +6,9 @@ Still Todo on this page:
 - DONE change colours, make customizeable by user
 - move random functions to their own files
 - make more modular, this file feels unnecessarily long 
-- ability to add notes per excercise
+- ability to add notes per exercise
 - change look of title
-- PERSISTENCE for excercises and set data, notes, title
+- PERSISTENCE for exercises and set data, notes, title
   - either through shared preferences or local SQLite database
 - Change look of calendar, right now big blocks of colour are too much
 - stop bottom from being like stuck too low
@@ -36,7 +36,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import 'package:flutter/services.dart';
 
-// TODO: add excercise and set persistence - may have to use SQLite database as opposed to shared preferences
+// TODO: add exercise and set persistence - may have to use SQLite database as opposed to shared preferences
 // TODO: move days between, lighten/darken and other outside functions to other file(s)
 
 int daysBetween(DateTime from, DateTime to) {
@@ -77,7 +77,7 @@ Color lighten(Color c, [int percent = 10]) {
 
 
 //program page, where user defines the overall program by days,
-// then excercises for each day with sets, rep range and notes
+// then exercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
   //Function writePrefs;
   final DatabaseHelper dbHelper;
@@ -90,7 +90,7 @@ class ProgramPage extends StatefulWidget {
 
 enum Viewer {title, color}
 // this class contains the list view of expandable card tiles 
-// title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
+// title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class _MyListState extends State<ProgramPage> {
   DateTime today = DateTime.now();
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
@@ -149,7 +149,7 @@ class _MyListState extends State<ProgramPage> {
   _addItem() {
       context.read<Profile>().splitAppend(
         // newDay: "New Day", 
-        // newExcercises: [], 
+        // newexercises: [], 
         // newSets: [],
         // newReps1TEC: [],
         // newReps2TEC: [],
@@ -318,7 +318,7 @@ class _MyListState extends State<ProgramPage> {
                           ),
                         ),
                               
-                              //expandable to see excercises and sets for that day
+                              //expandable to see exercises and sets for that day
                               child: ExpansionTile(
                               iconColor: Color(0XFF1A78EB),
                               collapsedIconColor: Color(0XFF1A78EB),
@@ -433,7 +433,7 @@ class _MyListState extends State<ProgramPage> {
                                                               //id: context.read<Profile>().split[index].dayID,
                                                               newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
               
-                                                              // newExcercises: context.read<Profile>().excercises[index],
+                                                              // newexercises: context.read<Profile>().exercises[index],
                                                               // newSets: context.read<Profile>().sets[index],
                     
                                                               // newSetsTEC: context.read<Profile>().setsTEC[index],
@@ -473,10 +473,10 @@ class _MyListState extends State<ProgramPage> {
                                 ),
                                       
                                 //children of expansion tile - what gets shown when user expands that day
-                                // shows excercises for that day
+                                // shows exercises for that day
                                 //this part is viewed after tile is expanded
-                                //TODO: show sets per excercise, notes, maybe most recent weight/reps
-                                //excercises are reorderable
+                                //TODO: show sets per exercise, notes, maybe most recent weight/reps
+                                //exercises are reorderable
                     
                                 //TODO: get rid of little bit of color that somehow gets through at bottom
                                 children: [
@@ -497,14 +497,14 @@ class _MyListState extends State<ProgramPage> {
                                       onReorder: (oldIndex, newIndex){
                                         HapticFeedback.heavyImpact();
                                         setState(() {
-                                          context.read<Profile>().moveExcercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
+                                          context.read<Profile>().moveexercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
               
                                         });
                                       },
                                       
-                                      //"add excercise" button at bottom of excercise list
+                                      //"add exercise" button at bottom of exercise list
                                       footer: Padding(
-                                        key: ValueKey('excerciseAdder'),
+                                        key: ValueKey('exerciseAdder'),
                                         padding: const EdgeInsets.all(8),
                                         child: Align(
                                           alignment: Alignment.centerLeft,
@@ -515,7 +515,7 @@ class _MyListState extends State<ProgramPage> {
                                               onPressed: () {
                                                 HapticFeedback.heavyImpact();
                                                 setState(() {
-                                                  context.read<Profile>().excerciseAppend(
+                                                  context.read<Profile>().exerciseAppend(
                                                     index: index,
                                                     
                                                   );
@@ -543,7 +543,7 @@ class _MyListState extends State<ProgramPage> {
                                                   ),
                                                   Text(
                                     
-                                                    "Excercise  ",
+                                                    "exercise  ",
                                                     style: TextStyle(
                                                         color: Color.fromARGB(255, 255, 255, 255),
                                                         //fontSize: 18,
@@ -560,15 +560,15 @@ class _MyListState extends State<ProgramPage> {
                                       //being able to scroll within the already scrollable day view 
                                       // is annoying so i disabled it
                                       physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: context.read<Profile>().excercises[index].length,
+                                      itemCount: context.read<Profile>().exercises[index].length,
                                       shrinkWrap: true,
                                       
                                           
-                                      //displaying list of excercises for that day
+                                      //displaying list of exercises for that day
                                       //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                      itemBuilder: (context, excerciseIndex) {
+                                      itemBuilder: (context, exerciseIndex) {
                                         return Dismissible(
-                                          key: ValueKey(context.watch<Profile>().excercises[index][excerciseIndex]),
+                                          key: ValueKey(context.watch<Profile>().exercises[index][exerciseIndex]),
                                           
                                           direction: DismissDirection.endToStart,
                                             background: Container(
@@ -580,7 +580,7 @@ class _MyListState extends State<ProgramPage> {
                                             HapticFeedback.heavyImpact();
                                             // Remove the item from the data source.
                                             setState(() {
-                                              context.read<Profile>().excercisePop(index1: index, index2: excerciseIndex);    
+                                              context.read<Profile>().exercisePop(index1: index, index2: exerciseIndex);    
                                             });
                                             
                                             ScaffoldMessenger.of(context).showSnackBar(
@@ -589,20 +589,20 @@ class _MyListState extends State<ProgramPage> {
                                                   style: TextStyle(
                                                     color: Colors.white
                                                   ),
-                                                  'Excercise Deleted'
+                                                  'exercise Deleted'
                                                 ),
                                                   
                                               ),
                                             );
                                           },
-                                          //actual information about the excercise
+                                          //actual information about the exercise
                                           child: Container(
                                             decoration: BoxDecoration(
                                               borderRadius: BorderRadius.all(Radius.circular(1)),
                                               border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
                                             ),
                                             child: Material(
-                                              color: const Color(0xFF1e2025),//_listColorFlop(index: excerciseIndex),
+                                              color: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex),
                                               child: Padding(
                                                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                                 child: Column(
@@ -613,7 +613,7 @@ class _MyListState extends State<ProgramPage> {
                                                           child: Padding(
                                                             padding: const EdgeInsets.all(8.0),
                                                             child: Text(
-                                                              context.watch<Profile>().excercises[index][excerciseIndex].excerciseTitle,
+                                                              context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
                                                                                                     
                                                               style: TextStyle(
                                                                 color: Color.fromARGB(255, 255, 255, 255),
@@ -652,7 +652,7 @@ class _MyListState extends State<ProgramPage> {
                                                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                                                   padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
                                                                   //alignment: Alignment.centerLeft,
-                                                                  backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: excerciseIndex + 1),
+                                                                  backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
                                                                   shape:
                                                                     RoundedRectangleBorder(
                                                                        side: BorderSide(
@@ -671,7 +671,7 @@ class _MyListState extends State<ProgramPage> {
                                                                       // newSets: 
                                                                       // SplitDayData(data: "New Set", dayColor: Colors.black), 
                                                                       index1: index,
-                                                                      index2: excerciseIndex,
+                                                                      index2: exerciseIndex,
                                                                     );
                                                                   });  
                                                                 },
@@ -701,31 +701,31 @@ class _MyListState extends State<ProgramPage> {
                                                             
                                                           HapticFeedback.heavyImpact();
                                                             //print(context.read<Profile>().split[index].data);
-                                                            alertTEC = TextEditingController(text: context.read<Profile>().excercises[index][excerciseIndex].excerciseTitle);
-                                                            String? excerciseTitle = await openDialog();
-                                                            if (excerciseTitle == null || excerciseTitle.isEmpty) return;
+                                                            alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
+                                                            String? exerciseTitle = await openDialog();
+                                                            if (exerciseTitle == null || exerciseTitle.isEmpty) return;
                                                                 
                                                             setState( () {
-                                                              Provider.of<Profile>(context, listen: false).excerciseAssign(
+                                                              Provider.of<Profile>(context, listen: false).exerciseAssign(
                                                                 index1: index, 
-                                                                index2: excerciseIndex,
-                                                                data: Provider.of<Profile>(context, listen: false).excercises[index][excerciseIndex].copyWith(newExcerciseTitle: excerciseTitle)
+                                                                index2: exerciseIndex,
+                                                                data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseTitle: exerciseTitle)
                                                                 // data: SplitDayData(
-                                                                //   data: excerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                                                //   data: exerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
                                                                 // ),
                                                                 
-                                                                // newSets: context.read<Profile>().sets[index][excerciseIndex],
+                                                                // newSets: context.read<Profile>().sets[index][exerciseIndex],
                                                        
-                                                                // newSetsTEC: context.read<Profile>().setsTEC[index][excerciseIndex],
+                                                                // newSetsTEC: context.read<Profile>().setsTEC[index][exerciseIndex],
                     
                     
-                                                                // newRpeTEC: context.read<Profile>().rpeTEC[index][excerciseIndex],
+                                                                // newRpeTEC: context.read<Profile>().rpeTEC[index][exerciseIndex],
                     
                                                           
-                                                                // newReps1TEC: context.read<Profile>().reps1TEC[index][excerciseIndex],
+                                                                // newReps1TEC: context.read<Profile>().reps1TEC[index][exerciseIndex],
                     
                     
-                                                                // newReps2TEC: context.read<Profile>().reps2TEC[index][excerciseIndex],
+                                                                // newReps2TEC: context.read<Profile>().reps2TEC[index][exerciseIndex],
                                                               );
                                                             });
                                                           }, 
@@ -736,27 +736,27 @@ class _MyListState extends State<ProgramPage> {
                                                       ],
                                                     ),
                                               
-                                                    //Displaying Sets for each excercise
+                                                    //Displaying Sets for each exercise
                                                     ReorderableListView.builder(
                                                       //on reorder, update tree with new ordering
                                                       onReorder: (oldIndex, newIndex){
                                                         HapticFeedback.heavyImpact();
                                                         setState(() {
-                                                          context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, excerciseIndex: excerciseIndex);
+                                                          context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, exerciseIndex: exerciseIndex);
                                                         });
                                                       },
                                               
                                                       //being able to scroll within the already scrollable day view 
                                                       // is annoying so i disabled it
                                                       physics: const NeverScrollableScrollPhysics(),
-                                                      itemCount: context.read<Profile>().sets[index][excerciseIndex].length,
+                                                      itemCount: context.read<Profile>().sets[index][exerciseIndex].length,
                                                       shrinkWrap: true,
                                               
-                                                      //displaying list of sets for that excercise
+                                                      //displaying list of sets for that exercise
                                                       //TODO: add sets here too, centre text boxes, add notes option on dropdown
                                                       itemBuilder: (context, setIndex) {
                                                         return Dismissible(
-                                                          key: ValueKey(context.watch<Profile>().sets[index][excerciseIndex][setIndex]),
+                                                          key: ValueKey(context.watch<Profile>().sets[index][exerciseIndex][setIndex]),
                                               
                                                           direction: DismissDirection.endToStart,
                                                           background: Container(
@@ -770,7 +770,7 @@ class _MyListState extends State<ProgramPage> {
                                                             setState(() {
                                                               context.read<Profile>().setsPop(
                                                                 index1: index, 
-                                                                index2: excerciseIndex,
+                                                                index2: exerciseIndex,
                                                                 index3: setIndex,
                                                               );    
                                                             });
@@ -781,7 +781,7 @@ class _MyListState extends State<ProgramPage> {
                                                                   style: TextStyle(
                                                                     color: Colors.white
                                                                   ),
-                                                                  'Excercise Deleted'
+                                                                  'exercise Deleted'
                                                                 ),
                                                              ),
                                                             );
@@ -809,7 +809,7 @@ class _MyListState extends State<ProgramPage> {
                                                                       
                                                                      
                                                                     
-                                                                      controller: context.watch<Profile>().setsTEC[index][excerciseIndex][setIndex],
+                                                                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
                     
                                                                       // onFieldSubmitted: (value){
                                                                       //   //HapticFeedback.heavyImpact();
@@ -851,7 +851,7 @@ class _MyListState extends State<ProgramPage> {
                                                                     },
                                                                     child: TextFormField(
                                                                     
-                                                                      controller: context.watch<Profile>().rpeTEC[index][excerciseIndex][setIndex],
+                                                                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
                                                                      
                                                                       keyboardType: TextInputType. numberWithOptions(decimal: true),
                                                                                                           
@@ -890,7 +890,7 @@ class _MyListState extends State<ProgramPage> {
                                                                     },
                                                                     child: TextFormField(
                                                                       
-                                                                      controller: context.watch<Profile>().reps1TEC[index][excerciseIndex][setIndex],
+                                                                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
                                               
                                                                       
                                                                       keyboardType: TextInputType. numberWithOptions(decimal: true,),
@@ -946,7 +946,7 @@ class _MyListState extends State<ProgramPage> {
 
   
   //TODO: move to another file
-  //this is to show text box to enter text for day titles and excercises
+  //this is to show text box to enter text for day titles and exercises
   Future<String?> openDialog() {
     //alertTEC = TextEditingController(text: hints);
     return showDialog(

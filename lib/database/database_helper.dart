@@ -7,6 +7,7 @@ import 'dart:async';
 //TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
+// TODO: spell exercise correctly (not exercise)
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -65,12 +66,13 @@ class DatabaseHelper {
 
     await db.execute(
     '''
-      CREATE TABLE excercises (
+      CREATE TABLE exercise_instances (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        excercise_title TEXT NOT NULL,
+        exercise_title TEXT NOT NULL,
         persistent_note TEXT NOT NULL,
-        excercise_order INTEGER NOT NULL,
+        exercise_order INTEGER NOT NULL,
         day_id INTEGER NOT NULL,
+        FOREIGN KEY (exercise)
         FOREIGN KEY (day_id) REFERENCES days (id) ON DELETE CASCADE
       );
     '''
@@ -83,16 +85,16 @@ class DatabaseHelper {
         num_sets INTEGER NOT NULL,
         set_lower INTEGER NOT NULL,
         set_upper INTEGER NOT NULL,
-        excercise_id INTEGER NOT NULL,
+        exercise_id INTEGER NOT NULL,
         set_order INTEGER NOT NULL,
         rpe INTEGER NOT NULL,
-        FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
     '''
     );
 
     // might want to remove on delete cascade, or make another way to save data even if typo, or used in different workouts
-    // basically, this may become a many-to-many table and we may have to have a large table of all excercises saved 
+    // basically, this may become a many-to-many table and we may have to have a large table of all exercises saved 
     // but for now this works
     await db.execute(
     '''
@@ -104,8 +106,8 @@ class DatabaseHelper {
         weight INTEGER NOT NULL,
         rpe INTEGER NOT NULL,
         history_note TEXT NOT NULL,
-        excercise_id INTEGER NOT NULL,
-        FOREIGN KEY (excercise_id) REFERENCES excercises (id) ON DELETE CASCADE
+        exercise_id INTEGER NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       )
     '''
     );
@@ -125,33 +127,33 @@ class DatabaseHelper {
     await db.insert('days', {'program_id': 1, 'day_title': 'Pull', 'day_order' : 2, 'day_color': Profile.colors[1].value});
     await db.insert('days', {'program_id': 1, 'day_title': 'Legs', 'day_order' : 3, 'day_color': Profile.colors[2].value});
 
-    // Insert initial excercises for program
+    // Insert initial exercises for program
     // Push
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Bench Press', 'persistent_note': '', 'excercise_order': 1});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Tricep Pushdown', 'persistent_note': '', 'excercise_order': 2});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Lateral Raise', 'persistent_note': '', 'excercise_order': 3});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Shoulder Press', 'persistent_note': '', 'excercise_order': 4});
-    await db.insert('excercises', {'day_id': 1, 'excercise_title': 'Cable Chest Fly', 'persistent_note': '', 'excercise_order': 5});
+    await db.insert('exercises', {'day_id': 1, 'exercise_title': 'Bench Press', 'persistent_note': '', 'exercise_order': 1});
+    await db.insert('exercises', {'day_id': 1, 'exercise_title': 'Tricep Pushdown', 'persistent_note': '', 'exercise_order': 2});
+    await db.insert('exercises', {'day_id': 1, 'exercise_title': 'Lateral Raise', 'persistent_note': '', 'exercise_order': 3});
+    await db.insert('exercises', {'day_id': 1, 'exercise_title': 'Shoulder Press', 'persistent_note': '', 'exercise_order': 4});
+    await db.insert('exercises', {'day_id': 1, 'exercise_title': 'Cable Chest Fly', 'persistent_note': '', 'exercise_order': 5});
 
     // Pull  
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Weighted Pull-ups', 'persistent_note': '', 'excercise_order': 1});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Cable Rows', 'persistent_note': '', 'excercise_order': 2});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Reverse Dumbbell Flies', 'persistent_note': '', 'excercise_order': 3});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Hammer Curls', 'persistent_note': '', 'excercise_order': 4});
-    await db.insert('excercises', {'day_id': 2, 'excercise_title': 'Barbell Rows', 'persistent_note': '', 'excercise_order': 5});
+    await db.insert('exercises', {'day_id': 2, 'exercise_title': 'Weighted Pull-ups', 'persistent_note': '', 'exercise_order': 1});
+    await db.insert('exercises', {'day_id': 2, 'exercise_title': 'Cable Rows', 'persistent_note': '', 'exercise_order': 2});
+    await db.insert('exercises', {'day_id': 2, 'exercise_title': 'Reverse Dumbbell Flies', 'persistent_note': '', 'exercise_order': 3});
+    await db.insert('exercises', {'day_id': 2, 'exercise_title': 'Hammer Curls', 'persistent_note': '', 'exercise_order': 4});
+    await db.insert('exercises', {'day_id': 2, 'exercise_title': 'Barbell Rows', 'persistent_note': '', 'exercise_order': 5});
 
     // Legs
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Barbell Squats', 'persistent_note': '', 'excercise_order': 1});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Romanian Deadlift', 'persistent_note': '', 'excercise_order': 2});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Calf Raises', 'persistent_note': '', 'excercise_order': 3});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Seated Leg Curl', 'persistent_note': '', 'excercise_order': 4});
-    await db.insert('excercises', {'day_id': 3, 'excercise_title': 'Leg Extension', 'persistent_note': '', 'excercise_order': 5});
+    await db.insert('exercises', {'day_id': 3, 'exercise_title': 'Barbell Squats', 'persistent_note': '', 'exercise_order': 1});
+    await db.insert('exercises', {'day_id': 3, 'exercise_title': 'Romanian Deadlift', 'persistent_note': '', 'exercise_order': 2});
+    await db.insert('exercises', {'day_id': 3, 'exercise_title': 'Calf Raises', 'persistent_note': '', 'exercise_order': 3});
+    await db.insert('exercises', {'day_id': 3, 'exercise_title': 'Seated Leg Curl', 'persistent_note': '', 'exercise_order': 4});
+    await db.insert('exercises', {'day_id': 3, 'exercise_title': 'Leg Extension', 'persistent_note': '', 'exercise_order': 5});
 
-    // Sets for each excercise
+    // Sets for each exercise
     // Each will just start off with 3 sets, 5-8 reps, RPE 8
     for (int i = 1; i <= 15; i++){
       await db.insert('plannedSets', {
-      'excercise_id': i, 
+      'exercise_id': i, 
       'num_sets': 3,
       'set_lower': 5,
       'set_upper': 8,
@@ -188,33 +190,33 @@ class DatabaseHelper {
     return splitList;
   }
 
-  Future<List<List<Excercise>>> initializeExcerciseList() async {
-    List<List<Excercise>> excerciseList = [];
+  Future<List<List<Exercise>>> initializeexerciseList() async {
+    List<List<Exercise>> exerciseList = [];
 
     // Fetch days from the database
     List<Map<String, dynamic>> days = await fetchDays(1);
 
     for (var day in days){
-      // for each day, fetch its corresponding excercises
-      List<Map<String, dynamic>> excerciseData = await fetchExercises(day['id']);
+      // for each day, fetch its corresponding exercises
+      List<Map<String, dynamic>> exerciseData = await fetchExercises(day['id']);
 
-      // map each excercise to an excercise object, return 2d list of excercises
-      List<Excercise> excerciseDataList = excerciseData.map((excercise) {
+      // map each exercise to an exercise object, return 2d list of exercises
+      List<Exercise> exerciseDataList = exerciseData.map((exercise) {
 
-        return Excercise(
-          excerciseID: excercise['id'],
-          dayID: excercise['day_id'],
-          excerciseTitle: excercise['excercise_title'],
-          persistentNote: excercise['persistent_note'],
-          excerciseOrder: excercise['excercise_order'],
+        return Exercise(
+          exerciseID: exercise['id'],
+          dayID: exercise['day_id'],
+          exerciseTitle: exercise['exercise_title'],
+          persistentNote: exercise['persistent_note'],
+          exerciseOrder: exercise['exercise_order'],
         );
       }).toList();
 
-      excerciseList.add(excerciseDataList);
+      exerciseList.add(exerciseDataList);
     }
 
-    // 2d list indexed excerciseList[day][excercise] to retrieve data
-    return excerciseList;
+    // 2d list indexed exerciseList[day][exercise] to retrieve data
+    return exerciseList;
   }
 
   Future<List<List<List<PlannedSet>>>> initializeSetList() async {
@@ -222,18 +224,18 @@ class DatabaseHelper {
 
     List<Map<String, dynamic>> days = await fetchDays(1);
 
-    // initialize 3d list indexed setList[day][excercise][set] to get data
+    // initialize 3d list indexed setList[day][exercise][set] to get data
     for (int i = 0; i < days.length; i++){//(var day in days){
       setList.add([]);
-      List<Map<String, dynamic>> excercises = await fetchExercises(days[i]['id']);
-      for (int j = 0; j < excercises.length; j++){//(var excercise in excercises){
-        List<Map<String, dynamic>> setData = await fetchPlannedSets(excercises[j]['id']);
+      List<Map<String, dynamic>> exercises = await fetchExercises(days[i]['id']);
+      for (int j = 0; j < exercises.length; j++){//(var exercise in exercises){
+        List<Map<String, dynamic>> setData = await fetchPlannedSets(exercises[j]['id']);
 
         List<PlannedSet> setDataList = setData.map((aSet) {
 
           return PlannedSet(
 
-            excerciseID: aSet['excercise_id'],
+            exerciseID: aSet['exercise_id'],
             numSets: aSet['num_sets'],
             setLower: aSet['set_lower'],
             setUpper: aSet['set_upper'],
@@ -355,42 +357,42 @@ class DatabaseHelper {
   }
 
   ////////////////////////////////////////////////////////////
-  // EXCERCISE TABLE CRUD
+  // exercise TABLE CRUD
 
-  Future<int> insertExcercise({required int dayId, required String excerciseTitle, String persistentNote = '', required int excerciseOrder}) async {
+  Future<int> insertexercise({required int dayId, required String exerciseTitle, String persistentNote = '', required int exerciseOrder}) async {
     final db = await DatabaseHelper.instance.database;
-    return await db.insert('excercises', {
+    return await db.insert('exercises', {
       'day_id': dayId,
-      'excercise_title': excerciseTitle,
+      'exercise_title': exerciseTitle,
       'persistent_note': persistentNote,
-      'excercise_order': excerciseOrder,
+      'exercise_order': exerciseOrder,
     });
   }
 
   Future<List<Map<String, dynamic>>> fetchExercises(int dayId) async {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
-      'excercises',
+      'exercises',
       where: 'day_id = ?',
       whereArgs: [dayId],
-      orderBy: 'excercise_order ASC',
+      orderBy: 'exercise_order ASC',
     );
   }
 
-  Future<int> updateExcercise(int excerciseID, Map<String, dynamic> updatedValues) async {
+  Future<int> updateexercise(int exerciseID, Map<String, dynamic> updatedValues) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
-      'excercises',
+      'exercises',
       updatedValues,
       where: 'id = ?',
-      whereArgs: [excerciseID],
+      whereArgs: [exerciseID],
     );
   } 
 
   Future<int> deleteExercise(int exerciseId) async {
     final db = await DatabaseHelper.instance.database;
     return await db.delete(
-      'excercises',
+      'exercises',
       where: 'id = ?',
       whereArgs: [exerciseId],
     );
@@ -402,7 +404,7 @@ class DatabaseHelper {
   Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('plannedSets', {
-      'excercise_id': exerciseId,
+      'exercise_id': exerciseId,
       'num_sets': numSets,
       'set_lower': setLower,
       'set_upper': setUpper,
@@ -415,7 +417,7 @@ class DatabaseHelper {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
       'plannedSets',
-      where: 'excercise_id = ?',
+      where: 'exercise_id = ?',
       whereArgs: [exerciseId],
       orderBy: 'set_order ASC',
     );
@@ -451,7 +453,7 @@ class DatabaseHelper {
     int exerciseId, String date, int numSets, int reps, int weight, int rpe, String historyNote) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('setRecord', {
-      'excercise_id': exerciseId,
+      'exercise_id': exerciseId,
       'date': date,
       'numSets': numSets,
       'reps': reps,
@@ -465,7 +467,7 @@ class DatabaseHelper {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
       'setRecord',
-      where: 'excercise_id = ?',
+      where: 'exercise_id = ?',
       whereArgs: [exerciseId],
       //TODO: parse date and order by date
     );
