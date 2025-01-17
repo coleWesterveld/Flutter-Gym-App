@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
+import '../user.dart';
 
 class Workout extends StatefulWidget {
   const Workout({super.key});

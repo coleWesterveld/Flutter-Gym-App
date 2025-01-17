@@ -7,10 +7,10 @@ import 'package:provider/provider.dart';
 
 
 //import 'package:shared_preferences/shared_preferences.dart';
-import 'workout_selection_page.dart';
-import 'schedule_page.dart';
-import 'program_page.dart';
-import 'analytics_page.dart';
+import 'workout_page/workout_selection_page.dart';
+import 'schedule_page/schedule_page.dart';
+import 'program_page/program_page.dart';
+import 'analytics_page/analytics_page.dart';
 import 'user.dart';
 //import 'data_saving.dart';
 import 'database/database_helper.dart';

@@ -48,6 +48,7 @@ dependencies:
   dotted_border: ^2.1.0
   fl_chart: ^0.70.0
   smooth_page_indicator: ^1.2.0+3
+  dropdown_search: ^6.0.2
 
 dev_dependencies:
   flutter_test:
@@ -66,9 +67,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets: 
-    - background.png
-    - gray.png
-    - darkbg.png
+    - assets/background.png
+    - assets/gray.png
+    - assets/darkbg.png
+    - assets/exercises.txt
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

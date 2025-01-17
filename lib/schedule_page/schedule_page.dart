@@ -8,8 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
-import 'database/profile.dart';
+import '../user.dart';
+import '../database/profile.dart';
 import 'edit_schedule.dart';
 
 class Event{

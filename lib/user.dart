@@ -103,7 +103,7 @@ class Profile extends ChangeNotifier {
   Future<void> _init() async {
     // Fetch data from DB and assign to in-memory lists
     split = await dbHelper.initializeSplitList();
-    exercises = await dbHelper.initializeexerciseList();
+    exercises = await dbHelper.initializeExerciseList();
     sets = await dbHelper.initializeSetList();
 
 
@@ -384,7 +384,7 @@ class Profile extends ChangeNotifier {
       final exercise = exercises[dayIndex][i];
       if (exercise.exerciseOrder != i) { // If the current order differs
         exercises[dayIndex][i] = exercises[dayIndex][i].copyWith(newexerciseOrder: i);
-        await dbHelper.updateexercise(exercise.exerciseID, {'exercise_order' : i});
+        await dbHelper.updateExercise(exercise.exerciseID, {'exercise_order' : i});
       }
     }
     //probably dont need this, and could be done after notify in other function
@@ -447,7 +447,7 @@ class Profile extends ChangeNotifier {
       final plannedSet = sets[dayIndex][exerciseIndex][i];
       if (plannedSet.setOrder != i) { // If the current order differs
         sets[dayIndex][exerciseIndex][i] = sets[dayIndex][exerciseIndex][i].copyWith(newSetOrder: i);
-        await dbHelper.updateexercise(plannedSet.setID, {'set_order' : i});
+        await dbHelper.updateExercise(plannedSet.setID, {'set_order' : i});
       }
     }
     //probably dont need this, and could be done after notify in other function
@@ -532,7 +532,7 @@ class Profile extends ChangeNotifier {
     // reps1TEC[index].add(newReps1TEC);
     // reps2TEC[index].add(newReps2TEC);
     // rpeTEC[index].add(newRpeTEC);
-    int id = await dbHelper.insertexercise(dayId: split[index].dayID, exerciseTitle: "New exercise", exerciseOrder: exercises[index].length);
+    int id = await dbHelper.insertExercise(dayId: split[index].dayID, exerciseTitle: "New exercise", exerciseOrder: exercises[index].length);
 
     exercises[index].add(
       Exercise(
@@ -586,7 +586,7 @@ class Profile extends ChangeNotifier {
     // required List<TextEditingController> newRpeTEC,
 
   }) async {
-    dbHelper.updateexercise(exercises[index1][index2].exerciseID, {'exercise_title': data.exerciseTitle});
+    dbHelper.updateExercise(exercises[index1][index2].exerciseID, {'exercise_title': data.exerciseTitle});
     exercises[index1][index2] = data;
     //sets[index1][index2] = newSets;
     // setsTEC[index1][index2] =  newSetsTEC;
@@ -618,7 +618,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1].insert(index2, newReps2TEC);
     rpeTEC[index1].insert(index2, newRpeTEC);
 
-    dbHelper.insertexercise(dayId: exercises[index1][index2].dayID, exerciseTitle: data.exerciseTitle, exerciseOrder: index2);
+    dbHelper.insertExercise(dayId: exercises[index1][index2].dayID, exerciseTitle: data.exerciseTitle, exerciseOrder: index2);
 
     notifyListeners();
   }

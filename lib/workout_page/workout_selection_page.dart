@@ -2,9 +2,9 @@
 //not updated
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
+import '../user.dart';
 //import 'package:flutter/cupertino.dart';
-import 'schedule_page.dart';
+import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
 import 'dart:math';
 

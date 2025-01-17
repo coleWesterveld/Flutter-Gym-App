@@ -33,7 +33,7 @@ sqfliteFfiInit();
     final dbHelper = DatabaseHelper.instance;
 
     List<Day> split = await dbHelper.initializeSplitList();
-    List<List<Excercise>> excercises = await dbHelper.initializeExcerciseList();
+    List<List<Exercise>> excercises = await dbHelper.initializeExerciseList();
 
     for (var day in split){
           debugPrint(day.toString());

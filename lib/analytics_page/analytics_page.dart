@@ -2,7 +2,7 @@
 // not updated
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import "user.dart";
+import "../user.dart";
 import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';

@@ -4,8 +4,8 @@
 import 'package:dotted_border/dotted_border.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
-import 'user.dart';
-import 'database/profile.dart';
+import '../user.dart';
+import '../database/profile.dart';
 import 'package:provider/provider.dart';
 
 // this page whats left: 
