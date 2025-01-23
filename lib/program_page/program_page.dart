@@ -35,6 +35,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 //TODO: gradient background
 
 import 'package:flutter/services.dart';
+import "exercise_search.dart";
 
 // TODO: add exercise and set persistence - may have to use SQLite database as opposed to shared preferences
 // TODO: move days between, lighten/darken and other outside functions to other file(s)
@@ -204,738 +205,7 @@ class _MyListState extends State<ProgramPage> {
         body: Column(
           children: [
             Expanded(
-              child: ReorderableListView.builder(
-                //reordering days
-                  onReorder: (oldIndex, newIndex){
-                    HapticFeedback.heavyImpact();
-                    setState(() {
-                      // if (newIndex > oldIndex) {
-                      //   newIndex -= 1;
-                      // }
-                      context.read<Profile>().moveDay(oldIndex: oldIndex, newIndex: newIndex, programID: 1);
-              
-              
-                    });
-                  },
-                
-                  //button at bottom to add a new day to split
-                  footer: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Card(
-                      key: ValueKey('dayAdder'),
-                    
-                      color: Color(0XFF1A78EB),
-                      child: InkWell(
-                     
-                        splashColor: Colors.deepOrange,
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          setState(() {
-                            _addItem();
-                          });
-                          
-                          //insertDay(context, 1, 'Day 1 - Upper Body');
-                          
-                        },
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 50.0,
-                          child: Icon(Icons.add),
-                        ),
-                      ),
-                    ),
-                  ),
-                      
-                  // building the rest of the tiles, one for each day from split list stored in user
-                  //dismissable and reorderable: each child for dismissable needs to have a unique key
-                  itemCount: context.watch<Profile>().split.length,
-                  itemBuilder: (context, index) {
-                    
-                    return Dismissible(
-                      direction: DismissDirection.endToStart,
-                      key: ValueKey(context.watch<Profile>().split[index]),
-                      background: Container(
-                        color: Colors.red,
-                        child: Icon(Icons.delete)
-                      ),
-                      
-                      // dismiss when user swipes right to left on any day, remove that day from the list
-                      onDismissed: (direction) {
-                        HapticFeedback.heavyImpact();
-                        // Remove the item from the data source.
-                        setState(() {
-                          context.read<Profile>().splitPop(index: index);    
-                        });
-                        //widget.writePrefs();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              style: TextStyle(
-                                color: Colors.white
-                              ),
-                              'Day Deleted'
-                              ),
-                          ),
-                        );
-                      },
-                      
-                      //outline for each day tile in the list
-                      child: Padding(
-                        key: ValueKey(context.watch<Profile>().split[index]),
-                        padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
-                        
-                    
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: lighten(Color(0xFF141414), 20)),
-                    
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Color(context.watch<Profile>().split[index].dayColor),
-                                Color(context.watch<Profile>().split[index].dayColor),
-                              const Color(0xFF1e2025),
-                              ],
-                          stops: const [
-                            0, 0.11, 0.11
-                          ]
-                        ),
-                    
-                            
-                            color: Color(0xFF1e2025),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                      
-                          //defining the inside of the actual box, display information
-                          child:  Center(
-                            child: Theme(
-                               data: Theme.of(context).copyWith(
-                          dividerColor: Colors.transparent,
-                          listTileTheme: ListTileThemeData(
-                            contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
-                          ),
-                        ),
-                              
-                              //expandable to see exercises and sets for that day
-                              child: ExpansionTile(
-                              iconColor: Color(0XFF1A78EB),
-                              collapsedIconColor: Color(0XFF1A78EB),
-                              onExpansionChanged: (val){
-                                if (!val){
-                                  WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                                  Provider.of<Profile>(context, listen: false).changeDone(false);
-                                }
-                              },
-                      
-                              //top row always displays day title, and edit button
-                              //sized boxes and padding is just a bunch of formatting stuff
-                              //tbh it could probably be made more concise
-                              //TODO: simplify this
-                              title: 
-                                SizedBox(
-                                  height: 40,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: SizedBox(
-                                          height: 30,
-                                          width: 100,
-                                          child: 
-                                            Row(
-                                              children: [
-                                                  
-                                                //number
-                                                SizedBox(
-                                                  width: 30,
-                                                  child: Text(
-                                                    
-                                                    "${index + 1}",
-                                                        
-                                                    style: TextStyle(
-                                                       height: 0.6,
-                                              
-                                              color: darken(Color(context.watch<Profile>().split[index].dayColor), 70),
-                                              fontSize: 50,
-                                                      fontWeight: FontWeight.w900,
-                                                    ),
-                                                        
-                                                  //day title
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left : 16.0),
-                                                  child: SizedBox(
-                                                    width: MediaQuery.sizeOf(context).width - 186,
-                                                    child: Text(
-                                                      overflow: TextOverflow.ellipsis,
-
-                                                      context.watch<Profile>().split[index].dayTitle,
-                                                      style: TextStyle(
-                                                        color: Color.fromARGB(255, 255, 255, 255),
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.w800,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                
-                                              ], 
-                                            ),
-                                          ),
-                                      ),
-                                        
-                                      //update title button
-                                      
-                                      IconButton(onPressed: () {
-                                          
-                                          //TODO: make a button to go between two screens, 
-                                          // default to changing title but when toggled to color can also change day color.
-                                          //TODO: color prefereces persistence
-                                          
-                                          showDialog(
-                                            anchorPoint: Offset(100, 100),
-                                            
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return StatefulBuilder(
-                                                builder: (context, StateSetter setState) {
-                                                    return AlertDialog(
-                                                      //Padding: EdgeInsets.only(bottom: alertInsetValue),
-                                                      title: CupertinoSlidingSegmentedControl(
-                                                        padding: EdgeInsets.all(4.0),
-                                                        children: const <int, Text>{
-                                                          0: Text("Title"),
-                                                          1: Text("Color"),
-                                                        }, 
-                                                
-                                                        onValueChanged: (int? newValue){
-                                                          _sliding = newValue;
-                                                
-                                                          setState((){});
-                                                     
-                                                        },
-                                                        thumbColor: Colors.orange,
-                                                        groupValue: _sliding,
-                                                      ),
-                                                      content: editBuilder(index),
-                                                      actions: [
-                                                        IconButton(
-                                                        onPressed: (){
-                                                          HapticFeedback.heavyImpact();
-                                                          String? dayTitle = alertTEC.text;
-                                                          if (dayTitle.isNotEmpty) {
-                                                          //rebuild widget tree reflecting new title
-                                                          setState( () {
-                                                            Provider.of<Profile>(context, listen: false).splitAssign(
-                                                              index: index, 
-                                                              //id: context.read<Profile>().split[index].dayID,
-                                                              newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
-              
-                                                              // newexercises: context.read<Profile>().exercises[index],
-                                                              // newSets: context.read<Profile>().sets[index],
-                    
-                                                              // newSetsTEC: context.read<Profile>().setsTEC[index],
-                    
-                                                              // newReps1TEC: context.read<Profile>().reps1TEC[index],
-                    
-                                                              // newReps2TEC: context.read<Profile>().reps2TEC[index],
-                    
-                                                              // newRpeTEC: context.read<Profile>().rpeTEC[index],
-                    
-                                                              // newDay: SplitDayData(
-                                                              //   data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                                              // )
-                                                            );
-                                                          });} //
-                                                          Navigator.of(context, rootNavigator: true).pop('dialog');
-                                                          _sliding = 0;
-                      
-                                                          
-                                                        },
-                                                        icon: Icon(Icons.check))
-              ]
-                                                
-                                                );},
-                                              );
-                                            },
-                                          );
-                                        
-                                          //widget.writePrefs();
-                                        },
-                      
-                                        icon: Icon(Icons.edit_outlined),
-                                        color: Colors.orange,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                      
-                                //children of expansion tile - what gets shown when user expands that day
-                                // shows exercises for that day
-                                //this part is viewed after tile is expanded
-                                //TODO: show sets per exercise, notes, maybe most recent weight/reps
-                                //exercises are reorderable
-                    
-                                //TODO: get rid of little bit of color that somehow gets through at bottom
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color:Color(0xFF1e2025),
-                                      borderRadius: BorderRadius.only(
-                                        
-                                        bottomRight: Radius.circular(12.0),
-                                        
-                                        bottomLeft: Radius.circular(12.0)),
-                                      ),
-                                    
-                                    
-                                    child: ReorderableListView.builder(
-                                      
-                                      //on reorder, update tree with new ordering
-                                      onReorder: (oldIndex, newIndex){
-                                        HapticFeedback.heavyImpact();
-                                        setState(() {
-                                          context.read<Profile>().moveexercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
-              
-                                        });
-                                      },
-                                      
-                                      //"add exercise" button at bottom of exercise list
-                                      footer: Padding(
-                                        key: ValueKey('exerciseAdder'),
-                                        padding: const EdgeInsets.all(8),
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: ButtonTheme(
-                                            minWidth: 100,
-                                            //height: 130,
-                                            child: TextButton.icon(
-                                              onPressed: () {
-                                                HapticFeedback.heavyImpact();
-                                                setState(() {
-                                                  context.read<Profile>().exerciseAppend(
-                                                    index: index,
-                                                    
-                                                  );
-                                                });  
-                                              },
-                                            
-                                              style: ButtonStyle(
-                                                //when clicked, it splashes a lighter purple to show that button was clicked
-                                                shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                       
-                                                  borderRadius: BorderRadius.circular(12))),
-                                                backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
-                                                overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                                                  if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
-                                                  return null;
-                                                }),
-                                              ),
-                                              
-                                              label: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: const [
-                                                  Icon(
-                                                    Icons.add,
-                                                    color: Colors.white,
-                                                  ),
-                                                  Text(
-                                    
-                                                    "exercise  ",
-                                                    style: TextStyle(
-                                                        color: Color.fromARGB(255, 255, 255, 255),
-                                                        //fontSize: 18,
-                                                        //fontWeight: FontWeight.w800,
-                                                      ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                          
-                                      //being able to scroll within the already scrollable day view 
-                                      // is annoying so i disabled it
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: context.read<Profile>().exercises[index].length,
-                                      shrinkWrap: true,
-                                      
-                                          
-                                      //displaying list of exercises for that day
-                                      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                      itemBuilder: (context, exerciseIndex) {
-                                        return Dismissible(
-                                          key: ValueKey(context.watch<Profile>().exercises[index][exerciseIndex]),
-                                          
-                                          direction: DismissDirection.endToStart,
-                                            background: Container(
-                                              color: Colors.red,
-                                              child: Icon(Icons.delete)
-                                            ),
-                                                      
-                                          onDismissed: (direction) {
-                                            HapticFeedback.heavyImpact();
-                                            // Remove the item from the data source.
-                                            setState(() {
-                                              context.read<Profile>().exercisePop(index1: index, index2: exerciseIndex);    
-                                            });
-                                            
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  style: TextStyle(
-                                                    color: Colors.white
-                                                  ),
-                                                  'exercise Deleted'
-                                                ),
-                                                  
-                                              ),
-                                            );
-                                          },
-                                          //actual information about the exercise
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.all(Radius.circular(1)),
-                                              border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
-                                            ),
-                                            child: Material(
-                                              color: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex),
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: Text(
-                                                              context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
-                                                                                                    
-                                                              style: TextStyle(
-                                                                color: Color.fromARGB(255, 255, 255, 255),
-                                                                fontSize: 16,
-                                                                fontWeight: FontWeight.w600,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                            
-                                                        //add set button 
-                                                        Align(
-                                                          key: ValueKey('setAdder'),
-                                                          alignment: Alignment.centerLeft,
-                                            
-                                                            child: Container(
-                                                              width: 70,
-                                                              height: 30,
-                                                
-                                                              decoration: BoxDecoration(
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors.black.withOpacity(0.5),
-                                                                    offset: const Offset(0.0, 0.0),
-                                                                    blurRadius: 12.0,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              
-                                                              child: OutlinedButton.icon(
-                                                                          
-                                                                          
-                                                                
-                                                                style: OutlinedButton.styleFrom(
-                                                                  
-                                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                                  padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
-                                                                  //alignment: Alignment.centerLeft,
-                                                                  backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
-                                                                  shape:
-                                                                    RoundedRectangleBorder(
-                                                                       side: BorderSide(
-                                                                        width: 2,
-                                                                        color: Color(0XFF1A78EB),
-                                                                       ),
-                                                                       borderRadius: BorderRadius.all(Radius.circular(8))
-                                                                    ),
-                                                                  
-                                                                ),
-                                                              
-                                                                onPressed: () {
-                                                                  HapticFeedback.heavyImpact();
-                                                                  setState(() {
-                                                                    context.read<Profile>().setsAppend(
-                                                                      // newSets: 
-                                                                      // SplitDayData(data: "New Set", dayColor: Colors.black), 
-                                                                      index1: index,
-                                                                      index2: exerciseIndex,
-                                                                    );
-                                                                  });  
-                                                                },
-                                                                label: Row(
-                                                                  children:  [
-                                                                    Icon(
-                                                                      Icons.add,
-                                                                      color: lighten(Color(0xFF141414), 70),
-                                                                    ),
-                                                                    Text(
-                                                                      "Set",
-                                                                      style: TextStyle(
-                                                                        color: lighten(Color(0xFF141414), 70),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                        
-                                                        ),
-                                                      
-                                                    
-                                                        //confirm update button
-                                                        IconButton(
-                                                          onPressed: () async{
-                                                            
-                                                          HapticFeedback.heavyImpact();
-                                                            //print(context.read<Profile>().split[index].data);
-                                                            alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
-                                                            String? exerciseTitle = await openDialog();
-                                                            if (exerciseTitle == null || exerciseTitle.isEmpty) return;
-                                                                
-                                                            setState( () {
-                                                              Provider.of<Profile>(context, listen: false).exerciseAssign(
-                                                                index1: index, 
-                                                                index2: exerciseIndex,
-                                                                data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseTitle: exerciseTitle)
-                                                                // data: SplitDayData(
-                                                                //   data: exerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                                                // ),
-                                                                
-                                                                // newSets: context.read<Profile>().sets[index][exerciseIndex],
-                                                       
-                                                                // newSetsTEC: context.read<Profile>().setsTEC[index][exerciseIndex],
-                    
-                    
-                                                                // newRpeTEC: context.read<Profile>().rpeTEC[index][exerciseIndex],
-                    
-                                                          
-                                                                // newReps1TEC: context.read<Profile>().reps1TEC[index][exerciseIndex],
-                    
-                    
-                                                                // newReps2TEC: context.read<Profile>().reps2TEC[index][exerciseIndex],
-                                                              );
-                                                            });
-                                                          }, 
-                                                          
-                                                          icon: Icon(Icons.edit),
-                                                              color: lighten(Color(0xFF141414), 70),
-                                                        ),
-                                                      ],
-                                                    ),
-                                              
-                                                    //Displaying Sets for each exercise
-                                                    ReorderableListView.builder(
-                                                      //on reorder, update tree with new ordering
-                                                      onReorder: (oldIndex, newIndex){
-                                                        HapticFeedback.heavyImpact();
-                                                        setState(() {
-                                                          context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, exerciseIndex: exerciseIndex);
-                                                        });
-                                                      },
-                                              
-                                                      //being able to scroll within the already scrollable day view 
-                                                      // is annoying so i disabled it
-                                                      physics: const NeverScrollableScrollPhysics(),
-                                                      itemCount: context.read<Profile>().sets[index][exerciseIndex].length,
-                                                      shrinkWrap: true,
-                                              
-                                                      //displaying list of sets for that exercise
-                                                      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-                                                      itemBuilder: (context, setIndex) {
-                                                        return Dismissible(
-                                                          key: ValueKey(context.watch<Profile>().sets[index][exerciseIndex][setIndex]),
-                                              
-                                                          direction: DismissDirection.endToStart,
-                                                          background: Container(
-                                                            color: Colors.red,
-                                                            child: Icon(Icons.delete)
-                                                          ),
-                                                                
-                                                          onDismissed: (direction) {
-                                                            HapticFeedback.heavyImpact();
-                                                            // Remove the item from the data source.
-                                                            setState(() {
-                                                              context.read<Profile>().setsPop(
-                                                                index1: index, 
-                                                                index2: exerciseIndex,
-                                                                index3: setIndex,
-                                                              );    
-                                                            });
-                                                
-                                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  style: TextStyle(
-                                                                    color: Colors.white
-                                                                  ),
-                                                                  'exercise Deleted'
-                                                                ),
-                                                             ),
-                                                            );
-                                                          },
-                                                          
-                                                          //actual information about the sets
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                            child: Row(
-                                                              // TODO: add rep ranges
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets.all(8.0),
-                                                                  child: Focus(
-                                                                    onFocusChange: (hasFocus) {
-                                                                      if (hasFocus){
-                                                                        setState((){context.read<Profile>().done = true;});
-                                                                      }//else{
-                                                                        //setState((){context.read<Profile>().done = false;});
-                                                                      //}
-                                                                    
-                                                                      
-                                                                    },
-                                                                    child: TextFormField(
-                                                                      
-                                                                     
-                                                                    
-                                                                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
-                    
-                                                                      // onFieldSubmitted: (value){
-                                                                      //   //HapticFeedback.heavyImpact();
-                                                                      //   //Navigator.of(context).pop(alertTEC.text);
-                                                                      // },
-                                                                            
-                                                                      keyboardType: TextInputType.number,
-                                                                      decoration: InputDecoration(
-                                                                        filled: true,
-                                                                        fillColor: darken(Color(0xFF1e2025), 25),
-                                                                        contentPadding: EdgeInsets.only(
-                                                                          bottom: 10, 
-                                                                          left: 8 
-                                                                        ),
-                                                                        constraints: BoxConstraints(
-                                                                          maxWidth: 50,
-                                                                          maxHeight: 30,
-                                                                        ),
-                                                                        border: OutlineInputBorder(
-                                                                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                        hintText: 'Sets', //This should be made to be whateever this value was last workout
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                          
-                                                                Padding(
-                                                                  padding: const EdgeInsets.all(8.0),
-                                                                  child: Focus(
-                                                                    onFocusChange: (hasFocus) {
-                                                                      if (hasFocus){
-                                                                        setState((){context.read<Profile>().done = true;});
-                                                                      }
-                                                                      // }else{
-                                                                      //   setState((){context.read<Profile>().done = false;});
-                                                                      // }
-                                                                    
-                                                                      
-                                                                    },
-                                                                    child: TextFormField(
-                                                                    
-                                                                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
-                                                                     
-                                                                      keyboardType: TextInputType. numberWithOptions(decimal: true),
-                                                                                                          
-                                                                      decoration:  InputDecoration(
-                                                                        filled: true,
-                                                                        fillColor: darken(Color(0xFF1e2025), 25),
-                                                                        contentPadding: EdgeInsets.only(
-                                                                          bottom: 10, 
-                                                                          left: 8 
-                                                                        ),
-                                                                        constraints: BoxConstraints(
-                                                                          maxWidth: 80,
-                                                                          maxHeight: 30,
-                                                                        ),
-                                                                        border: OutlineInputBorder(
-                                                                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                        hintText: 'RPE', //This should be made to be whateever this value was last workout
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                          
-                                                                Icon(Icons.clear),
-                                                                          
-                                                                Padding(
-                                                                  padding: const EdgeInsets.all(8.0),
-                                                                  child: Focus(
-                                                                    onFocusChange: (hasFocus) {
-                                                                      if (hasFocus){
-                                                                        setState((){context.read<Profile>().done = true;});}
-                                                                      // }else{
-                                                                      //   setState((){context.read<Profile>().done = false;});
-                                                                      // }
-                                                                    
-                                                                      
-                                                                    },
-                                                                    child: TextFormField(
-                                                                      
-                                                                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
-                                              
-                                                                      
-                                                                      keyboardType: TextInputType. numberWithOptions(decimal: true,),
-                                                                      decoration: InputDecoration(
-                                                                        filled: true,
-                                                                        fillColor: darken(Color(0xFF1e2025), 25),
-                                                                        contentPadding: EdgeInsets.only(
-                                                                          bottom: 10, 
-                                                                          left: 8 
-                                                                        ),
-                                                                        constraints: BoxConstraints(
-                                                                          maxWidth: 80,
-                                                                          maxHeight: 30,
-                                                                        ),
-                                                                        border: OutlineInputBorder(
-                                                                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                                                                        hintText: 'Reps', //This should be made to be whateever this value was last workout
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),                  
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ]
-                              ),
-                            ),
-                          ),
-                        )
-                      ),  
-                    );
-                  },
-              ),
+              child: listDays(context),
             ),
             SizedBox(height: 82),
           ],
@@ -944,35 +214,790 @@ class _MyListState extends State<ProgramPage> {
     );
   }
 
+  /////////////////////////////////////////////////////////////////////
+  // LIST OF DAYS IN A SPLIT
+  /////////////////////////////////////////////////////////////////////
+
+  ReorderableListView listDays(BuildContext context) {
+    return ReorderableListView.builder(
+      //reordering days
+        onReorder: (oldIndex, newIndex){
+          HapticFeedback.heavyImpact();
+          setState(() {
+            // if (newIndex > oldIndex) {
+            //   newIndex -= 1;
+            // }
+            context.read<Profile>().moveDay(oldIndex: oldIndex, newIndex: newIndex, programID: 1);
+    
+    
+          });
+        },
+      
+        //button at bottom to add a new day to split
+        footer: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            key: ValueKey('dayAdder'),
+          
+            color: Color(0XFF1A78EB),
+            child: InkWell(
+            
+              splashColor: Colors.deepOrange,
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                setState(() {
+                  _addItem();
+                });
+                
+                //insertDay(context, 1, 'Day 1 - Upper Body');
+                
+              },
+              child: SizedBox(
+                width: double.infinity,
+                height: 50.0,
+                child: Icon(Icons.add),
+              ),
+            ),
+          ),
+        ),
+            
+        // building the rest of the tiles, one for each day from split list stored in user
+        //dismissable and reorderable: each child for dismissable needs to have a unique key
+        itemCount: context.watch<Profile>().split.length,
+        itemBuilder: (context, index) {
+          
+          return Dismissible(
+            direction: DismissDirection.endToStart,
+            key: ValueKey(context.watch<Profile>().split[index]),
+            background: Container(
+              color: Colors.red,
+              child: Icon(Icons.delete)
+            ),
+            
+            // dismiss when user swipes right to left on any day, remove that day from the list
+            onDismissed: (direction) {
+              HapticFeedback.heavyImpact();
+              // Remove the item from the data source.
+              setState(() {
+                context.read<Profile>().splitPop(index: index);    
+              });
+              //widget.writePrefs();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                    'Day Deleted'
+                    ),
+                ),
+              );
+            },
+            
+            //outline for each day tile in the list
+            child: Padding(
+              key: ValueKey(context.watch<Profile>().split[index]),
+              padding: const EdgeInsets.only(left: 15, right: 15, top: 15),
+              
+          
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: lighten(Color(0xFF141414), 20)),
+          
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Color(context.watch<Profile>().split[index].dayColor),
+                      Color(context.watch<Profile>().split[index].dayColor),
+                    const Color(0xFF1e2025),
+                    ],
+                stops: const [
+                  0, 0.11, 0.11
+                ]
+              ),
+          
+                  
+                  color: Color(0xFF1e2025),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+            
+                //defining the inside of the actual box, display information
+                child:  Center(
+                  child: Theme(
+                      data: Theme.of(context).copyWith(
+                dividerColor: Colors.transparent,
+                listTileTheme: ListTileThemeData(
+                  contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
+                ),
+              ),
+                    
+                    //expandable to see exercises and sets for that day
+                    child: ExpansionTile(
+                    iconColor: Color(0XFF1A78EB),
+                    collapsedIconColor: Color(0XFF1A78EB),
+                    onExpansionChanged: (val){
+                      if (!val){
+                        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                        Provider.of<Profile>(context, listen: false).changeDone(false);
+                      }
+                    },
+            
+                    //top row always displays day title, and edit button
+                    //sized boxes and padding is just a bunch of formatting stuff
+                    //tbh it could probably be made more concise
+                    //TODO: simplify this
+                    title: 
+                      SizedBox(
+                        height: 40,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 30,
+                                width: 100,
+                                child: 
+                                  Row(
+                                    children: [
+                                        
+                                      //number
+                                      SizedBox(
+                                        width: 30,
+                                        child: Text(
+                                          
+                                          "${index + 1}",
+                                              
+                                          style: TextStyle(
+                                              height: 0.6,
+                                    
+                                    color: darken(Color(context.watch<Profile>().split[index].dayColor), 70),
+                                    fontSize: 50,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                              
+                                        //day title
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(left : 16.0),
+                                        child: SizedBox(
+                                          width: MediaQuery.sizeOf(context).width - 186,
+                                          child: Text(
+                                            overflow: TextOverflow.ellipsis,
+
+                                            context.watch<Profile>().split[index].dayTitle,
+                                            style: TextStyle(
+                                              color: Color.fromARGB(255, 255, 255, 255),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                    ], 
+                                  ),
+                                ),
+                            ),
+                              
+                            //update title button
+                            
+                            IconButton(onPressed: () {
+                                
+                                //TODO: make a button to go between two screens, 
+                                // default to changing title but when toggled to color can also change day color.
+                                //TODO: color prefereces persistence
+                                
+                                showDialog(
+                                  anchorPoint: Offset(100, 100),
+                                  
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return StatefulBuilder(
+                                      builder: (context, StateSetter setState) {
+                                          return AlertDialog(
+                                            //Padding: EdgeInsets.only(bottom: alertInsetValue),
+                                            title: CupertinoSlidingSegmentedControl(
+                                              padding: EdgeInsets.all(4.0),
+                                              children: const <int, Text>{
+                                                0: Text("Title"),
+                                                1: Text("Color"),
+                                              }, 
+                                      
+                                              onValueChanged: (int? newValue){
+                                                _sliding = newValue;
+                                      
+                                                setState((){});
+                                            
+                                              },
+                                              thumbColor: Colors.orange,
+                                              groupValue: _sliding,
+                                            ),
+                                            content: editBuilder(index),
+                                            actions: [
+                                              IconButton(
+                                              onPressed: (){
+                                                HapticFeedback.heavyImpact();
+                                                String? dayTitle = alertTEC.text;
+                                                if (dayTitle.isNotEmpty) {
+                                                //rebuild widget tree reflecting new title
+                                                setState( () {
+                                                  Provider.of<Profile>(context, listen: false).splitAssign(
+                                                    index: index, 
+                                                    //id: context.read<Profile>().split[index].dayID,
+                                                    newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
+    
+                                                    // newexercises: context.read<Profile>().exercises[index],
+                                                    // newSets: context.read<Profile>().sets[index],
+          
+                                                    // newSetsTEC: context.read<Profile>().setsTEC[index],
+          
+                                                    // newReps1TEC: context.read<Profile>().reps1TEC[index],
+          
+                                                    // newReps2TEC: context.read<Profile>().reps2TEC[index],
+          
+                                                    // newRpeTEC: context.read<Profile>().rpeTEC[index],
+          
+                                                    // newDay: SplitDayData(
+                                                    //   data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                                    // )
+                                                  );
+                                                });} //
+                                                Navigator.of(context, rootNavigator: true).pop('dialog');
+                                                _sliding = 0;
+            
+                                                
+                                              },
+                                              icon: Icon(Icons.check))
+    ]
+                                      
+                                      );},
+                                    );
+                                  },
+                                );
+                              
+                                //widget.writePrefs();
+                              },
+            
+                              icon: Icon(Icons.edit_outlined),
+                              color: Colors.orange,
+                            ),
+                          ],
+                        ),
+                      ),
+                            
+                      //children of expansion tile - what gets shown when user expands that day
+                      // shows exercises for that day
+                      //this part is viewed after tile is expanded
+                      //TODO: show sets per exercise, notes, maybe most recent weight/reps
+                      //exercises are reorderable
+          
+                      //TODO: get rid of little bit of color that somehow gets through at bottom
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color:Color(0xFF1e2025),
+                            borderRadius: BorderRadius.only(
+                              
+                              bottomRight: Radius.circular(12.0),
+                              
+                              bottomLeft: Radius.circular(12.0)),
+                            ),
+                          
+                          
+                          child: listExercises(context, index),
+                        ),
+                      ]
+                    ),
+                  ),
+                ),
+              )
+            ),  
+          );
+        },
+    );
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // LIST OF EXERCISES FOR EACH DAY
+  /////////////////////////////////////////////////////////////////////
   
+  ReorderableListView listExercises(BuildContext context, int index) {
+    return ReorderableListView.builder(
+                                    
+      //on reorder, update tree with new ordering
+      onReorder: (oldIndex, newIndex){
+        HapticFeedback.heavyImpact();
+        setState(() {
+          context.read<Profile>().moveexercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
+
+        });
+      },
+      
+      //"add exercise" button at bottom of exercise list
+      footer: Padding(
+        key: ValueKey('exerciseAdder'),
+        padding: const EdgeInsets.all(8),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ButtonTheme(
+            minWidth: 100,
+            //height: 130,
+            child: TextButton.icon(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                setState(() {
+                  context.read<Profile>().exerciseAppend(
+                    index: index,
+                    
+                  );
+                });  
+              },
+            
+              style: ButtonStyle(
+                //when clicked, it splashes a lighter purple to show that button was clicked
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(
+        
+                  borderRadius: BorderRadius.circular(12))),
+                backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                  if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                  return null;
+                }),
+              ),
+              
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                  Text(
+    
+                    "exercise  ",
+                    style: TextStyle(
+                        color: Color.fromARGB(255, 255, 255, 255),
+                        //fontSize: 18,
+                        //fontWeight: FontWeight.w800,
+                      ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+          
+      //being able to scroll within the already scrollable day view 
+      // is annoying so i disabled it
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: context.read<Profile>().exercises[index].length,
+      shrinkWrap: true,
+      
+          
+      //displaying list of exercises for that day
+      //TODO: add sets here too, centre text boxes, add notes option on dropdown
+      itemBuilder: (context, exerciseIndex) {
+        return Dismissible(
+          key: ValueKey(context.watch<Profile>().exercises[index][exerciseIndex]),
+          
+          direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              child: Icon(Icons.delete)
+            ),
+                      
+          onDismissed: (direction) {
+            HapticFeedback.heavyImpact();
+            // Remove the item from the data source.
+            setState(() {
+              context.read<Profile>().exercisePop(index1: index, index2: exerciseIndex);    
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  style: TextStyle(
+                    color: Colors.white
+                  ),
+                  'exercise Deleted'
+                ),
+                  
+              ),
+            );
+          },
+          //actual information about the exercise
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(1)),
+              border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
+            ),
+            child: Material(
+              color: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
+                                                                    
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+            
+                        //add set button 
+                        Align(
+                          key: ValueKey('setAdder'),
+                          alignment: Alignment.centerLeft,
+            
+                            child: Container(
+                              width: 70,
+                              height: 30,
+                
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    offset: const Offset(0.0, 0.0),
+                                    blurRadius: 12.0,
+                                  ),
+                                ],
+                              ),
+                              
+                              child: OutlinedButton.icon(
+                                          
+                                          
+                                
+                                style: OutlinedButton.styleFrom(
+                                  
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
+                                  //alignment: Alignment.centerLeft,
+                                  backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
+                                  shape:
+                                    RoundedRectangleBorder(
+                                        side: BorderSide(
+                                        width: 2,
+                                        color: Color(0XFF1A78EB),
+                                        ),
+                                        borderRadius: BorderRadius.all(Radius.circular(8))
+                                    ),
+                                  
+                                ),
+                              
+                                onPressed: () {
+                                  HapticFeedback.heavyImpact();
+                                  setState(() {
+                                    context.read<Profile>().setsAppend(
+                                      // newSets: 
+                                      // SplitDayData(data: "New Set", dayColor: Colors.black), 
+                                      index1: index,
+                                      index2: exerciseIndex,
+                                    );
+                                  });  
+                                },
+                                label: Row(
+                                  children:  [
+                                    Icon(
+                                      Icons.add,
+                                      color: lighten(Color(0xFF141414), 70),
+                                    ),
+                                    Text(
+                                      "Set",
+                                      style: TextStyle(
+                                        color: lighten(Color(0xFF141414), 70),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        
+                        ),
+                      
+                    
+                        //confirm update button
+                        IconButton(
+                          onPressed: () async{
+                            
+                          HapticFeedback.heavyImpact();
+                            //print(context.read<Profile>().split[index].data);
+                            alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
+                            String? exerciseTitle = await openDialog();
+                            if (exerciseTitle == null || exerciseTitle.isEmpty) return;
+                                
+                            setState( () {
+                              Provider.of<Profile>(context, listen: false).exerciseAssign(
+                                index1: index, 
+                                index2: exerciseIndex,
+                                data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseTitle: exerciseTitle)
+                                // data: SplitDayData(
+                                //   data: exerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
+                                // ),
+                                
+                                // newSets: context.read<Profile>().sets[index][exerciseIndex],
+                        
+                                // newSetsTEC: context.read<Profile>().setsTEC[index][exerciseIndex],
+
+
+                                // newRpeTEC: context.read<Profile>().rpeTEC[index][exerciseIndex],
+
+                          
+                                // newReps1TEC: context.read<Profile>().reps1TEC[index][exerciseIndex],
+
+
+                                // newReps2TEC: context.read<Profile>().reps2TEC[index][exerciseIndex],
+                              );
+                            });
+                          }, 
+                          
+                          icon: Icon(Icons.edit),
+                              color: lighten(Color(0xFF141414), 70),
+                        ),
+                      ],
+                    ),
+              
+                    //Displaying Sets for each exercise
+                    listSets(context, index, exerciseIndex),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // LIST OF SETS FOR EACH EXERCISE
+  /////////////////////////////////////////////////////////////////////
+
+  ReorderableListView listSets(BuildContext context, int index, int exerciseIndex) {
+    return ReorderableListView.builder(
+      //on reorder, update tree with new ordering
+      onReorder: (oldIndex, newIndex){
+        HapticFeedback.heavyImpact();
+        setState(() {
+          context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, exerciseIndex: exerciseIndex);
+        });
+      },
+
+      //being able to scroll within the already scrollable day view 
+      // is annoying so i disabled it
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: context.read<Profile>().sets[index][exerciseIndex].length,
+      shrinkWrap: true,
+
+      //displaying list of sets for that exercise
+      //TODO: add sets here too, centre text boxes, add notes option on dropdown
+      itemBuilder: (context, setIndex) {
+        return Dismissible(
+          key: ValueKey(context.watch<Profile>().sets[index][exerciseIndex][setIndex]),
+
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            child: Icon(Icons.delete)
+          ),
+                
+          onDismissed: (direction) {
+            HapticFeedback.heavyImpact();
+            // Remove the item from the data source.
+            setState(() {
+              context.read<Profile>().setsPop(
+                index1: index, 
+                index2: exerciseIndex,
+                index3: setIndex,
+              );    
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  style: TextStyle(
+                    color: Colors.white
+                  ),
+                  'exercise Deleted'
+                ),
+              ),
+            );
+          },
+          
+          //actual information about the sets
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              // TODO: add rep ranges
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus){
+                        setState((){context.read<Profile>().done = true;});
+                      }//else{
+                        //setState((){context.read<Profile>().done = false;});
+                      //}
+                    
+                      
+                    },
+                    child: TextFormField(
+                      
+                      
+                    
+                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
+
+                      // onFieldSubmitted: (value){
+                      //   //HapticFeedback.heavyImpact();
+                      //   //Navigator.of(context).pop(alertTEC.text);
+                      // },
+                            
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: darken(Color(0xFF1e2025), 25),
+                        contentPadding: EdgeInsets.only(
+                          bottom: 10, 
+                          left: 8 
+                        ),
+                        constraints: BoxConstraints(
+                          maxWidth: 50,
+                          maxHeight: 30,
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                        hintText: 'Sets', //This should be made to be whateever this value was last workout
+                      ),
+                    ),
+                  ),
+                ),
+                          
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus){
+                        setState((){context.read<Profile>().done = true;});
+                      }
+                      // }else{
+                      //   setState((){context.read<Profile>().done = false;});
+                      // }
+                    
+                      
+                    },
+                    child: TextFormField(
+                    
+                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
+                      
+                      keyboardType: TextInputType. numberWithOptions(decimal: true),
+                                                          
+                      decoration:  InputDecoration(
+                        filled: true,
+                        fillColor: darken(Color(0xFF1e2025), 25),
+                        contentPadding: EdgeInsets.only(
+                          bottom: 10, 
+                          left: 8 
+                        ),
+                        constraints: BoxConstraints(
+                          maxWidth: 80,
+                          maxHeight: 30,
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                        hintText: 'RPE', //This should be made to be whateever this value was last workout
+                      ),
+                    ),
+                  ),
+                ),
+                          
+                Icon(Icons.clear),
+                          
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus){
+                        setState((){context.read<Profile>().done = true;});}
+                      // }else{
+                      //   setState((){context.read<Profile>().done = false;});
+                      // }
+                    
+                      
+                    },
+                    child: TextFormField(
+                      
+                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
+
+                      
+                      keyboardType: TextInputType. numberWithOptions(decimal: true,),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: darken(Color(0xFF1e2025), 25),
+                        contentPadding: EdgeInsets.only(
+                          bottom: 10, 
+                          left: 8 
+                        ),
+                        constraints: BoxConstraints(
+                          maxWidth: 80,
+                          maxHeight: 30,
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                        hintText: 'Reps', //This should be made to be whateever this value was last workout
+                      ),
+                    ),
+                  ),
+                ),                  
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   //TODO: move to another file
   //this is to show text box to enter text for day titles and exercises
   Future<String?> openDialog() {
+
+    
     //alertTEC = TextEditingController(text: hints);
-    return showDialog(
-      
+    return showModalBottomSheet(
+      showDragHandle: true,
       context: context,
-      builder: (context) => AlertDialog(
-        title: TextFormField(
-          onFieldSubmitted: (value){
-            HapticFeedback.heavyImpact();
-            Navigator.of(context).pop(alertTEC.text);
-          },
-          autofocus: true,
-          controller: alertTEC,
-          decoration: InputDecoration(
-            hintText: "Enter Text",
-          ),
+      isScrollControlled: true, // Allows the bottom sheet to adjust to content height
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16),
         ),
-        actions: [
-          IconButton(
-            onPressed: (){
-              HapticFeedback.heavyImpact();
-              Navigator.of(context).pop(alertTEC.text);
-            },
-            icon: Icon(Icons.check))
-        ]
       ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            
+          ),
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height - 100, 
+            child: ExerciseDropdown()
+            ),
+        );
+      },
     );
   }
 
@@ -1145,4 +1170,3 @@ class _MyListState extends State<ProgramPage> {
           }
   }
 }
-

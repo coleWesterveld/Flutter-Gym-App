@@ -442,6 +442,29 @@ class DatabaseHelper {
     );
   }
 
+  // TODO: make naming better of exercises vs exercise instances in methods
+  Future<List<String>> fetchExerciseTitlesFromAll() async {
+    final db = await DatabaseHelper.instance.database;
+    final result = await db.query(
+      'exercises',
+    );
+    List<String> exercises = result.map((e) => e['exercise_title'] as String).toList();
+
+    return exercises;
+  }
+
+
+
+  Future<int> insertCustomExercise({required String exerciseTitle, String  persistentNote = '', String musclesWorked = ''}) async {
+      final db = await DatabaseHelper.instance.database;
+      return await db.insert('exercises', {
+        'exercise_title': exerciseTitle,
+        'persistent_note': persistentNote,
+        'muscles_worked' : musclesWorked
+        //'exercise_id' : exercise
+      });
+  }
+
   ////////////////////////////////////////////////////////////
   // PLANNED SET TABLE CRUD
 
