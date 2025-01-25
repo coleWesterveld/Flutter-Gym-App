@@ -82,6 +82,7 @@ Color lighten(Color c, [int percent = 10]) {
 class ProgramPage extends StatefulWidget {
   //Function writePrefs;
   final DatabaseHelper dbHelper;
+
   
   const ProgramPage({Key? programkey, required this.dbHelper,}) : super(key: programkey);
   @override
@@ -100,6 +101,7 @@ class _MyListState extends State<ProgramPage> {
   DateTime startDay = DateTime(2024, 8, 10);
   int? _sliding = 0;
   TextEditingController alertTEC = TextEditingController();
+  List<int> editIndex = [-1, -1, -1];
   //double alertInsetValue = 0;
 
   Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
@@ -576,7 +578,7 @@ class _MyListState extends State<ProgramPage> {
                   ),
                   Text(
     
-                    "exercise  ",
+                    "Exercise  ",
                     style: TextStyle(
                         color: Color.fromARGB(255, 255, 255, 255),
                         //fontSize: 18,
@@ -706,6 +708,10 @@ class _MyListState extends State<ProgramPage> {
                                       index1: index,
                                       index2: exerciseIndex,
                                     );
+                                    editIndex = [index, 
+                                                      exerciseIndex, 
+                                                      context.read<Profile>().sets[index][exerciseIndex].length
+                                                ];
                                   });  
                                 },
                                 label: Row(
@@ -837,137 +843,149 @@ class _MyListState extends State<ProgramPage> {
           },
           
           //actual information about the sets
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              // TODO: add rep ranges
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
-                      if (hasFocus){
-                        setState((){context.read<Profile>().done = true;});
-                      }//else{
-                        //setState((){context.read<Profile>().done = false;});
-                      //}
-                    
-                      
-                    },
-                    child: TextFormField(
-                      
-                      
-                    
-                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
-
-                      // onFieldSubmitted: (value){
-                      //   //HapticFeedback.heavyImpact();
-                      //   //Navigator.of(context).pop(alertTEC.text);
-                      // },
-                            
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: darken(Color(0xFF1e2025), 25),
-                        contentPadding: EdgeInsets.only(
-                          bottom: 10, 
-                          left: 8 
-                        ),
-                        constraints: BoxConstraints(
-                          maxWidth: 50,
-                          maxHeight: 30,
-                        ),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                        hintText: 'Sets', //This should be made to be whateever this value was last workout
-                      ),
-                    ),
-                  ),
-                ),
-                          
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
-                      if (hasFocus){
-                        setState((){context.read<Profile>().done = true;});
-                      }
-                      // }else{
-                      //   setState((){context.read<Profile>().done = false;});
-                      // }
-                    
-                      
-                    },
-                    child: TextFormField(
-                    
-                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
-                      
-                      keyboardType: TextInputType. numberWithOptions(decimal: true),
-                                                          
-                      decoration:  InputDecoration(
-                        filled: true,
-                        fillColor: darken(Color(0xFF1e2025), 25),
-                        contentPadding: EdgeInsets.only(
-                          bottom: 10, 
-                          left: 8 
-                        ),
-                        constraints: BoxConstraints(
-                          maxWidth: 80,
-                          maxHeight: 30,
-                        ),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                        hintText: 'RPE', //This should be made to be whateever this value was last workout
-                      ),
-                    ),
-                  ),
-                ),
-                          
-                Icon(Icons.clear),
-                          
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
-                      if (hasFocus){
-                        setState((){context.read<Profile>().done = true;});}
-                      // }else{
-                      //   setState((){context.read<Profile>().done = false;});
-                      // }
-                    
-                      
-                    },
-                    child: TextFormField(
-                      
-                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
-
-                      
-                      keyboardType: TextInputType. numberWithOptions(decimal: true,),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: darken(Color(0xFF1e2025), 25),
-                        contentPadding: EdgeInsets.only(
-                          bottom: 10, 
-                          left: 8 
-                        ),
-                        constraints: BoxConstraints(
-                          maxWidth: 80,
-                          maxHeight: 30,
-                        ),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                        hintText: 'Reps', //This should be made to be whateever this value was last workout
-                      ),
-                    ),
-                  ),
-                ),                  
-              ],
-            ),
-          ),
+          child: DisplaySet(context, index, exerciseIndex, setIndex),
         );
       },
     );
   }
+
+  Widget DisplaySet(BuildContext context, int index, int exerciseIndex, int setIndex) {
+  // State variable to control the view (either AxBxC or input fields)
+  
+
+  return Row(
+  
+    children: [
+      // Gesture detector to toggle between AxBxC and the editable fields
+      (editIndex[0] == index && editIndex[1] == exerciseIndex && editIndex[2] == setIndex) 
+            ? Container(
+              color: lighten(Color(0xFF1e2025), 20),
+                      
+              width: MediaQuery.sizeOf(context).width - 48,
+            
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  
+                  children: [
+                    // Show text fields when editing
+                    _buildTextField(
+                      context,
+                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
+                      hint: 'Sets',
+                      maxWidth: 50,
+                    ),
+                    _buildTextField(
+                      context,
+                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
+                      hint: 'RPE',
+                      maxWidth: 80,
+                    ),
+                    Icon(Icons.clear),
+                    _buildTextField(
+                      context,
+                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
+                      hint: 'Reps',
+                      maxWidth: 80,
+                    ),
+                    Spacer(flex: 1),
+                    IconButton(
+                      padding: EdgeInsets.all(0.0),
+                      style: ButtonStyle(
+                        shape: WidgetStateProperty.all<OutlinedBorder>(
+                          CircleBorder(), 
+                        ),
+
+                        minimumSize: WidgetStateProperty.all<Size>(
+                          Size(32, 32), 
+                        ),
+
+                        side: WidgetStateProperty.all<BorderSide>(
+                          BorderSide(
+
+                            color: Colors.orange,//socks,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      
+
+                      onPressed: () {
+                        setState(() {editIndex = [-1, -1, -1];});
+                        
+                      },
+                      
+                      icon: Icon(Icons.check, color: Colors.orange,)//socks
+                    )
+                  ],
+                ),
+              ),
+            )
+          : GestureDetector(
+            onTap: () {
+              setState(() {
+                  editIndex = [index, exerciseIndex, setIndex]; // Toggle between edit and nice view
+            
+                //debugPrint("Swapped! $editIndex");
+              });
+            },
+            child: AbsorbPointer(
+              child: Container(
+              
+                width: MediaQuery.sizeOf(context).width - 48,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        // Display AxBxC format when not editing
+                        
+                        Text(
+                          '${context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex].text} x '
+                          '${context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex].text} x '
+                          '${context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 8),
+                        //Icon(Icons.edit, size: 20),
+                      ],
+                    ),
+                ),
+              ),
+            ),
+          ),
+    ],
+  );
+}
+
+Widget _buildTextField(BuildContext context, {
+  required TextEditingController controller,
+  required String hint,
+  required double maxWidth,
+}) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: darken(Color(0xFF1e2025), 25),
+        contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+        constraints: BoxConstraints(
+          maxWidth: maxWidth,
+          maxHeight: 30,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        hintText: hint,
+      ),
+    ),
+  );
+}
+
 
   //TODO: move to another file
   //this is to show text box to enter text for day titles and exercises

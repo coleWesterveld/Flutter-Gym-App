@@ -8,7 +8,10 @@ import 'package:flutter/services.dart' show rootBundle;
 //TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
-// TODO: spell exercise correctly (not exercise)
+
+// Problems to fix from migration: 
+
+
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
