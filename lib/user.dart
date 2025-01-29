@@ -392,8 +392,9 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-
-    void moveSet({
+  //trying toi fix this.. getting "database is locked?"
+  // need to find whats locking it...
+  void moveSet({
     required int oldIndex,
     required int newIndex,
     required int dayIndex,
@@ -429,7 +430,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[dayIndex][exerciseIndex].removeAt(oldIndex);
     reps2TEC[dayIndex][exerciseIndex].insert(newIndex, moveReps2TEC);
     
-    updateexerciseOrderInDatabase(dayIndex);
+    updateSetOrderInDatabase(dayIndex, exerciseIndex);
     notifyListeners();
 
     // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
@@ -653,23 +654,30 @@ class Profile extends ChangeNotifier {
     TextEditingController? newRpeTEC,
     TextEditingController? newReps2TEC,
     TextEditingController? newReps1TEC,
-
   }) async {
+    // Update the data in the sets list
     sets[index1][index2][index3] = data;
 
-    newSetsTEC = newSetsTEC ?? TextEditingController();
-    newReps2TEC = newReps2TEC ?? TextEditingController();
-    newReps1TEC = newReps1TEC ?? TextEditingController();
-    newRpeTEC = newRpeTEC ?? TextEditingController();
+    // Preserve existing controllers if new ones are not provided
+    setsTEC[index1][index2][index3] = newSetsTEC ?? setsTEC[index1][index2][index3];
+    reps1TEC[index1][index2][index3] = newReps1TEC ?? reps1TEC[index1][index2][index3];
+    reps2TEC[index1][index2][index3] = newReps2TEC ?? reps2TEC[index1][index2][index3];
+    rpeTEC[index1][index2][index3] = newRpeTEC ?? rpeTEC[index1][index2][index3];
 
-    setsTEC[index1][index2][index3] = newSetsTEC;
-    reps1TEC[index1][index2][index3] = newReps1TEC;
-    reps2TEC[index1][index2][index3] = newReps2TEC;
-    rpeTEC[index1][index2][index3] = newRpeTEC;
+    // Update database
+    dbHelper.updatePlannedSet(
+      data.setID, 
+      {
+        'num_sets': data.numSets, 
+        'set_lower': data.setLower, 
+        'set_upper': data.setUpper ?? 0,
+        'rpe' : data.rpe,
+      }
+    );
 
-    dbHelper.updatePlannedSet(data.setID, {'num_sets': data.numSets, 'set_lower': data.setLower, 'set_upper' : data.setUpper ?? -1});
     notifyListeners();
   }
+
 
   //inserts exercise onto a specific day in list
   void setsInsert({
@@ -694,7 +702,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1][index2].insert(index3, newReps2TEC);
     rpeTEC[index1][index2].insert(index3, newRpeTEC);
 
-    dbHelper.insertPlannedSet(data.exerciseID, data.numSets, data.setLower, data.setUpper ?? -1, index3, data.rpe);
+    dbHelper.insertPlannedSet(data.exerciseID, data.numSets, data.setLower, data.setUpper ?? 0, index3, data.rpe);
     notifyListeners();
   }
 
@@ -710,14 +718,14 @@ class Profile extends ChangeNotifier {
     // TextEditingController? newReps1TEC,
 
   }) async {
-    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].exerciseID, -1, -1, -1, sets[index1][index2].length, -1);
+    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].exerciseID, 0, 0, 0, sets[index1][index2].length, 0);
     
     sets[index1][index2].add(PlannedSet(
       exerciseID: exercises[index1][index2].exerciseID,
       setID: id,
       numSets: 1,
-      setLower: -1,
-      setUpper: -1,
+      setLower: 0,
+      setUpper: 0,
       setOrder: sets[index1][index2].length,
       )
       );

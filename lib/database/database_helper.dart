@@ -495,7 +495,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       'set_lower': setLower,
       'set_upper': setUpper,
       'set_order': setOrder,
-      'rpe': rpe ?? -1,
+      'rpe': rpe ?? 0,
     });
   }
 

@@ -922,6 +922,7 @@ class _MyListState extends State<ProgramPage> {
                           index3: setIndex, 
                           // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
                           // if empty, will save 0. else, will disregard the 0.
+                          // THIS IS PROBLEMATIC IF -1 is put - have "0-1"
                           data: context.read<Profile>().sets[index][exerciseIndex][setIndex].copyWith(
                             newNumSets: int.parse("0${context.read<Profile>().setsTEC[index][exerciseIndex][setIndex].text}"),
                             newRpe: int.parse("0${context.read<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}"),
