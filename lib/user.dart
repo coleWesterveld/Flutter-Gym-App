@@ -447,7 +447,9 @@ class Profile extends ChangeNotifier {
       final plannedSet = sets[dayIndex][exerciseIndex][i];
       if (plannedSet.setOrder != i) { // If the current order differs
         sets[dayIndex][exerciseIndex][i] = sets[dayIndex][exerciseIndex][i].copyWith(newSetOrder: i);
-        await dbHelper.updateExercise(plannedSet.setID, {'set_order' : i});
+        await dbHelper.updatePlannedSet(
+          plannedSet.setID, 
+          {'set_order' : i});
       }
     }
     //probably dont need this, and could be done after notify in other function
@@ -665,7 +667,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1][index2][index3] = newReps2TEC;
     rpeTEC[index1][index2][index3] = newRpeTEC;
 
-    dbHelper.updatePlannedSet(data.setID, data.numSets, data.setLower, data.setUpper ?? -1);
+    dbHelper.updatePlannedSet(data.setID, {'num_sets': data.numSets, 'set_lower': data.setLower, 'set_upper' : data.setUpper ?? -1});
     notifyListeners();
   }
 

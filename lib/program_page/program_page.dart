@@ -23,6 +23,7 @@ I think the not saving problem is because i am unfocusing but not saving when I 
 
 //import 'package:firstapp/main.dart';
 import 'package:firstapp/database/database_helper.dart';
+import 'package:firstapp/database/profile.dart';
 //import 'package:firstapp/database/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -701,18 +702,18 @@ class _MyListState extends State<ProgramPage> {
                               
                                 onPressed: () {
                                   HapticFeedback.heavyImpact();
-                                  setState(() {
+                                  
                                     context.read<Profile>().setsAppend(
                                       // newSets: 
                                       // SplitDayData(data: "New Set", dayColor: Colors.black), 
                                       index1: index,
-                                      index2: exerciseIndex,
-                                    );
+                                      index2: exerciseIndex,);
+                                    
                                     editIndex = [index, 
                                                       exerciseIndex, 
                                                       context.read<Profile>().sets[index][exerciseIndex].length
                                                 ];
-                                  });  
+                                  setState(() {});
                                 },
                                 label: Row(
                                   children:  [
@@ -836,7 +837,7 @@ class _MyListState extends State<ProgramPage> {
                   style: TextStyle(
                     color: Colors.white
                   ),
-                  'exercise Deleted'
+                  'Set Deleted'
                 ),
               ),
             );
@@ -904,7 +905,7 @@ class _MyListState extends State<ProgramPage> {
                         side: WidgetStateProperty.all<BorderSide>(
                           BorderSide(
 
-                            color: Colors.orange,//socks,
+                            color: Colors.orange,
                             width: 2.0,
                           ),
                         ),
@@ -912,11 +913,26 @@ class _MyListState extends State<ProgramPage> {
                       
 
                       onPressed: () {
+                        // still something strange - need to debug
+                        // seems like the TEC text is not saving after renders
                         setState(() {editIndex = [-1, -1, -1];});
+                        context.read<Profile>().setsAssign(
+                          index1: index, 
+                          index2: exerciseIndex, 
+                          index3: setIndex, 
+                          // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
+                          // if empty, will save 0. else, will disregard the 0.
+                          data: context.read<Profile>().sets[index][exerciseIndex][setIndex].copyWith(
+                            newNumSets: int.parse("0${context.read<Profile>().setsTEC[index][exerciseIndex][setIndex].text}"),
+                            newRpe: int.parse("0${context.read<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}"),
+                            newSetLower: int.parse("0${context.read<Profile>().reps1TEC[index][exerciseIndex][setIndex].text}"),
+                            newSetUpper: int.parse("0${context.read<Profile>().reps2TEC[index][exerciseIndex][setIndex].text}"),
+                          )
+                        );
                         
                       },
                       
-                      icon: Icon(Icons.check, color: Colors.orange,)//socks
+                      icon: Icon(Icons.check, color: Colors.orange,)
                     )
                   ],
                 ),
@@ -942,9 +958,9 @@ class _MyListState extends State<ProgramPage> {
                         // Display AxBxC format when not editing
                         
                         Text(
-                          '${context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex].text} x '
-                          '${context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex].text} x '
-                          '${context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}',
+                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].numSets} x '
+                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].setLower} x '
+                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].rpe}',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(width: 8),

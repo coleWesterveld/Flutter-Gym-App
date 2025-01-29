@@ -140,18 +140,18 @@ class DatabaseHelper {
   }
 
   Future<void> _loadExercisesFromText(Database db) async {
-    // Load the text file as a string
-    final data = await rootBundle.loadString('assets/exercises.txt');
-    final lines = data.split('\n');
+  final data = await rootBundle.loadString('assets/exercises.txt');
+  final lines = data.split('\n');
 
-    // Parse each line and insert it into the database
+  await db.transaction((txn) async {
     for (var line in lines) {
       if (line.trim().isNotEmpty) {
         final parts = line.split(',');
         if (parts.length >= 2) {
           final name = parts[0].trim();
           final category = parts[1].trim();
-          await db.insert('exercises', {
+          //debugPrint('Inserting exercise: $name');
+          await txn.insert('exercises', {
             'exercise_title': name,
             'muscles_worked': category,
             'persistent_note': '',
@@ -159,7 +159,10 @@ class DatabaseHelper {
         }
       }
     }
-  }
+    debugPrint("Done Initial Insert");
+  });
+}
+
 
   // Add initial data to program in startup
   Future<void> _insertInitialData(Database db) async {
@@ -195,7 +198,7 @@ class DatabaseHelper {
     await db.insert('exercise_instances', {'day_id': 3, 'exercise_title': 'Leg Extension', 'exercise_order': 5, 'exercise_id' : 852});
 
     // Sets for each exercise
-    // Each will just start off with 3 sets, 5-8 reps, RPE 8//socks
+    // Each will just start off with 3 sets, 5-8 reps, RPE 8
     // TODO: this "3" needs to be updated to however many exercises are pre added
     for (int i = 1; i <= 15; i++){
       await db.insert('plannedSets', {
@@ -448,6 +451,7 @@ class DatabaseHelper {
   // TODO: make naming better of exercises vs exercise instances in methods
   Future<List<String>> fetchExerciseTitlesFromAll() async {
     final db = await DatabaseHelper.instance.database;
+    debugPrint('Querying exercises...');  
     final result = await db.query(
       'exercises',
     );
@@ -471,6 +475,18 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // PLANNED SET TABLE CRUD
 
+
+/*
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+        DONE num_sets INTEGER NOT NULL,
+        DONE set_lower INTEGER NOT NULL,
+        DONE set_upper INTEGER NOT NULL,
+        DONE exercise_instance_id INTEGER NOT NULL,
+        DONEset_order INTEGER NOT NULL,
+         DONErpe INTEGER NOT NULL,
+        FOREIGN KEY (exercise_instance_id) REFERENCES exercise_instances (id) ON DELETE CASCADE
+      );
+*/
   Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('plannedSets', {
@@ -493,15 +509,11 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> updatePlannedSet(int plannedSetId, int numSets, int setLower, int setUpper) async {
+  Future<int> updatePlannedSet(int plannedSetId, Map<String, dynamic> updatedValues) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
       'plannedSets',
-      {
-        'num_sets': numSets,
-        'set_lower': setLower,
-        'set_upper': setUpper,
-      },
+      updatedValues,
       where: 'id = ?',
       whereArgs: [plannedSetId],
     );
