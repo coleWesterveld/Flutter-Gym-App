@@ -2,13 +2,13 @@
 // not updated
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import "user.dart";
+import "../user.dart";
 import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 // overall goal of this page:
 // metrics for motivation/acccountability
-// insights into effective excercises or routines 
+// insights into effective exercises or routines 
 // (effectiveness measured by increased strength, or other metric)
 // fun for workout and data geeks :)
 
@@ -28,7 +28,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 //  important could be "progressing exceptionally well/poorly"
 
 // for this, I may need to adjust my approach that I am taking currently: 
-// I may need a list of all excercises possible, otherwise for example:
+// I may need a list of all exercises possible, otherwise for example:
 // "Dumbbell Press" would be different to "dumbbell press" to "dumbbell chest press"
 // which proably mean all the same thing
 Color lighten(Color c, [int percent = 10]) {
@@ -110,7 +110,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: SearchBar(
-                  hintText: "Search excercise",
+                  hintText: "Search exercise",
         
                   onTapOutside:(event) => WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
                   constraints: BoxConstraints(
@@ -269,7 +269,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       
                       // Column(children: [
                       //   // good start make it look better and needs more metrics in the week view but overall good
-                      //   // maybe have an arrow for each excercise to take the user to see the full graph
+                      //   // maybe have an arrow for each exercise to take the user to see the full graph
                       //   Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
                       //   Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
                       //   Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
@@ -591,8 +591,8 @@ class _DayProgressState extends State<DayProgress> {
             Expanded(
               child: ListView.builder(
               
-                  itemCount: context.read<Profile>().excercises[widget.index].length,
-                  itemBuilder: (context, excerciseIndex) {
+                  itemCount: context.read<Profile>().exercises[widget.index].length,
+                  itemBuilder: (context, exerciseIndex) {
                     return Container(
                       
                       decoration: BoxDecoration(
@@ -616,7 +616,7 @@ class _DayProgressState extends State<DayProgress> {
                                   overflow: TextOverflow.ellipsis,
                                   softWrap: true,
                                   maxLines: 2,
-                                  context.read<Profile>().excercises[widget.index][excerciseIndex].excerciseTitle,
+                                  context.read<Profile>().exercises[widget.index][exerciseIndex].exerciseTitle,
                                 ),
                               ),
                             ),

@@ -2,9 +2,9 @@
 //not updated
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
+import '../user.dart';
 //import 'package:flutter/cupertino.dart';
-import 'schedule_page.dart';
+import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
 import 'dart:math';
 
@@ -215,7 +215,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                 ),
               ),
 
-              //expandable to see excercises and sets for that day
+              //expandable to see exercises and sets for that day
               child: ExpansionTile(
                   controller: controllers[index],
                   key: ValueKey(context.watch<Profile>().split[index]),
@@ -265,6 +265,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                       fontSize: 50,
                                       fontWeight: FontWeight.w900,
                                     ),
+                                    
 
                                     //day title
                                   ),
@@ -294,10 +295,10 @@ class _WorkoutPageState extends State<WorkoutPage>
                   ),
 
                   //children of expansion tile - what gets shown when user expands that day
-                  // shows excercises for that day
+                  // shows exercises for that day
                   //this part is viewed after tile is expanded
-                  //TODO: show sets per excercise, notes, maybe most recent weight/reps
-                  //excercises are reorderable
+                  //TODO: show sets per exercise, notes, maybe most recent weight/reps
+                  //exercises are reorderable
                   children: [
                     Container(
                       decoration: const BoxDecoration(
@@ -311,17 +312,17 @@ class _WorkoutPageState extends State<WorkoutPage>
                         // is annoying so i disabled it
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount:
-                            context.read<Profile>().excercises[index].length +
+                            context.read<Profile>().exercises[index].length +
                                 1,
                         shrinkWrap: true,
 
-                        //displaying list of excercises for that day
+                        //displaying list of exercises for that day
 
-                        itemBuilder: (context, excerciseIndex) {
-                          if (excerciseIndex ==
+                        itemBuilder: (context, exerciseIndex) {
+                          if (exerciseIndex ==
                               context
                                   .read<Profile>()
-                                  .excercises[index]
+                                  .exercises[index]
                                   .length) {
                             return Padding(
                               padding: const EdgeInsets.all(8),
@@ -437,20 +438,16 @@ class _WorkoutPageState extends State<WorkoutPage>
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                            SizedBox(
-                                              // TODO: fix error here, setsTEC is not getting updated as it should
-                                              height: max(45,context.watch<Profile>().setsTEC[index][excerciseIndex].length * 20 + 16),
-                                              //color: Colors.red,s
-                                              child: Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(12.0),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(12.0),
+                                                child: SizedBox(
+                                                  width: MediaQuery.sizeOf(context).width - 172,
                                                   child: Text(
-                                                    context
-                                                        .watch<Profile>()
-                                                        .excercises[index]
-                                                            [excerciseIndex]
-                                                        .excerciseTitle,
+                                                    overflow: TextOverflow.visible,
+                                                    //softWrap: true,
+                                                    context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
                                                     style: const TextStyle(
                                                       color: Color.fromARGB(
                                                           255, 255, 255, 255),
@@ -462,19 +459,19 @@ class _WorkoutPageState extends State<WorkoutPage>
                                               ),
                                             ),
                                             SizedBox(
-                                            height: context.watch<Profile>().setsTEC[index][excerciseIndex].length * 20 + 16,
+                                            height: context.watch<Profile>().setsTEC[index][exerciseIndex].length * 20 + 16,
                                             width: 100,
                                             child: Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: ListView(
                                                 physics: const NeverScrollableScrollPhysics(),
                                                 children: [
-                                                  for(int i = 0; i < context.watch<Profile>().setsTEC[index][excerciseIndex].length; i++) 
+                                                  for(int i = 0; i < context.watch<Profile>().setsTEC[index][exerciseIndex].length; i++) 
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 24.0),
                                                       child: Center(
                                                         child: Text(
-                                                          "${context.watch<Profile>().setsTEC[index][excerciseIndex][i].text} x ${context.watch<Profile>().reps1TEC[index][excerciseIndex][i].text}",
+                                                          "${context.watch<Profile>().setsTEC[index][exerciseIndex][i].text} x ${context.watch<Profile>().reps1TEC[index][exerciseIndex][i].text}",
                                                           style: const TextStyle(
                                                             fontWeight: FontWeight.w700,
                                                           )

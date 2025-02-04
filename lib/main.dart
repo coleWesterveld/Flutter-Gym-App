@@ -7,10 +7,10 @@ import 'package:provider/provider.dart';
 
 
 //import 'package:shared_preferences/shared_preferences.dart';
-import 'workout_selection_page.dart';
-import 'schedule_page.dart';
-import 'program_page.dart';
-import 'analytics_page.dart';
+import 'workout_page/workout_selection_page.dart';
+import 'schedule_page/schedule_page.dart';
+import 'program_page/program_page.dart';
+import 'analytics_page/analytics_page.dart';
 import 'user.dart';
 //import 'data_saving.dart';
 import 'database/database_helper.dart';
@@ -71,9 +71,9 @@ class _MainPage extends State<NavigationBarApp> {
             //split: split,
             controllers: [],//setControllers()
             // this is temporairy while i figure out persistence for the split,
-            // so that i dont run into index out of range on the excercises
+            // so that i dont run into index out of range on the exercises
             //with sets this is atrocious lol
-            //excercises: excercises,
+            //exercises: exercises,
 
             //sets: sets,
 
@@ -128,7 +128,7 @@ class NavigationExampleState extends State<NavigationExample> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     //var list = ['Legs', 'Push', 'Pull'];
-    //var excercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
+    //var exercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
       resizeToAvoidBottomInset: true,
 

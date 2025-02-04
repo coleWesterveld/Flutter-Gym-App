@@ -8,8 +8,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
-import 'database/profile.dart';
+import '../user.dart';
+import '../database/profile.dart';
 import 'edit_schedule.dart';
 
 class Event{
@@ -59,7 +59,7 @@ class SchedulePage extends StatefulWidget {
 }
 
 // this class contains the list view of expandable card tiles 
-// title is day title (eg. 'legs') and when expanded, leg excercises for that day show up
+// title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class _MyScheduleState extends State<SchedulePage> {
   DateTime today = DateTime.now();
   Map<DateTime, List<Event>> events = {};

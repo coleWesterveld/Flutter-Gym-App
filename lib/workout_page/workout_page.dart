@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'user.dart';
+import '../user.dart';
 
 class Workout extends StatefulWidget {
   const Workout({super.key});
@@ -38,7 +38,7 @@ class _WorkoutState extends State<Workout> {
 
     // activeDay 
     // return ListView.builder(
-    //   itemCount: context.watch<Profile>()excercises[activeDayInde],
+    //   itemCount: context.watch<Profile>()exercises[activeDayInde],
     //   itemBuilder: itemBuilder
     //   );
   }
