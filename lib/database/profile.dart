@@ -84,13 +84,12 @@ class Day {
   }
 }
 
-// exercise TABLE
+// exercise_instances TABLE
 // (one exercise -> many planned sets, many set records)
 class Exercise {
   final int exerciseID;
   final int dayID;
   final String exerciseTitle;
-  final String? persistentNote;
   final int exerciseOrder;
 
 
@@ -99,7 +98,6 @@ class Exercise {
     required this.dayID, 
     required this.exerciseTitle, 
     required this.exerciseOrder,
-    this.persistentNote
   });
 
   Map<String, dynamic> toMap() {
@@ -107,7 +105,6 @@ class Exercise {
       'id': exerciseID,
       'day_id': dayID,
       'exercise_title': exerciseTitle,
-      'persistent_note': persistentNote,
       'exercise_order': exerciseOrder,
     };
   }
@@ -117,13 +114,12 @@ class Exercise {
       exerciseID: map['id'],
       dayID: map['day_id'],
       exerciseTitle: map['exercise_title'],
-      persistentNote: map['persistent_note'],
       exerciseOrder: map['exercise_order']
     );
   }
   @override
   String toString() {
-    return 'exercise{title: $exerciseTitle, id: $exerciseID, dayID: $dayID, persistNote: $persistentNote}';
+    return 'exercise{title: $exerciseTitle, id: $exerciseID, dayID: $dayID';
   }
 
   Exercise copyWith({int? newDayID, int? newexerciseID, String? newexerciseTitle, int? newexerciseOrder}) {
@@ -211,7 +207,6 @@ class SetRecord {
   final int weight;
   final int rpe;
   final String? historyNote;
-
 
   SetRecord({
     required this.recordID, 

@@ -143,23 +143,20 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-  
-  //I feel like there should be a better way to do all this instead of using a bunch of methods
-  // but it works so thats a later problem
+  // TODO: I think many of these methods could be simpler setters and getters?
   void changeDone(bool val){
     done = val;
     notifyListeners();
   }
 
+  // sets whatever day the user is currently doing
   void setActiveDay(int? index){
     activeDayIndex = (index != null && index >= 0 && index < split.length) ? index: null;
     activeDay = (index != null && index >= 0 && index < split.length) ? split[index]: null;
     notifyListeners();
   }
 
-  // since this function is async, we will have to await it if we want a value
   void updateSplitLength() {
-    //final resolvedSplit = await split; // Resolve the future
     if (split.length > 7) {
       splitLength = split.length;
     } else {
@@ -168,36 +165,22 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-  void splitAppend(/*{
-  
-    // required String newDay,
-    // required List<exercise> newexercises,
-    // required List<List<PlannedSet>> newSets,
-    // required List<List<TextEditingController>> newSetsTEC,
-    // required List<List<TextEditingController>> newReps1TEC,
-    // required List<List<TextEditingController>> newReps2TEC,
-    // required List<List<TextEditingController>> newRpeTEC,
-  }*/) async {
-    // this function resolves the data (waits for it to come in from future), mutates it and then reassigns it.
-    // this is to ultimately add a day and update the future variables
-
-    //final resolvedSplit = await split;
-    //final resolvedexercises = await exercises;
-    //final resolvedSets = await sets;
+  void splitAppend() async {
 
     int id = await dbHelper.insertDay(1, "New Day", split.length);
 
     split.add(
       Day(
-      dayOrder: split.length,
-      dayTitle: "New Day", 
-      programID: 1,
-      dayColor: colors[(split.length + 1) % (colors.length)].value,
-      dayID: id,
-    ));
+        dayOrder: split.length,
+        dayTitle: "New Day", 
+        programID: 1,
+        dayColor: colors[(split.length + 1) % (colors.length)].value,
+        dayID: id,
+      )
+    );
 
+    // add sets and exercises and TECs for the day
     exercises.add([]);
-
     sets.add([]);
 
     setsTEC.add([]);
@@ -206,11 +189,6 @@ class Profile extends ChangeNotifier {
     rpeTEC.add([]);
     controllers.add(ExpansionTileController());
 
-
-    // split = Future.value(resolvedSplit);
-    // exercises = Future.value(resolvedexercises);
-    // sets = Future.value(resolvedSets);
-
     updateSplitLength();
     notifyListeners();
   }
@@ -218,34 +196,20 @@ class Profile extends ChangeNotifier {
   void splitPop({
     required int index,
   }) async {
-    // this resolves to future variables, deletes a given day, and then updates them
-    // also updates database to reflect
-    // final resolvedSplit = await split;
-    // final resolvedexercises = await exercises;
-    // final resolvedSets = await sets;
-    //int index = id - 1;
     int id = split[index].dayID;
 
     split.removeAt(index);
     exercises.removeAt(index);
     sets.removeAt(index);
 
-    // these are not future and so can be updated directly, no need to resolve
     setsTEC.removeAt(index);
     reps1TEC.removeAt(index);
     reps2TEC.removeAt(index);
     rpeTEC.removeAt(index);
 
-    // split = Future.value(resolvedSplit);
-    // exercises = Future.value(resolvedexercises);
-    // sets = Future.value(resolvedSets);
-
-
     // this *should* cascade in database and delete all other associated exercises n stuff
     dbHelper.deleteDay(id);
     
-    //dbHelper.deleteExercisesByDayId(resolvedSplit[index].dayID);
-    //dbHelper.deletePlannedSet(plannedSetId);
     updateDaysOrderInDatabase();
 
     updateSplitLength();
@@ -262,9 +226,7 @@ class Profile extends ChangeNotifier {
     if (newIndex > oldIndex) {
       newIndex -= 1;
     } 
-    // remove the day from its old index in split
-    // insert the day into its new index in the list 
-    // do the same for exercises, sets and controllers
+
     // this should be able to be done with the remove and insert functions I made, 
     // right now idk if they work so Ill do it like this
     // TODO: use insert/delete to do this
@@ -312,22 +274,29 @@ class Profile extends ChangeNotifier {
     //update: i did decide to move this
   }
 
-  Future<void> updateDaysOrderInDatabase() async {
-    // Loop through _split and update day_order based on the new index
+Future<void> updateDaysOrderInDatabase() async {
+  final db = await dbHelper.database; // Get database instance
+  await db.transaction((txn) async {
     for (int i = 0; i < split.length; i++) {
       final day = split[i];
-      if (day.dayOrder != i) { // If the current order differs
+      if (day.dayOrder != i) { // Only update if needed
         split[i] = split[i].copyWith(newDayOrder: i);
-        await dbHelper.updateDayOrder(day.dayID, i);
+        await txn.update(
+          'days', 
+          {'day_order': i},
+          where: 'id = ?',
+          whereArgs: [day.dayID],
+        );
       }
     }
-    //probably dont need this, and could be done after notify in other function
-    // do performance check, later
-    notifyListeners();
-  }
+  });
+
+  // Notify listeners after transaction completes
+  notifyListeners();
+}
 
 
-  void moveexercise({
+  void moveExercise({
     required int oldIndex,
     required int newIndex,
     required int dayIndex,
@@ -366,7 +335,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[dayIndex].removeAt(oldIndex);
     reps2TEC[dayIndex].insert(newIndex, moveReps2TEC);
     
-    updateexerciseOrderInDatabase(dayIndex);
+    updateExerciseOrderInDatabase(dayIndex);
     notifyListeners();
 
     // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
@@ -378,19 +347,28 @@ class Profile extends ChangeNotifier {
     //update: i did decide to move this
   }
 
-  Future<void> updateexerciseOrderInDatabase(int dayIndex) async {
-    // Loop through _split and update day_order based on the new index
-    for (int i = 0; i < exercises[dayIndex].length; i++) {
-      final exercise = exercises[dayIndex][i];
-      if (exercise.exerciseOrder != i) { // If the current order differs
-        exercises[dayIndex][i] = exercises[dayIndex][i].copyWith(newexerciseOrder: i);
-        await dbHelper.updateExercise(exercise.exerciseID, {'exercise_order' : i});
+  Future<void> updateExerciseOrderInDatabase(int dayIndex) async {
+    final db = await dbHelper.database; // Get database instance
+
+    await db.transaction((txn) async {
+      for (int i = 0; i < exercises[dayIndex].length; i++) {
+        final exercise = exercises[dayIndex][i];
+        if (exercise.exerciseOrder != i) { // Only update if needed
+          exercises[dayIndex][i] = exercise.copyWith(newexerciseOrder: i);
+          await txn.update(
+            'exercise_instances', 
+            {'exercise_order': i},
+            where: 'id = ?',
+            whereArgs: [exercise.exerciseID],
+          );
+        }
       }
-    }
-    //probably dont need this, and could be done after notify in other function
-    // do performance check, later
+    });
+
+    // Notify listeners after transaction completes
     notifyListeners();
   }
+
 
   //trying toi fix this.. getting "database is locked?"
   // need to find whats locking it...
@@ -442,7 +420,7 @@ class Profile extends ChangeNotifier {
     //update: i did decide to move this
   }
 
-    Future<void> updateSetOrderInDatabase(int dayIndex, int exerciseIndex) async {
+  Future<void> updateSetOrderInDatabase(int dayIndex, int exerciseIndex) async {
     // Loop through _split and update day_order based on the new index
     for (int i = 0; i < sets[dayIndex][exerciseIndex].length; i++) {
       final plannedSet = sets[dayIndex][exerciseIndex][i];
@@ -450,7 +428,7 @@ class Profile extends ChangeNotifier {
         sets[dayIndex][exerciseIndex][i] = sets[dayIndex][exerciseIndex][i].copyWith(newSetOrder: i);
         await dbHelper.updatePlannedSet(
           plannedSet.setID, 
-          {'set_order' : i});
+          {'set_order' : i});//socks
       }
     }
     //probably dont need this, and could be done after notify in other function
@@ -516,45 +494,35 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-  //adds new exercise to end of list of exercises at index
-  void exerciseAppend(
-    {required int index}
-    /*{
-    // required exercise newexercise,
-    // required List<PlannedSet> newSets,
-    // required int index,
-    // required List<TextEditingController> newSetsTEC,
-    // required List<TextEditingController> newReps1TEC,
-    // required List<TextEditingController> newReps2TEC,
-    // required List<TextEditingController> newRpeTEC,
-  }*/) async {
-    // int dayID = split[index].dayID;
-    // exercises[index].add(newexercise);
-    // sets[index].add(newSets);
-    // setsTEC[index].add(newSetsTEC);
-    // reps1TEC[index].add(newReps1TEC);
-    // reps2TEC[index].add(newReps2TEC);
-    // rpeTEC[index].add(newRpeTEC);
-    int id = await dbHelper.insertExercise(dayId: split[index].dayID, exerciseTitle: "New exercise", exerciseOrder: exercises[index].length);
+  void exerciseAppend({required int index, required int exerciseId}) async {
+    // Insert the exercise into the database and get the inserted ID
+    int id = await dbHelper.insertExercise(
+      dayID: split[index].dayID,
+      exerciseOrder: exercises[index].length,
+      exerciseID: exerciseId,
+    );
 
+    // Fetch the title of the exercise from the exercises table
+    String exerciseTitle = await dbHelper.fetchExerciseTitleById(exerciseId);
+
+    // Add the exercise to the list with the fetched title
     exercises[index].add(
       Exercise(
         exerciseID: id,
         dayID: split[index].dayID,
-        exerciseTitle: "New exercise",
+        exerciseTitle: exerciseTitle, // Use the title from the database
         exerciseOrder: exercises[index].length,
-    ));
+      ),
+    );
 
-    //exercises.add([]);
-
+    // Add empty sets and their corresponding controllers
     sets[index].add([]);
-
     setsTEC[index].add([]);
     reps1TEC[index].add([]);
     reps2TEC[index].add([]);
     rpeTEC[index].add([]);
 
-    
+    // Notify listeners to update the UI
     notifyListeners();
   }
 
@@ -563,14 +531,14 @@ class Profile extends ChangeNotifier {
     required int index1,
     required int index2,
   }) async {
-    dbHelper.deleteExercise(exercises[index1][index2].exerciseID);
+    dbHelper.deleteExerciseInstance(exercises[index1][index2].exerciseID);
     exercises[index1].removeAt(index2);
     sets[index1].removeAt(index2);
     setsTEC[index1].removeAt(index2);
     reps1TEC[index1].removeAt(index2);
     reps2TEC[index1].removeAt(index2);
     rpeTEC[index1].removeAt(index2);
-    updateexerciseOrderInDatabase(index1); 
+    updateExerciseOrderInDatabase(index1); 
 
     
     notifyListeners();
@@ -589,7 +557,7 @@ class Profile extends ChangeNotifier {
     // required List<TextEditingController> newRpeTEC,
 
   }) async {
-    dbHelper.updateExercise(exercises[index1][index2].exerciseID, {'exercise_title': data.exerciseTitle});
+    dbHelper.updateExerciseInstance(exercises[index1][index2].exerciseID, {'exercise_title': data.exerciseTitle});
     exercises[index1][index2] = data;
     //sets[index1][index2] = newSets;
     // setsTEC[index1][index2] =  newSetsTEC;
@@ -621,7 +589,7 @@ class Profile extends ChangeNotifier {
     reps2TEC[index1].insert(index2, newReps2TEC);
     rpeTEC[index1].insert(index2, newRpeTEC);
 
-    dbHelper.insertExercise(dayId: exercises[index1][index2].dayID, exerciseTitle: data.exerciseTitle, exerciseOrder: index2);
+    dbHelper.insertExercise(dayID: exercises[index1][index2].dayID, exerciseOrder: index2, exerciseID: data.exerciseID);
 
     notifyListeners();
   }

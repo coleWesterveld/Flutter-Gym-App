@@ -265,6 +265,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                       fontSize: 50,
                                       fontWeight: FontWeight.w900,
                                     ),
+                                    
 
                                     //day title
                                   ),
@@ -437,20 +438,16 @@ class _WorkoutPageState extends State<WorkoutPage>
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                            SizedBox(
-                                              // TODO: fix error here, setsTEC is not getting updated as it should
-                                              height: max(45,context.watch<Profile>().setsTEC[index][exerciseIndex].length * 20 + 16),
-                                              //color: Colors.red,s
-                                              child: Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(12.0),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(12.0),
+                                                child: SizedBox(
+                                                  width: MediaQuery.sizeOf(context).width - 172,
                                                   child: Text(
-                                                    context
-                                                        .watch<Profile>()
-                                                        .exercises[index]
-                                                            [exerciseIndex]
-                                                        .exerciseTitle,
+                                                    overflow: TextOverflow.visible,
+                                                    //softWrap: true,
+                                                    context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
                                                     style: const TextStyle(
                                                       color: Color.fromARGB(
                                                           255, 255, 255, 255),

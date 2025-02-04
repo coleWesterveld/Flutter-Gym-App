@@ -533,7 +533,7 @@ class _MyListState extends State<ProgramPage> {
       onReorder: (oldIndex, newIndex){
         HapticFeedback.heavyImpact();
         setState(() {
-          context.read<Profile>().moveexercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
+          context.read<Profile>().moveExercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
 
         });
       },
@@ -548,14 +548,18 @@ class _MyListState extends State<ProgramPage> {
             minWidth: 100,
             //height: 130,
             child: TextButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.heavyImpact();
-                setState(() {
+                
+                  int exerciseID = await openDialog();
+
+
                   context.read<Profile>().exerciseAppend(
-                    index: index,
+                    index: index,//socks
+                    exerciseId: exerciseID,
                     
                   );
-                });  
+                setState(() {});  
               },
             
               style: ButtonStyle(
@@ -1006,35 +1010,38 @@ Widget _buildTextField(BuildContext context, {
 
   //TODO: move to another file
   //this is to show text box to enter text for day titles and exercises
-  Future<String?> openDialog() {
-
-    
-    //alertTEC = TextEditingController(text: hints);
-    return showModalBottomSheet(
-      showDragHandle: true,
-      context: context,
-      isScrollControlled: true, // Allows the bottom sheet to adjust to content height
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16),
-        ),
+Future<dynamic> openDialog() {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Allows the bottom sheet to adjust to content height
+    showDragHandle: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(16),
       ),
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            
-          ),
-          child: SizedBox(
-            height: MediaQuery.sizeOf(context).height - 100, 
-            child: ExerciseDropdown()
-            ),
-        );
-      },
-    );
-  }
+    ),
+    builder: (BuildContext context) {
+      final mediaQuery = MediaQuery.of(context);
+      final screenHeight = mediaQuery.size.height;
+      final keyboardHeight = mediaQuery.viewInsets.bottom;
+      final availableHeight = screenHeight - keyboardHeight;
+      final maxHeight = availableHeight * 0.7; // Ensures some padding remains above
+
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: keyboardHeight, // Adjust for keyboard
+          left: 16,
+          right: 16,
+        ),
+        child: SizedBox(
+          height: maxHeight, // Prevents it from taking full height
+          child: ExerciseDropdown(),
+        ),
+      );
+    },
+  );
+}
+
 
 
   Widget buildBottomSheet(){
