@@ -555,7 +555,7 @@ class _MyListState extends State<ProgramPage> {
 
 
                   context.read<Profile>().exerciseAppend(
-                    index: index,//socks
+                    index: index,
                     exerciseId: exerciseID,
                     
                   );
@@ -746,14 +746,14 @@ class _MyListState extends State<ProgramPage> {
                           HapticFeedback.heavyImpact();
                             //print(context.read<Profile>().split[index].data);
                             alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
-                            String? exerciseTitle = await openDialog();
-                            if (exerciseTitle == null || exerciseTitle.isEmpty) return;
+                            int? exerciseID = await openDialog();
+                            if (exerciseID == null) return;
                                 
                             setState( () {
                               Provider.of<Profile>(context, listen: false).exerciseAssign(
                                 index1: index, 
                                 index2: exerciseIndex,
-                                data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseTitle: exerciseTitle)
+                                data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseID: exerciseID)
                                 // data: SplitDayData(
                                 //   data: exerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
                                 // ),

@@ -171,7 +171,7 @@ class Profile extends ChangeNotifier {
 
     split.add(
       Day(
-        dayOrder: split.length,
+        dayOrder: split.length + 1,
         dayTitle: "New Day", 
         programID: 1,
         dayColor: colors[(split.length + 1) % (colors.length)].value,
@@ -364,7 +364,7 @@ Future<void> updateDaysOrderInDatabase() async {
         }
       }
     });
-
+    debugPrint("reordered");
     // Notify listeners after transaction completes
     notifyListeners();
   }
@@ -549,21 +549,26 @@ Future<void> updateDaysOrderInDatabase() async {
     required int index1,
     required int index2,
     required Exercise data,
-    //required int id,
-    //required List<PlannedSet> newSets,
-    // required List<TextEditingController> newSetsTEC,
-    // required List<TextEditingController> newReps1TEC,
-    // required List<TextEditingController> newReps2TEC,
-    // required List<TextEditingController> newRpeTEC,
+/*
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        exercise_order INTEGER NOT NULL,
+        day_id INTEGER NOT NULL,
+        exercise_id INTEGER NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
+        FOREIGN KEY (day_id) REFERENCES days (id) ON DELETE CASCADE
+*/
 
   }) async {
-    dbHelper.updateExerciseInstance(exercises[index1][index2].exerciseID, {'exercise_title': data.exerciseTitle});
-    exercises[index1][index2] = data;
-    //sets[index1][index2] = newSets;
-    // setsTEC[index1][index2] =  newSetsTEC;
-    // reps1TEC[index1][index2] =  newReps1TEC;
-    // reps2TEC[index1][index2] =  newReps2TEC;
-    // rpeTEC[index1][index2] =  newRpeTEC;
+    dbHelper.updateExerciseInstance(exercises[index1][index2].exerciseID, 
+      {
+        'exercise_order' : data.exerciseOrder,
+        'exercise_id' : data.exerciseID,
+        'day_id' : data.dayID
+      }
+    );
+    String newTitle = await dbHelper.fetchExerciseTitleById(data.exerciseID);
+    exercises[index1][index2] = data.copyWith(newexerciseTitle: newTitle);
+
 
     
     notifyListeners();
@@ -694,7 +699,7 @@ Future<void> updateDaysOrderInDatabase() async {
       numSets: 1,
       setLower: 0,
       setUpper: 0,
-      setOrder: sets[index1][index2].length,
+      setOrder: sets[index1][index2].length + 1,
       )
       );
 
