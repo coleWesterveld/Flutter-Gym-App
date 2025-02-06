@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 
 class ExerciseDropdown extends StatefulWidget {
-  const ExerciseDropdown({super.key});
+
+  ExerciseDropdown({super.key});
 
   @override
   State<ExerciseDropdown> createState() => _ExerciseDropdownState();
@@ -35,7 +36,12 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
             SizedBox(
               width: double.infinity, // Full-width dropdown
               child: DropdownMenu<int>( // Change type to int (exercise ID)
+              //errorText: "THIS IS RED ERROR TEXT",
+              //expandedInsets: EdgeInsets.symmetric(vertical: 20),
+              //menuStyle: MenuStyle(fixedSize: WidgetStatePropertyAll(Size(50, 200)) ),
                 width: MediaQuery.of(context).size.width - 32,
+                // TODO: this is not responsive and will not work on smaller screens
+                // need to make responsive
                 menuHeight: 300, // Limit menu height for better UX
                 enableFilter: true,
                 requestFocusOnTap: true,
@@ -58,6 +64,8 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
                 }).toList(),
               ),
             ),
+
+            //Container(height: 250, color: Colors.red)
           ],
         );
       },

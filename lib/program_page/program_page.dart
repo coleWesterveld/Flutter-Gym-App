@@ -987,21 +987,30 @@ Widget _buildTextField(BuildContext context, {
 }) {
   return Padding(
     padding: const EdgeInsets.all(8.0),
-    child: TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: darken(Color(0xFF1e2025), 25),
-        contentPadding: EdgeInsets.only(bottom: 10, left: 8),
-        constraints: BoxConstraints(
-          maxWidth: maxWidth,
-          maxHeight: 30,
+    child: Focus(
+      onFocusChange: (hasFocus) {
+        if(hasFocus){
+          context.read<Profile>().changeDone(true);
+        }else{
+          context.read<Profile>().changeDone(false);
+        }
+      },
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: darken(Color(0xFF1e2025), 25),
+          contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+            maxHeight: 30,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          hintText: hint,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-        ),
-        hintText: hint,
       ),
     ),
   );
@@ -1012,6 +1021,7 @@ Widget _buildTextField(BuildContext context, {
   //this is to show text box to enter text for day titles and exercises
 Future<dynamic> openDialog() {
   return showModalBottomSheet(
+
     context: context,
     isScrollControlled: true, // Allows the bottom sheet to adjust to content height
     showDragHandle: true,
@@ -1030,12 +1040,67 @@ Future<dynamic> openDialog() {
       return Padding(
         padding: EdgeInsets.only(
           bottom: keyboardHeight, // Adjust for keyboard
-          left: 16,
-          right: 16,
+          // left: 16,
+          // right: 16,
         ),
         child: SizedBox(
           height: maxHeight, // Prevents it from taking full height
-          child: ExerciseDropdown(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: ExerciseDropdown(),
+              ),
+              Container(
+              decoration: BoxDecoration(
+
+                border: Border(
+                  top: BorderSide(
+                    color:  lighten(Color(0xFF141414), 20),
+                  ),
+                ),
+                
+                color: Color(0xFF1e2025),
+                  //borderRadius: BorderRadius.circular(12.0),
+                ),
+
+                height: 50,
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ButtonTheme(
+                      minWidth: double.infinity,
+                      child: ElevatedButton(
+                      
+                        style: ButtonStyle(
+                          //when clicked, it splashes a lighter purple to show that button was clicked
+                          shape: WidgetStateProperty.all(
+                            
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4)
+                            ),
+                          ),
+                          backgroundColor: WidgetStateProperty.all(Colors.blue,),
+                        ),
+                          
+                        onPressed: () {
+                          debugPrint("now go add one");
+                        },
+                      
+                        child: Text(
+                          
+                          'Add New Exercise',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       );
     },
@@ -1063,6 +1128,7 @@ Future<dynamic> openDialog() {
         ),
 
         height: 50,
+        width: double.infinity,
         padding: const EdgeInsets.all(8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
