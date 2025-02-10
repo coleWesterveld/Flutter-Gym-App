@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
-
+//todo: make keybioard come up automatically here
 class ExerciseDropdown extends StatefulWidget {
 
   ExerciseDropdown({super.key});
@@ -12,12 +12,28 @@ class ExerciseDropdown extends StatefulWidget {
 class _ExerciseDropdownState extends State<ExerciseDropdown> {
   List<Map<String, dynamic>> _exercises = []; // Store both ID & Title
   final dbHelper = DatabaseHelper.instance;
+  final FocusNode _dropDownFocus = FocusNode();
+  final TextEditingController _dropDownTEC = TextEditingController();
   
 
   @override
   void initState() {
     super.initState();
-    _loadExercisesFromDatabase(); // Load exercises on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_dropDownFocus);
+    });
+        _loadExercisesFromDatabase(); 
+    //Future.delayed(const Duration(milliseconds: 500));
+    //_dropDownTEC.clear();
+
+    
+  }
+
+    @override
+  void dispose() {
+    _dropDownFocus.dispose(); 
+    _dropDownTEC.dispose();
+    super.dispose();
   }
 
   Future<void> _loadExercisesFromDatabase() async {
@@ -44,6 +60,9 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
             SizedBox(
               width: double.infinity, // Full-width dropdown
               child: DropdownMenu<int>( // Change type to int (exercise ID)
+              focusNode: _dropDownFocus,
+              controller: _dropDownTEC,
+              
               //errorText: "THIS IS RED ERROR TEXT",
               //expandedInsets: EdgeInsets.symmetric(vertical: 20),
               //menuStyle: MenuStyle(fixedSize: WidgetStatePropertyAll(Size(50, 200)) ),
