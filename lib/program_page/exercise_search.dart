@@ -12,6 +12,7 @@ class ExerciseDropdown extends StatefulWidget {
 class _ExerciseDropdownState extends State<ExerciseDropdown> {
   List<Map<String, dynamic>> _exercises = []; // Store both ID & Title
   final dbHelper = DatabaseHelper.instance;
+  
 
   @override
   void initState() {
@@ -28,6 +29,13 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
 
   @override
   Widget build(BuildContext context) {
+
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final keyboardHeight = mediaQuery.viewInsets.bottom;
+    final availableHeight = screenHeight - keyboardHeight;
+    final menuHeight = availableHeight * 0.7 - 114; // Ensures some padding remains above
+
     return StatefulBuilder(
       builder: (BuildContext context, setState) {
         return Column(
@@ -42,7 +50,7 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
                 width: MediaQuery.of(context).size.width - 32,
                 // TODO: this is not responsive and will not work on smaller screens
                 // need to make responsive
-                menuHeight: 300, // Limit menu height for better UX
+                menuHeight: menuHeight, // Limit menu height for better UX
                 enableFilter: true,
                 requestFocusOnTap: true,
                 leadingIcon: const Icon(Icons.search),

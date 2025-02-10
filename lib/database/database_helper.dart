@@ -5,6 +5,7 @@ import 'package:firstapp/user.dart';
 import 'profile.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
+// TODO: maybe add way to delete added exercises
 //TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
@@ -83,6 +84,7 @@ class DatabaseHelper {
     '''
     );
 
+    // TODO: maybe add support for more than 1 muscle worked - will require schema changes to not violate 1NF
     await db.execute(
     '''
       CREATE TABLE exercises (

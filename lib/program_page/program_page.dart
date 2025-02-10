@@ -31,6 +31,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import '../user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'custom_exercise_form.dart';
 //import 'package:flutter/cupertino.dart';
 
 //TODO: gradient background
@@ -101,6 +102,8 @@ class _MyListState extends State<ProgramPage> {
 
   DateTime startDay = DateTime(2024, 8, 10);
   int? _sliding = 0;
+
+  TextEditingController customExerciseTEC = TextEditingController();
   TextEditingController alertTEC = TextEditingController();
   List<int> editIndex = [-1, -1, -1];
   //double alertInsetValue = 0;
@@ -551,14 +554,17 @@ class _MyListState extends State<ProgramPage> {
               onPressed: () async {
                 HapticFeedback.heavyImpact();
                 
-                  int exerciseID = await openDialog();
+                  int? exerciseID = await openDialog();
 
+                  if (exerciseID == null) return;
 
                   context.read<Profile>().exerciseAppend(
                     index: index,
                     exerciseId: exerciseID,
                     
                   );
+                  
+                  
                 setState(() {});  
               },
             
@@ -1019,9 +1025,9 @@ Widget _buildTextField(BuildContext context, {
 
   //TODO: move to another file
   //this is to show text box to enter text for day titles and exercises
-Future<dynamic> openDialog() {
+ Future<dynamic> openDialog() {
+  bool showCustomMaker = false;
   return showModalBottomSheet(
-
     context: context,
     isScrollControlled: true, // Allows the bottom sheet to adjust to content height
     showDragHandle: true,
@@ -1031,83 +1037,83 @@ Future<dynamic> openDialog() {
       ),
     ),
     builder: (BuildContext context) {
-      final mediaQuery = MediaQuery.of(context);
-      final screenHeight = mediaQuery.size.height;
-      final keyboardHeight = mediaQuery.viewInsets.bottom;
-      final availableHeight = screenHeight - keyboardHeight;
-      final maxHeight = availableHeight * 0.7; // Ensures some padding remains above
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          final mediaQuery = MediaQuery.of(context);
+          final screenHeight = mediaQuery.size.height;
+          final keyboardHeight = mediaQuery.viewInsets.bottom;
+          final availableHeight = screenHeight - keyboardHeight;
+          final maxHeight = availableHeight * 0.7; // Ensures some padding remains above
 
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: keyboardHeight, // Adjust for keyboard
-          // left: 16,
-          // right: 16,
-        ),
-        child: SizedBox(
-          height: maxHeight, // Prevents it from taking full height
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: ExerciseDropdown(),
-              ),
-              Container(
-              decoration: BoxDecoration(
+          //debugPrint(showCustomMaker.toString());
 
-                border: Border(
-                  top: BorderSide(
-                    color:  lighten(Color(0xFF141414), 20),
-                  ),
-                ),
-                
-                color: Color(0xFF1e2025),
-                  //borderRadius: BorderRadius.circular(12.0),
-                ),
-
-                height: 50,
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+          if (showCustomMaker) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: keyboardHeight),
+              // here I could maybe add a toggle that will capitalize by default but can be turned off.
+              // TODO: toggle ^ and potentially do checks if custom exercise is already in DB, then pop up "did you mean X?" for some similar exercise or something.
+              child: CustomExerciseForm(height: maxHeight),
+            );
+          } else {
+            return Padding(
+              padding: EdgeInsets.only(bottom: keyboardHeight),
+              child: SizedBox(
+                height: maxHeight, // Prevents it from taking full height
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ButtonTheme(
-                      minWidth: double.infinity,
-                      child: ElevatedButton(
-                      
-                        style: ButtonStyle(
-                          //when clicked, it splashes a lighter purple to show that button was clicked
-                          shape: WidgetStateProperty.all(
-                            
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: ExerciseDropdown(),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: lighten(Color(0xFF141414), 20)),
+                        ),
+                        color: Color(0xFF1e2025),
+                      ),
+                      height: 50,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ButtonTheme(
+                            minWidth: double.infinity,
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                shape: WidgetStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                                backgroundColor: WidgetStateProperty.all(Colors.blue),
+                              ),
+                              onPressed: () {
+                                setModalState(() {
+                                  showCustomMaker = true; // Updates state inside modal
+                                });
+                                debugPrint(showCustomMaker.toString());
+                              },
+                              child: Text(
+                                'Add New Exercise',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
-                          backgroundColor: WidgetStateProperty.all(Colors.blue,),
-                        ),
-                          
-                        onPressed: () {
-                          debugPrint("now go add one");
-                        },
-                      
-                        child: Text(
-                          
-                          'Add New Exercise',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        ],
                       ),
-                    ),
+                    )
                   ],
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
+            );
+          }
+        },
       );
     },
   );
 }
-
-
 
   Widget buildBottomSheet(){
     // if we should be displaying done button for numeric keyboard, then create.
