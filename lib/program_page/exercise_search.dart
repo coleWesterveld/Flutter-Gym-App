@@ -50,7 +50,7 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
     final screenHeight = mediaQuery.size.height;
     final keyboardHeight = mediaQuery.viewInsets.bottom;
     final availableHeight = screenHeight - keyboardHeight;
-    final menuHeight = availableHeight * 0.7 - 114; // Ensures some padding remains above
+    final menuHeight = availableHeight * 0.7 - 124; // Ensures some padding remains above
 
     return StatefulBuilder(
       builder: (BuildContext context, setState) {

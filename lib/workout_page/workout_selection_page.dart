@@ -6,8 +6,6 @@ import '../user.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
-import 'dart:math';
-
 
 // lighten and darken colour functions found on stackoverflow by mr_mmmmore
 // here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
@@ -169,26 +167,14 @@ class _WorkoutPageState extends State<WorkoutPage>
       return Padding(
           key: ValueKey(context.watch<Profile>().split[index]),
           padding: EdgeInsets.only(
-              left: 15,
-              right: 15,
-              top: (!todaysWorkout && index == 0) ? 5 : 15),
+              left: 8,
+              right: 8,
+              top: (!todaysWorkout && index == 0) ? 8 : 8),
 
           child: Container(
             // TODO: dont like how this goes all the way down under "start workout" button and stuff,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Color(context.watch<Profile>().split[index].dayColor),
-                    Color(context.watch<Profile>().split[index].dayColor),
-                    const Color(0xFF1e2025),
-                  ],
-                  stops: const [
-                    0,
-                    0.11,
-                    0.11
-                  ]),
+    
               border: Border.all(color: lighten(const Color(0xFF141414), 20)),
               boxShadow: [
                 todaysWorkout
@@ -199,9 +185,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                       )
                     : const BoxShadow(),
               ],
-              color: todaysWorkout
-                  ? Color(context.watch<Profile>().split[index].dayColor)
-                  : const Color(0xFF1e2025),
+              color:  const Color(0xFF1e2025),
               borderRadius: BorderRadius.circular(12.0),
             ),
 
@@ -256,12 +240,7 @@ class _WorkoutPageState extends State<WorkoutPage>
 
                                     style: TextStyle(
                                       height: 0.6,
-                                      color: darken(
-                                          Color(context
-                                              .watch<Profile>()
-                                              .split[index]
-                                              .dayColor),
-                                          70),
+                                      color: Color(context.watch<Profile>().split[index].dayColor),
                                       fontSize: 50,
                                       fontWeight: FontWeight.w900,
                                     ),
