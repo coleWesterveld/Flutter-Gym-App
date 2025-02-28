@@ -92,6 +92,7 @@ class _MainPage extends State<NavigationBarApp> {
         title: 'TempTitle',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+            
             snackBarTheme: SnackBarThemeData(
               backgroundColor: Color(0xFFF28500),
             ),

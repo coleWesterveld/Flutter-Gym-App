@@ -60,7 +60,21 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                   decoration: InputDecoration(
                     errorText: _exerciseError,
                     hintText: "Enter Exercise",
-                    border: OutlineInputBorder(), // Gives it a box appearance
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
+                      borderSide: BorderSide(width: 2.0), // Optional focus border
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0),                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
+                      borderSide: BorderSide(color: Colors.grey), // Optional border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(Icons.highlight_remove),
                       onPressed: _exerciseTEC.clear,
@@ -83,10 +97,23 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                 },
                 
                 controller: _musclesTEC,
+                
                 decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
+                      borderSide: BorderSide.none, // Removes the border if you want only the filled background
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
+                      borderSide: BorderSide(color: Colors.grey), // Optional border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
+                    ),
                   
                   hintText: "Muscles Worked (Optional)",
-                  border: OutlineInputBorder(),
+  
                   suffixIcon: IconButton(
                     icon: Icon(Icons.highlight_remove),
                     onPressed: _musclesTEC.clear,

@@ -49,6 +49,7 @@ dependencies:
   fl_chart: ^0.70.0
   smooth_page_indicator: ^1.2.0+3
   dropdown_search: ^6.0.2
+  flutter_slidable: ^4.0.0
 
 dev_dependencies:
   flutter_test:

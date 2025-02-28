@@ -76,7 +76,21 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
                 label: const Text('Search Exercises'),
                 inputDecorationTheme: const InputDecorationTheme(
                   filled: true,
+                  
                   contentPadding: EdgeInsets.symmetric(vertical: 5.0),
+
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
+                      borderSide: BorderSide.none, // Removes the border if you want only the filled background
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
+                      borderSide: BorderSide(color: Colors.grey), // Optional border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
+                    ),
                 ),
                 onSelected: (int? exerciseId) {
                   if (exerciseId != null) {
@@ -89,6 +103,7 @@ class _ExerciseDropdownState extends State<ExerciseDropdown> {
                     value: exercise['id'], // Store ID as value
                   );
                 }).toList(),
+
               ),
             ),
 

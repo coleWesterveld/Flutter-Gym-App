@@ -32,9 +32,8 @@ import 'package:provider/provider.dart';
 import '../user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'custom_exercise_form.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 //import 'package:flutter/cupertino.dart';
-
-//TODO: gradient background
 
 import 'package:flutter/services.dart';
 import "exercise_search.dart";
@@ -273,33 +272,77 @@ class _MyListState extends State<ProgramPage> {
         itemCount: context.watch<Profile>().split.length,
         itemBuilder: (context, index) {
           
-          return Dismissible(
-            direction: DismissDirection.endToStart,
-            key: ValueKey(context.watch<Profile>().split[index]),
-            background: Container(
-              color: Colors.red,
-              child: Icon(Icons.delete)
-            ),
+          return Slidable(
+            closeOnScroll: true,
             
+            direction: Axis.horizontal,
+
+            key: ValueKey(context.watch<Profile>().split[index]),
+            // background: Container(
+            //   color: Colors.red,
+            //   child: Icon(Icons.delete)
+            // ),
+            endActionPane: ActionPane(//socks
+              extentRatio: 0.3,
+              motion: const ScrollMotion(), 
+              children: [SlidableAction(
+                
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                icon: Icons.delete,
+                onPressed: (direction) {
+                  HapticFeedback.heavyImpact();
+                  final deletedItem = context.read<Profile>().split[index];
+                  // Remove the item from the data source.
+                  setState(() {
+                    context.read<Profile>().splitPop(index: index);    
+                  });
+                  //widget.writePrefs();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        style: TextStyle(
+                          color: Colors.white
+                        ),
+                        'Day Deleted'
+                        ),
+                        action: SnackBarAction(
+                        label: 'Undo',
+                        textColor: Colors.white,
+                        onPressed: () {
+                          debugPrint("readd: ${deletedItem.toString()}");
+                          // setState(() {
+
+                          //   // TODO: this requires some work...
+                          //   //context.read<Profile>().splitInsert(index: index, deletedItem);
+                          // });
+                        },
+                      ),
+                    ),
+                  );
+                },
+            ),
+              ],
+            ),
             // dismiss when user swipes right to left on any day, remove that day from the list
-            onDismissed: (direction) {
-              HapticFeedback.heavyImpact();
-              // Remove the item from the data source.
-              setState(() {
-                context.read<Profile>().splitPop(index: index);    
-              });
-              //widget.writePrefs();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
-                    'Day Deleted'
-                    ),
-                ),
-              );
-            },
+            // onDismissed: (direction) {
+            //   HapticFeedback.heavyImpact();
+            //   // Remove the item from the data source.
+            //   setState(() {
+            //     context.read<Profile>().splitPop(index: index);    
+            //   });
+            //   //widget.writePrefs();
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(
+            //       content: Text(
+            //         style: TextStyle(
+            //           color: Colors.white
+            //         ),
+            //         'Day Deleted'
+            //         ),
+            //     ),
+            //   );
+            // },
             
             //outline for each day tile in the list
             child: Padding(
@@ -1014,7 +1057,8 @@ Widget _buildTextField(BuildContext context, {
 
   //TODO: move to another file
   //this is to show text box to enter text for day titles and exercises
- Future<dynamic> openDialog() {
+Future<dynamic> openDialog() {
+
   bool showCustomMaker = false;
   return showModalBottomSheet(
     context: context,
@@ -1039,9 +1083,29 @@ Widget _buildTextField(BuildContext context, {
           if (showCustomMaker) {
             return Padding(
               padding: EdgeInsets.only(bottom: keyboardHeight),
+
               // here I could maybe add a toggle that will capitalize by default but can be turned off.
               // TODO: toggle ^ and potentially do checks if custom exercise is already in DB, then pop up "did you mean X?" for some similar exercise or something.
-              child: CustomExerciseForm(height: maxHeight),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+ // Print to the debug console
+                      setModalState(() {
+                        showCustomMaker = false; // Updates state inside modal
+                      });
+                      debugPrint(showCustomMaker.toString());
+                    },
+                    label: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      color: Colors.blue,
+                    )
+                  ),
+                  CustomExerciseForm(height: maxHeight - 48),
+                ],
+              ),
             );
           } else {
             return Padding(
