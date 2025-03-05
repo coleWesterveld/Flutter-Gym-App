@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../user.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
+import 'setLogging.dart';
 
 // lighten and darken colour functions found on stackoverflow by mr_mmmmore
 // here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
@@ -163,7 +164,7 @@ class _WorkoutState extends State<Workout>{
                   collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
 
                   //TODO: simplify this
-                  title: Text("Hello World"),
+                  title: Text(context.watch<Profile>().exercises[primaryIndex][index].exerciseTitle),
 
                   //children of expansion tile - what gets shown when user expands that day
                   // shows exercises for that day
@@ -172,12 +173,12 @@ class _WorkoutState extends State<Workout>{
                   //exercises are reorderable
                   children: [
                     SizedBox(
-                      height: 50,
+                      
                       child: ListView.builder(
-                        itemCount: context.read<Profile>().exercises[primaryIndex].length,
+                        shrinkWrap: true,
+                        itemCount: context.read<Profile>().sets[primaryIndex][index].length,
                         itemBuilder: (context, exerciseIndex){
-                          final name = context.read<Profile>().exercises[primaryIndex][exerciseIndex].exerciseTitle;
-                          return Text(name);
+                          return GymSetRow(prevWeight: 12, prevReps: 5, expectedRPE: 8);
                         },
                       ),
                     )

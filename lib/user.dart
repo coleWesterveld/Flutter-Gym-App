@@ -95,7 +95,6 @@ class Profile extends ChangeNotifier {
     this.splitLength = 7,
     this.activeDayIndex,
     this.activeDay,
-
   }){
     _init();
   }

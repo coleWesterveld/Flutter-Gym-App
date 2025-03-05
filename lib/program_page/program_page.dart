@@ -271,7 +271,8 @@ class _MyListState extends State<ProgramPage> {
         //dismissable and reorderable: each child for dismissable needs to have a unique key
         itemCount: context.watch<Profile>().split.length,
         itemBuilder: (context, index) {
-          
+          // todo: currently, some are slideable and some are dismissable. make all slideable
+          // todo: add undo button in snackbar, make easy to use on mobile
           return Slidable(
             closeOnScroll: true,
             
@@ -369,11 +370,11 @@ class _MyListState extends State<ProgramPage> {
               child:  Center(
                 child: Theme(
                     data: Theme.of(context).copyWith(
-              dividerColor: Colors.transparent,
-              listTileTheme: ListTileThemeData(
-                contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
-              ),
-            ),
+                      dividerColor: Colors.transparent,
+                      listTileTheme: ListTileThemeData(
+                        contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
+                      ),
+                    ),
                   
                   //expandable to see exercises and sets for that day
                   child: ExpansionTile(

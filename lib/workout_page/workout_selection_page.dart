@@ -32,18 +32,6 @@ Color lighten(Color c, [int percent = 10]) {
       
 }
 
-// Color _listColorFlop(
-//     {required int index, Color bgColor = const Color(0xFF151218)}) {
-//   if (index % 2 == 0) {
-//     return lighten(bgColor, 5);
-//   } else {
-
-//     return bgColor;
-//   }
-// }
-
-//TODO: gradient background
-
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
     super.key,
@@ -56,18 +44,9 @@ class WorkoutPage extends StatefulWidget {
 class _WorkoutPageState extends State<WorkoutPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
-  late List<ExpansionTileController> _expansionControllers;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Access Provider or other inherited widgets here
-    int splitLength = context.watch<Profile>().split.length;
-    _expansionControllers = List.generate(
-      splitLength,
-      (index) => ExpansionTileController(),
-    );
   }
 
   @override
@@ -130,16 +109,16 @@ class _WorkoutPageState extends State<WorkoutPage>
             if (todaysWorkout != -1) {
               if (index == 0) {
                 return dayBuild(
-                    context, todaysWorkout, true, _expansionControllers);
+                    context, todaysWorkout, true);
               } else if (index <= todaysWorkout) {
                 return dayBuild(
-                    context, index - 1, false, _expansionControllers);
+                    context, index - 1, false);
               } else {
-                return dayBuild(context, index, false, _expansionControllers);
+                return dayBuild(context, index, false);
               }
             } else {
               // TODO: here I want to make a little grayed box that says "no workouts planned today" so the user knows why none are highliughted
-              return dayBuild(context, index - 1, false, _expansionControllers);
+              return dayBuild(context, index - 1, false);
             }
           },
         ),
@@ -147,8 +126,7 @@ class _WorkoutPageState extends State<WorkoutPage>
     );
   }
 
-  Padding dayBuild(BuildContext context, int index, bool todaysWorkout,
-      List<ExpansionTileController> controllers) {
+  Padding dayBuild(BuildContext context, int index, bool todaysWorkout) {
     if (!todaysWorkout && index == -1) {
       return Padding(
         padding: const EdgeInsets.only(top: 8.0),
@@ -201,13 +179,13 @@ class _WorkoutPageState extends State<WorkoutPage>
 
               //expandable to see exercises and sets for that day
               child: ExpansionTile(
-                  controller: controllers[index],
+                  controller: context.watch<Profile>().controllers[index],
                   key: ValueKey(context.watch<Profile>().split[index]),
                   onExpansionChanged: (isExpanded) {
                     setState(() {
-                      for (int i = 0; i < _expansionControllers.length; i++) {
+                      for (int i = 0; i < context.read<Profile>().controllers.length; i++) {
                         if (i != index && isExpanded) {
-                          _expansionControllers[i].collapse();
+                          context.read<Profile>().controllers[i].collapse();
                         }
                       }
                     });
