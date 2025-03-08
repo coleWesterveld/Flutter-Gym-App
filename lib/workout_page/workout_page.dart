@@ -62,15 +62,19 @@ class _WorkoutState extends State<Workout>{
 
 
     // Access Provider or other inherited widgets here
+    // THIS IS CAUSING ISSUES
     int exerciseLength = context.watch<Profile>().exercises[primaryIndex!].length;
     _expansionControllers = List.generate(
       exerciseLength,
-      (index) => ExpansionTileController(),
+      (_) => ExpansionTileController(),
     );
+
+    //sint? primaryIndex = context.read<Profile>().activeDayIndex;
   }
 
   @override
   void initState() {
+    
     super.initState();
 
     //List<ExpansionTileController> _expansionControllers = List.filled(context.watch<Profile>().split.length, ExpansionTileController(), growable: true);
@@ -88,10 +92,12 @@ class _WorkoutState extends State<Workout>{
    
     return Scaffold(
       appBar: AppBar(
+        // maybe null check here, i am using a lot of !
+        // it should be fine but there could be wierd edge cases with closing/reloading I guess
         backgroundColor: const Color(0xFF1e2025),
-        centerTitle: true,
-        title: const Text(
-          "Workout",
+        // centerTitle: true,
+        title:  Text(
+          "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
           style: TextStyle(
             fontWeight: FontWeight.w900,
           ),
@@ -116,6 +122,7 @@ class _WorkoutState extends State<Workout>{
   Padding exerciseBuild(BuildContext context, int index, 
       List<ExpansionTileController> controllers) {
 
+      
       int? primaryIndex = context.read<Profile>().activeDayIndex;
 
       return Padding(
@@ -147,6 +154,7 @@ class _WorkoutState extends State<Workout>{
 
               //expandable to see exercises and sets for that day
               child: ExpansionTile(
+                  initiallyExpanded: index == 0,
                   controller: controllers[index],
                   key: ValueKey(context.watch<Profile>().exercises[primaryIndex][index]),
                   onExpansionChanged: (isExpanded) {
@@ -164,28 +172,72 @@ class _WorkoutState extends State<Workout>{
                   collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
 
                   //TODO: simplify this
-                  title: Text(context.watch<Profile>().exercises[primaryIndex][index].exerciseTitle),
+                  title: Row(
+                    children: [
+                      IconButton(
+                        onPressed: (){
+                          setState((){context.read<Profile>().showHistory![index] = !context.read<Profile>().showHistory![index];});
+                          //(context.read<Profile>().showHistory![index].toString());
+                        }, 
+                        
+                        icon: Icon(context.watch<Profile>().showHistory![index] ? Icons.swap_horiz:Icons.history)
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal:8.0),
+                        child: Text(
+                          context.watch<Profile>().exercises[primaryIndex][index].exerciseTitle,
+                          overflow: TextOverflow.ellipsis,
+                                            
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
                   //children of expansion tile - what gets shown when user expands that day
                   // shows exercises for that day
                   //this part is viewed after tile is expanded
                   //TODO: show sets per exercise, notes, maybe most recent weight/reps
                   //exercises are reorderable
-                  children: [
+                  children: context.watch<Profile>().showHistory![index] ? [Text("Hello there")]: [
                     SizedBox(
                       
                       child: ListView.builder(
                         shrinkWrap: true,
                         itemCount: context.read<Profile>().sets[primaryIndex][index].length,
                         itemBuilder: (context, exerciseIndex){
-                          return GymSetRow(prevWeight: 12, prevReps: 5, expectedRPE: 8);
+                          return GymSetRow(prevWeight: 12, prevReps: 5, expectedRPE: 8, expectedReps: 5, expectedWeight: 200,);
                         },
                       ),
-                    )
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextFormField(
+  keyboardType: TextInputType.multiline,
+  minLines: 2,  // Start with 2 rows
+  maxLines: null, // Allow vertical expansion
+  decoration: InputDecoration(
+    filled: true,
+    fillColor: const Color(0xFF1e2025),
+    contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
+    border: const OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+    ),
+    hintText: "Notes: ",
+  ),
+)
+
+                    ),
                   ]
-                  ),
+                ),
             ),
-          ));
+          )
+        );
     }
   }
 

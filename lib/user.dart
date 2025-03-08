@@ -53,6 +53,7 @@ class Profile extends ChangeNotifier {
   DatabaseHelper dbHelper;
   int? activeDayIndex;
   Day? activeDay;
+  List<bool>? showHistory;
 
   //defaults to monday of this week
   DateTime _origin = getDayOfCurrentWeek(1);
@@ -95,6 +96,7 @@ class Profile extends ChangeNotifier {
     this.splitLength = 7,
     this.activeDayIndex,
     this.activeDay,
+    this.showHistory,
   }){
     _init();
   }
@@ -111,6 +113,7 @@ class Profile extends ChangeNotifier {
     for (int i = 0; i < sets.length; i++){
       // each day
       controllers.add(ExpansionTileController());
+      
       
       setsTEC.add(<List<TextEditingController>>[]);
       reps1TEC.add(<List<TextEditingController>>[]);
@@ -152,6 +155,7 @@ class Profile extends ChangeNotifier {
   void setActiveDay(int? index){
     activeDayIndex = (index != null && index >= 0 && index < split.length) ? index: null;
     activeDay = (index != null && index >= 0 && index < split.length) ? split[index]: null;
+    showHistory = (index != null && index >= 0 && index < split.length) ? List.filled(exercises[index].length, false):null;
     notifyListeners();
   }
 

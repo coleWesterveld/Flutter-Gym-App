@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 class GymSetRow extends StatefulWidget {
   final double prevWeight;
   final int prevReps;
+  final double expectedWeight;
+  final int expectedReps;
   final double expectedRPE;
 
   const GymSetRow({
     Key? key,
     required this.prevWeight,
     required this.prevReps,
+    required this.expectedWeight,
+    required this.expectedReps,
     required this.expectedRPE,
   }) : super(key: key);
 
@@ -21,6 +25,7 @@ class _GymSetRowState extends State<GymSetRow> {
   final TextEditingController repsController = TextEditingController();
   final TextEditingController rpeController = TextEditingController();
   bool isLogged = false;
+  bool showPrevious = false;
 
   @override
   void dispose() {
@@ -32,54 +37,120 @@ class _GymSetRowState extends State<GymSetRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Previous weight and reps
-        Column(
-          children: [
-            Text("Last: ${widget.prevWeight}kg"),
-            Text("${widget.prevReps} reps"),
-          ],
-        ),
-        // Weight input
-        SizedBox(
-          width: 50,
-          child: TextField(
-            controller: weightController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "Kg"),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  "${205}kg x ${2} @ 7 RPE",
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                  ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: TextFormField(
+                  //controller: controller,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFF1e2025),
+                    contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+                    constraints: BoxConstraints(
+                      maxWidth: 30,
+                      maxHeight: 30,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    hintText: "8",
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: TextFormField(
+                  //controller: controller,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFF1e2025),
+                    contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+                    constraints: BoxConstraints(
+                      maxWidth: 50,
+                      maxHeight: 30,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    hintText: "8",
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: TextFormField(
+                  //controller: controller,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Color(0xFF1e2025),
+                    contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+                    constraints: BoxConstraints(
+                      maxWidth: 40,
+                      maxHeight: 30,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    hintText: "8",
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: InkWell(
+                  onTap: () {
+                    // Toggle your isChecked state here, e.g.,
+                    // setState(() { isChecked = !isChecked; });
+                  },
+                  child: Container(
+                    width: 24.0,
+                    height: 24.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.blue, width: 2),
+                    ),
+                    child: true
+                        ? Center(
+                            child: Icon(
+                              Icons.check,
+                              size: 16.0,
+                              color: Colors.blue,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              )
+
+            ],
           ),
         ),
-        // Reps input
-        SizedBox(
-          width: 40,
-          child: TextField(
-            controller: repsController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "Reps"),
-          ),
-        ),
-        // Actual RPE input
-        SizedBox(
-          width: 40,
-          child: TextField(
-            controller: rpeController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "RPE"),
-          ),
-        ),
-        // Expected RPE
-        Text("Exp: ${widget.expectedRPE.toStringAsFixed(1)}"),
-        // Checkbox
-        Checkbox(
-          value: isLogged,
-          onChanged: (bool? value) {
-            setState(() {
-              isLogged = value ?? false;
-            });
-          },
-        ),
+
+
       ],
     );
   }
