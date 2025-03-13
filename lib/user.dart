@@ -431,7 +431,7 @@ Future<void> updateDaysOrderInDatabase() async {
         sets[dayIndex][exerciseIndex][i] = sets[dayIndex][exerciseIndex][i].copyWith(newSetOrder: i);
         await dbHelper.updatePlannedSet(
           plannedSet.setID, 
-          {'set_order' : i});//socks
+          {'set_order' : i});
       }
     }
     //probably dont need this, and could be done after notify in other function

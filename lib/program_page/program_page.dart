@@ -37,46 +37,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:flutter/services.dart';
 import "exercise_search.dart";
-
-// TODO: add exercise and set persistence - may have to use SQLite database as opposed to shared preferences
-// TODO: move days between, lighten/darken and other outside functions to other file(s)
-
-int daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-   return (to.difference(from).inHours / 24).round();
-}
-
-// lighten and darken colour functions found on stackoverflow by mr_mmmmore
-// here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
-// void main() => runApp(new MaterialApp(home: MyList()));
-/// Darken a color by [percent] amount (100 = black)
-// ........................................................
-Color darken(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var f = 1 - percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        (c.red * f).round(),
-        (c.green  * f).round(),
-        (c.blue * f).round()
-    );
-}
-
-/// Lighten a color by [percent] amount (100 = white)
-// ........................................................
-Color lighten(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var p = percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        c.red + ((255 - c.red) * p).round(),
-        c.green + ((255 - c.green) * p).round(),
-        c.blue + ((255 - c.blue) * p).round()
-    );
-}
-
-
+import '../other_utilities/days_between.dart';
+import '../other_utilities/lightness.dart';
 
 //program page, where user defines the overall program by days,
 // then exercises for each day with sets, rep range and notes
@@ -283,7 +245,7 @@ class _MyListState extends State<ProgramPage> {
             //   color: Colors.red,
             //   child: Icon(Icons.delete)
             // ),
-            endActionPane: ActionPane(//socks
+            endActionPane: ActionPane(
               extentRatio: 0.3,
               motion: const ScrollMotion(), 
               children: [SlidableAction(
@@ -361,7 +323,7 @@ class _MyListState extends State<ProgramPage> {
     return Container(
               decoration: BoxDecoration(
                 border: Border.all(color: lighten(Color(0xFF141414), 20)),
-        //socks
+     
                 color: Color(0xFF1e2025),
                 borderRadius: BorderRadius.circular(12.0),
               ),

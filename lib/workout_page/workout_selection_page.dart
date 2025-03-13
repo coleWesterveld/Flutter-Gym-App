@@ -6,31 +6,8 @@ import '../user.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
-
-// lighten and darken colour functions found on stackoverflow by mr_mmmmore
-// here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
-// void main() => runApp(new MaterialApp(home: MyList()));
-/// Darken a color by [percent] amount (100 = black)
-// ........................................................
-Color darken(Color c, [int percent = 10]) {
-  assert(1 <= percent && percent <= 100);
-  var f = 1 - percent / 100;
-  return Color.fromARGB(c.alpha, (c.red * f).round(), (c.green * f).round(),
-      (c.blue * f).round());
-}
-
-/// Lighten a color by [percent] amount (100 = white)
-// ........................................................
-Color lighten(Color c, [int percent = 10]) {
-  // not very fond of this solution, it seems to work though. 
-  // will have to migrate from previous solution as colors is moving from 0-255 to 0-1
-  assert(1 <= percent && percent <= 100);
-  var p = percent / 100;
-  return Color.lerp(
-  c, Colors.white, p
-  )!;
-      
-}
+import '../other_utilities/days_between.dart';
+import '../other_utilities/lightness.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({

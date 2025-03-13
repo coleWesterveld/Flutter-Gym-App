@@ -11,44 +11,14 @@ import 'package:provider/provider.dart';
 import '../user.dart';
 import '../database/profile.dart';
 import 'edit_schedule.dart';
+import '../other_utilities/days_between.dart';
+import '../other_utilities/lightness.dart';
 
 class Event{
   final String title;
   final int index;
   Event(this.title, this.index);
 }
-
-// these need to be moved, they are repasted everywhere as of now
-Color lighten(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var p = percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        c.red + ((255 - c.red) * p).round(),
-        c.green + ((255 - c.green) * p).round(),
-        c.blue + ((255 - c.blue) * p).round()
-    );
-}
-
-Color darken(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var f = 1 - percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        (c.red * f).round(),
-        (c.green  * f).round(),
-        (c.blue * f).round()
-    );
-}
-
-int daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-   return (to.difference(from).inHours / 24).round();
-}
-
-
-
 
 class SchedulePage extends StatefulWidget {
   

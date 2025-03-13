@@ -126,7 +126,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   SizedBox(
-                     height: 60,//socks
+                     height: 60,
                      width: (MediaQuery.sizeOf(context).width - 32) / 2,
                     child: Card(
                     
@@ -167,7 +167,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                           final formattedMuscles =
                               musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
                             
-                          //socks
+                     
                           Navigator.of(context).pop(
                             dbHelper.insertCustomExercise(
                               exerciseTitle: formattedExercise, 
@@ -191,7 +191,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
 
 
                   SizedBox(
-                     height: 60,//socks
+                     height: 60,
                      width: (MediaQuery.sizeOf(context).width - 32) / 2,
                     child: Card(
                       shape: RoundedRectangleBorder(
@@ -241,7 +241,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
               //     final formattedMuscles =
               //         musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
                     
-              //     //socks
+              //     
               //     Navigator.of(context).pop(
               //       dbHelper.insertCustomExercise(
               //         exerciseTitle: formattedExercise, 

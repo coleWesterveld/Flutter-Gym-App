@@ -4,44 +4,13 @@ import 'package:provider/provider.dart';
 import '../user.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
-import 'setLogging.dart';
+import 'set_logging.dart';
+import '../other_utilities/lightness.dart';
 
-// lighten and darken colour functions found on stackoverflow by mr_mmmmore
-// here: https://stackoverflow.com/questions/58360989/programmatically-lighten-or-darken-a-hex-color-in-dart
-// void main() => runApp(new MaterialApp(home: MyList()));
-/// Darken a color by [percent] amount (100 = black)
-// ........................................................
-Color darken(Color c, [int percent = 10]) {
-  assert(1 <= percent && percent <= 100);
-  var f = 1 - percent / 100;
-  return Color.fromARGB(c.alpha, (c.red * f).round(), (c.green * f).round(),
-      (c.blue * f).round());
-}
-
-/// Lighten a color by [percent] amount (100 = white)
-// ........................................................
-Color lighten(Color c, [int percent = 10]) {
-  // not very fond of this solution, it seems to work though. 
-  // will have to migrate from previous solution as colors is moving from 0-255 to 0-1
-  assert(1 <= percent && percent <= 100);
-  var p = percent / 100;
-  return Color.lerp(
-  c, Colors.white, p
-  )!;
-      
-}
-
-// Color _listColorFlop(
-//     {required int index, Color bgColor = const Color(0xFF151218)}) {
-//   if (index % 2 == 0) {
-//     return lighten(bgColor, 5);
-//   } else {
-
-//     return bgColor;
-//   }
-// }
-
-//TODO: gradient background
+// for set logging this is how it should prolly be done:
+// when the user opens an active workout, it should create a "session" which buffers the setdata in memory
+// when they are working out, maybe it would be good to load up the history for that exercise in the background so that it is fast to retrieve
+// 
 
 class Workout extends StatefulWidget {
   const Workout({
@@ -204,9 +173,27 @@ class _WorkoutState extends State<Workout>{
                   //TODO: show sets per exercise, notes, maybe most recent weight/reps
                   //exercises are reorderable
                   children: context.watch<Profile>().showHistory![index] ? [Text("Hello there")]: [
+
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Row(
+                      
+                        children: [
+                          Text("Target"),
+                          SizedBox(width: 125),
+                          Text("RPE"),
+                          SizedBox(width: 20),
+                          Text("Weight"),
+                          SizedBox(width: 20),
+                          Text("Reps")
+                        ]
+                      ),
+                    ),
+
                     SizedBox(
                       
                       child: ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: context.read<Profile>().sets[primaryIndex][index].length,
                         itemBuilder: (context, exerciseIndex){
@@ -218,19 +205,19 @@ class _WorkoutState extends State<Workout>{
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextFormField(
-  keyboardType: TextInputType.multiline,
-  minLines: 2,  // Start with 2 rows
-  maxLines: null, // Allow vertical expansion
-  decoration: InputDecoration(
-    filled: true,
-    fillColor: const Color(0xFF1e2025),
-    contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
-    border: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-    ),
-    hintText: "Notes: ",
-  ),
-)
+                      keyboardType: TextInputType.multiline,
+                      minLines: 2,  // Start with 2 rows
+                      maxLines: null, // Allow vertical expansion
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF1e2025),
+                        contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                        hintText: "Notes: ",
+                      ),
+                    )
 
                     ),
                   ]

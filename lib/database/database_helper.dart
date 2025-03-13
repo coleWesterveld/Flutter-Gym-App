@@ -457,7 +457,7 @@ class DatabaseHelper {
     );
   }
 
-  // fetch an exercise by ID//socks
+  // fetch an exercise by ID
   Future<String> fetchExerciseTitleById(int exerciseID) async {
     final db = await database;
     final result = await db.query(

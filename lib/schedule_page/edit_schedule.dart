@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../user.dart';
 import '../database/profile.dart';
 import 'package:provider/provider.dart';
+import '../other_utilities/lightness.dart';
 
 // this page whats left: 
 // TODO: make pretty - notably, when a day hovers another day, preview changes
@@ -29,29 +30,6 @@ import 'package:provider/provider.dart';
 
 // This page mostly works IN ISOLATION, but not fully with everything
 // i am not saving origin 
-
-Color darken(Color c, [int percent = 10]) {
-    assert(1 <= percent && percent <= 100);
-    var f = 1 - percent / 100;
-    return Color.fromARGB(
-        c.alpha,
-        (c.red * f).round(),
-        (c.green  * f).round(),
-        (c.blue * f).round()
-    );
-}
-
-Color lighten(Color c, [int percent = 10]) {
-  // not very fond of this solution, it seems to work though. 
-  // will have to migrate from previous solution as colors is moving from 0-255 to 0-1
-  assert(1 <= percent && percent <= 100);
-  var p = percent / 100;
-  return Color.lerp(
-  c, Colors.white, p
-  )!;
-      
-}
-
 
 class EditSchedule extends StatefulWidget {
   @override
@@ -724,7 +702,7 @@ class _DraggableDay extends StatelessWidget {
     childWhenDragging: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Container(
-          height: 60,//socks
+          height: 60,
           width: double.infinity,
           
           decoration: BoxDecoration(
