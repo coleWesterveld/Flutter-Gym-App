@@ -78,12 +78,10 @@ class Profile extends ChangeNotifier {
   List<List<List<TextEditingController>>> reps2TEC;
 
   int splitLength;
-  bool done;
+  bool _done = false;
   //bool _initialized = false;
 
   Profile({
-    
-    this.done = false,
     this.split = const <Day>[],
     this.exercises = const <List<Exercise>>[],
     this.sets = const <List<List<PlannedSet>>>[],
@@ -145,9 +143,22 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  bool get done => _done;
+
+  set done(bool value) {
+    if (_done != value) {
+      _done = value;
+      notifyListeners(); // Notify widgets that listen to Profile
+    }
+  }
+
+
+
+
   // TODO: I think many of these methods could be simpler setters and getters?
   void changeDone(bool val){
-    done = val;
+    _done = val;
     notifyListeners();
   }
 
@@ -230,7 +241,7 @@ class Profile extends ChangeNotifier {
       newIndex -= 1;
     } 
 
-    // this should be able to be done with the remove and insert functions I made, 
+    // this should be able to be _done with the remove and insert functions I made, 
     // right now idk if they work so Ill do it like this
     // TODO: use insert/delete to do this
     final moveDay = split[oldIndex];
@@ -268,7 +279,7 @@ class Profile extends ChangeNotifier {
     updateDaysOrderInDatabase();
     notifyListeners();
 
-    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // TODO: evaluate performace here - this could maybe be _done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
     // This is async 
     // loop through each day in split, set its day_order equal to its index
         // reorders day in database
@@ -311,7 +322,7 @@ Future<void> updateDaysOrderInDatabase() async {
     // remove the day from its old index in split
     // insert the day into its new index in the list 
     // do the same for exercises, sets and controllers
-    // this should be able to be done with the remove and insert functions I made, 
+    // this should be able to be _done with the remove and insert functions I made, 
     // right now idk if they work so Ill do it like this
     // TODO: use insert/delete to do this
     final moveexercises = exercises[dayIndex][oldIndex];
@@ -341,7 +352,7 @@ Future<void> updateDaysOrderInDatabase() async {
     updateExerciseOrderInDatabase(dayIndex);
     notifyListeners();
 
-    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // TODO: evaluate performace here - this could maybe be _done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
     // This is async 
     // loop through each day in split, set its day_order equal to its index
         // reorders day in database
@@ -388,7 +399,7 @@ Future<void> updateDaysOrderInDatabase() async {
     // remove the day from its old index in split
     // insert the day into its new index in the list 
     // do the same for exercises, sets and controllers
-    // this should be able to be done with the remove and insert functions I made, 
+    // this should be able to be _done with the remove and insert functions I made, 
     // right now idk if they work so Ill do it like this
     // TODO: use insert/delete to do this
     final moveSets = sets[dayIndex][exerciseIndex][oldIndex];
@@ -414,7 +425,7 @@ Future<void> updateDaysOrderInDatabase() async {
     updateSetOrderInDatabase(dayIndex, exerciseIndex);
     notifyListeners();
 
-    // TODO: evaluate performace here - this could maybe be done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
+    // TODO: evaluate performace here - this could maybe be _done in another function after rebuild, and doesnt need notify listeners. performance will probably be fine either way though.
     // This is async 
     // loop through each day in split, set its day_order equal to its index
         // reorders day in database
@@ -434,7 +445,7 @@ Future<void> updateDaysOrderInDatabase() async {
           {'set_order' : i});
       }
     }
-    //probably dont need this, and could be done after notify in other function
+    //probably dont need this, and could be _done after notify in other function
     // do performance check, later
     notifyListeners();
   }

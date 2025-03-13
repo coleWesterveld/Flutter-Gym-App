@@ -60,6 +60,51 @@ class _WorkoutState extends State<Workout>{
     int? primaryIndex = context.read<Profile>().activeDayIndex;
    
     return Scaffold(
+      bottomSheet: context.watch<Profile>().done ? Container(
+      decoration: BoxDecoration(
+
+        border: Border(
+          top: BorderSide(
+            color:  lighten(Color(0xFF141414), 20),
+          ),
+        ),
+        
+        color: Color(0xFF1e2025),
+          //borderRadius: BorderRadius.circular(12.0),
+        ),
+
+        height: 50,
+        width: double.infinity,
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                //when clicked, it splashes a lighter purple to show that button was clicked
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4)
+                  ),
+                ),
+                backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),),
+              ),
+                
+              onPressed: () {
+                WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                context.read<Profile>().done = false;
+                setState((){});
+              },
+
+              child: Text(
+                'Done',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ) : null,
+      
       appBar: AppBar(
         // maybe null check here, i am using a lot of !
         // it should be fine but there could be wierd edge cases with closing/reloading I guess

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
+import 'package:firstapp/user.dart';
 
 class GymSetRow extends StatefulWidget {
   final double prevWeight;
@@ -26,15 +28,42 @@ class _GymSetRowState extends State<GymSetRow> {
   final TextEditingController weightController = TextEditingController();
   final TextEditingController repsController = TextEditingController();
   final TextEditingController rpeController = TextEditingController();
-  bool isLogged = false;
-  bool showPrevious = false;
+
+  final FocusNode weightFocus = FocusNode();
+  final FocusNode repsFocus = FocusNode();
+  final FocusNode rpeFocus = FocusNode();
+
   bool isChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Add listeners to focus nodes
+    weightFocus.addListener(_updateDoneState);
+    repsFocus.addListener(_updateDoneState);
+    rpeFocus.addListener(_updateDoneState);
+  }
+
+  void _updateDoneState() {
+    bool anyFieldFocused = weightFocus.hasFocus || repsFocus.hasFocus || rpeFocus.hasFocus;
+    context.read<Profile>().done = anyFieldFocused;
+  }
 
   @override
   void dispose() {
     weightController.dispose();
     repsController.dispose();
     rpeController.dispose();
+
+    weightFocus.removeListener(_updateDoneState);
+    repsFocus.removeListener(_updateDoneState);
+    rpeFocus.removeListener(_updateDoneState);
+
+    weightFocus.dispose();
+    repsFocus.dispose();
+    rpeFocus.dispose();
+
     super.dispose();
   }
 
@@ -48,108 +77,72 @@ class _GymSetRowState extends State<GymSetRow> {
         padding: const EdgeInsets.all(8.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-      
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                "${205}kg x ${2} @ 7 RPE",
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-                ),
-            ),
-      
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: TextFormField(
-                //controller: controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Color(0xFF1e2025),
-                  contentPadding: EdgeInsets.only(bottom: 10, left: 8),
-                  constraints: BoxConstraints(
-                    maxWidth: 30,
-                    maxHeight: 30,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  hintText: "8",
-                ),
+                "${widget.prevWeight}kg x ${widget.prevReps} @ ${widget.expectedRPE} RPE",
+                style: TextStyle(fontSize: 16),
               ),
             ),
-      
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: TextFormField(
-                //controller: controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Color(0xFF1e2025),
-                  contentPadding: EdgeInsets.only(bottom: 10, left: 8),
-                  constraints: BoxConstraints(
-                    maxWidth: 50,
-                    maxHeight: 30,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  hintText: "8",
-                ),
-              ),
-            ),
-      
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: TextFormField(
-                //controller: controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Color(0xFF1e2025),
-                  contentPadding: EdgeInsets.only(bottom: 10, left: 8),
-                  constraints: BoxConstraints(
-                    maxWidth: 40,
-                    maxHeight: 30,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                  hintText: "8",
-                ),
-              ),
-            ),
-      
+            _buildTextField(weightController, weightFocus, "Weight", 30),
+            _buildTextField(repsController, repsFocus, "Reps", 50),
+            _buildTextField(rpeController, rpeFocus, "RPE", 40),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: InkWell(
                 onTap: () {
                   HapticFeedback.heavyImpact();
-                  // Toggle your isChecked state here, e.g.,
-                  setState(() { isChecked = !isChecked; });
+                  setState(() {
+                    isChecked = !isChecked;
+                  });
                 },
                 child: Container(
                   width: 24.0,
                   height: 24.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: isChecked ? Colors.blue : Colors.grey, width: 2),
+                    border: Border.all(
+                      color: isChecked ? Colors.blue : Colors.grey,
+                      width: 2,
+                    ),
                   ),
                   child: Center(
-                          child: Icon(
-                            Icons.check,
-                            size: 16.0,
-                            color: isChecked ? Colors.blue : Colors.grey,
-                          ),
-                        ),
+                    child: Icon(
+                      Icons.check,
+                      size: 16.0,
+                      color: isChecked ? Colors.blue : Colors.grey,
+                    ),
+                  ),
                 ),
               ),
-            )
-      
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller, FocusNode focusNode, String hint, double width) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode, // Attach focus node
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Color(0xFF1e2025),
+          contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+          constraints: BoxConstraints(
+            maxWidth: width,
+            maxHeight: 30,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          hintText: hint,
         ),
       ),
     );

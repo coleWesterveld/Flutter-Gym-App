@@ -1131,6 +1131,8 @@ Future<dynamic> openDialog() {
   );
 }
 
+// TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
+// also, it goes away when clicking directly from one textbox to another
   Widget buildBottomSheet(){
     // if we should be displaying done button for numeric keyboard, then create.
     // else display calendar
