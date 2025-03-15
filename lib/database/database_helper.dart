@@ -9,6 +9,7 @@ import 'package:flutter/services.dart' show rootBundle;
 //TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
+// TODO: maybe switch some integers to real to allow decimals. ie weight and even reps
 
 // TODO: unify ordering index start
 // currently I think some start at 0 and some at 1
@@ -114,10 +115,12 @@ class DatabaseHelper {
     // might want to remove on delete cascade, or make another way to save data even if typo, or used in different workouts
     // basically, this may become a many-to-many table and we may have to have a large table of all exercises saved 
     // but for now this works
+    // will be assigned session_id based off of timestamp of session to group same exercise sets done on same day
     await db.execute(
     '''
       CREATE TABLE set_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
         date TEXT NOT NULL,
         numSets INTEGER NOT NULL,
         reps INTEGER NOT NULL,
@@ -217,6 +220,27 @@ class DatabaseHelper {
 
     // Execute all operations in a single batch
     await batch.commit();
+  }
+
+  // this is intended to be run when a user finishes a workout
+  //this takes the session buffer populated during the workout 
+  // and writes all the recorded sets to the database
+  Future<void> insertSetRecords(Database db, List<SetRecord> records) async {
+    if (records.isEmpty) return;
+
+    await db.transaction((txn) async {
+      final Batch batch = txn.batch();
+
+      for (var record in records) {
+        batch.insert(
+          'set_log',
+          record.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace, // Avoid duplicates
+        );
+      }
+
+      await batch.commit(noResult: true); // Improves performance by not returning results
+    });
   }
 
 

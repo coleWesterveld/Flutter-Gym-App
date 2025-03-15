@@ -8,6 +8,10 @@
 
 // Also with help of the one and only ChatGPT
 
+// For now, for saving the set record I will match sets by sessionID and the history note will be copied for every set, or maybe just the first one
+// at some point, should probably make  exercises -> many setClusterHistory -> many Individual sets
+// to group by date, session, and have one note to define everything
+
 // PROGRAM TABLE
 // (one program -> many days)
 class Program {
@@ -198,6 +202,7 @@ class PlannedSet {
 class SetRecord {
   final int recordID;
   final int exerciseID;
+  final String sessionID;
 
   // Will use ISO 8601 format to store dates, yyyy-MM-ddTHH:mm:ss
   final String date;
@@ -209,6 +214,7 @@ class SetRecord {
   final String? historyNote;
 
   SetRecord({
+    required this.sessionID,
     required this.recordID, 
     required this.exerciseID, 
     required this.date, 
@@ -229,6 +235,7 @@ class SetRecord {
       'weight': weight,
       'rpe': rpe,
       'history_note': historyNote,
+      'session_id' : sessionID,
     };
   }
 
@@ -242,6 +249,7 @@ class SetRecord {
       weight: map['weight'],
       rpe: map['rpe'],
       historyNote: map['history_note'],
+      sessionID: map['session_id'],
     );
   }
 
@@ -262,11 +270,13 @@ class SetRecord {
     required int reps,
     required int weight,
     required int rpe,
+    required String sessionID,
     String? historyNote,
   }) {
     return SetRecord(
       recordID: recordID,
       exerciseID: exerciseID,
+      sessionID: sessionID,
 
       date: date.toIso8601String(),
       

@@ -55,6 +55,9 @@ class Profile extends ChangeNotifier {
   Day? activeDay;
   List<bool>? showHistory;
 
+  // during a workout, logged sets will go here before being added to the database
+  //List<SetRecord> sessionBuffer;
+
   //defaults to monday of this week
   DateTime _origin = getDayOfCurrentWeek(1);
 
