@@ -58,6 +58,36 @@ class Profile extends ChangeNotifier {
   // during a workout, logged sets will go here before being added to the database
   //List<SetRecord> sessionBuffer;
 
+  // this will keep track of what the expected next set will be
+  // it will start as 0 but will change to be the set planned after the most recently logged set
+  // it will be a list [exercise, set]
+  List<int> nextSet = [0, 0];
+
+  // List<int> get nextSet => _nextSet;
+
+  // will set nextSet to the set reccomended after justDone
+  void incrementSet(List<int> justDone){
+    assert(activeDayIndex != null, "Trying to set an active set while no workout is in progress");
+    // if last set of an exercise, move to next exercise
+    debugPrint("length is: ${sets[activeDayIndex!][justDone[0]].length}");
+    if (justDone[1] == sets[activeDayIndex!][justDone[0]].length - 1){
+
+      // also, dont increment if this is the last exercise of the workout
+      // atp we should maybe glow the "finish workout" button or something to suggest it to the user
+      if (justDone[0] != exercises[activeDayIndex!].length - 1){
+         nextSet[0] = justDone[0] + 1;
+         nextSet[1] = 0;
+      }
+     
+    }else{
+      // otherwise, just go to next set same exercise
+      nextSet[0] = justDone[0];
+      nextSet[1] = justDone[1] + 1;
+    }
+
+    notifyListeners();
+  }
+
   //defaults to monday of this week
   DateTime _origin = getDayOfCurrentWeek(1);
 
@@ -155,9 +185,6 @@ class Profile extends ChangeNotifier {
       notifyListeners(); // Notify widgets that listen to Profile
     }
   }
-
-
-
 
   // TODO: I think many of these methods could be simpler setters and getters?
   void changeDone(bool val){

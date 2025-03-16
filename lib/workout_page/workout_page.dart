@@ -40,12 +40,25 @@ class _WorkoutState extends State<Workout> {
   @override
   void initState() {
     super.initState();
+
+    final profile = context.read<Profile>();
+    expandedTileIndex = profile.nextSet[0];
+
+    profile.addListener(() {
+      if (mounted) {
+        setState(() {
+          expandedTileIndex = profile.nextSet[0];
+        });
+      }
+    });
+    
     _startStopwatch();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    context.read<Profile>().removeListener(() {});
     super.dispose();
   }
 
@@ -147,7 +160,7 @@ class _WorkoutState extends State<Workout> {
                       
                       color: _isPaused ? lighten( Color(0xFF1e2025), 10) : darken( Color(0xFF1e2025), 10),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(width: 2, color: _isPaused ? lighten(Colors.blue, 10): Colors.blue)
+                      border: Border.all(width: 2, color: lighten( Color(0xFF1e2025), 20) /*_isPaused ? lighten(Colors.blue, 10): Colors.blue*/)
                     ),
                     child: Center(
                       child: Text(
@@ -155,7 +168,7 @@ class _WorkoutState extends State<Workout> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _isPaused ? lighten(Colors.grey, 20): Colors.white,
+                          color:  Colors.white,
                         ),
                       ),
                     ),
@@ -244,7 +257,7 @@ class _WorkoutState extends State<Workout> {
         decoration: BoxDecoration(
           // the colour should maybe change with what is reccomended to be next (next after most recently logged set)
           // but for now its fine IG
-          border: Border.all(width: (index == expandedTileIndex) ? 2 :1,color: (index == expandedTileIndex) ? Colors.blue : lighten(const Color(0xFF141414), 20)),
+          border: Border.all(width: (index == context.watch<Profile>().nextSet[0]) ? 2 :1,color: (index == context.watch<Profile>().nextSet[0]) ? Colors.blue : lighten(const Color(0xFF141414), 20)),
           color: const Color(0xFF1e2025),
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -325,13 +338,15 @@ class _WorkoutState extends State<Workout> {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: context.read<Profile>().sets[primaryIndex][index].length,
-                        itemBuilder: (context, exerciseIndex) {
+                        itemBuilder: (context, setIndex) {
                           return GymSetRow(
                             prevWeight: 12,
                             prevReps: 5,
                             expectedRPE: 8,
                             expectedReps: 5,
                             expectedWeight: 200,
+                            exerciseIndex: index,
+                            setIndex: setIndex,
                           );
                         },
                       ),

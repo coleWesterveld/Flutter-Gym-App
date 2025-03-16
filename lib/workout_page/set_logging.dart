@@ -10,15 +10,18 @@ class GymSetRow extends StatefulWidget {
   final double expectedWeight;
   final int expectedReps;
   final double expectedRPE;
+  final int exerciseIndex, setIndex;
 
   const GymSetRow({
-    Key? key,
+    super.key,
     required this.prevWeight,
     required this.prevReps,
     required this.expectedWeight,
     required this.expectedReps,
     required this.expectedRPE,
-  }) : super(key: key);
+    required this.exerciseIndex,
+    required this.setIndex,
+  });
 
   @override
   _GymSetRowState createState() => _GymSetRowState();
@@ -93,6 +96,8 @@ class _GymSetRowState extends State<GymSetRow> {
               child: InkWell(
                 onTap: () {
                   HapticFeedback.heavyImpact();
+                  context.read<Profile>().incrementSet([widget.exerciseIndex, widget.setIndex]);
+                  debugPrint("Next set: ${context.read<Profile>().nextSet}");
                   setState(() {
                     isChecked = !isChecked;
                   });
