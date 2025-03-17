@@ -27,38 +27,45 @@ class _WorkoutState extends State<Workout> {
   // -1 indicates no tile is expanded.
   int expandedTileIndex = 0; 
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // No need to initialize controllers here
-  }
+  // Declare a private variable for the Profile and a listener callback.
+  Profile? _profile;
+  late final VoidCallback _profileListener;
 
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
   bool _isPaused = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize the provider only once.
+    if (_profile == null) {
+      _profile = Provider.of<Profile>(context, listen: false);
+      expandedTileIndex = _profile!.nextSet[0];
+      // Define and add the listener.
+      _profileListener = () {
+        if (mounted) {
+          setState(() {
+            expandedTileIndex = _profile!.nextSet[0];
+          });
+        }
+      };
+      _profile!.addListener(_profileListener);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
-
-    final profile = context.read<Profile>();
-    expandedTileIndex = profile.nextSet[0];
-
-    profile.addListener(() {
-      if (mounted) {
-        setState(() {
-          expandedTileIndex = profile.nextSet[0];
-        });
-      }
-    });
-    
+    // Start the stopwatch.
     _startStopwatch();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    context.read<Profile>().removeListener(() {});
+    // Remove the listener using the stored reference.
+    _profile?.removeListener(_profileListener);
     super.dispose();
   }
 
@@ -66,7 +73,7 @@ class _WorkoutState extends State<Workout> {
     _stopwatch.start();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {}); // Update UI every second
+        setState(() {}); // Update UI every second.
       }
     });
   }
@@ -76,19 +83,15 @@ class _WorkoutState extends State<Workout> {
     _timer?.cancel();
   }
 
-
   String _formatTime(int milliseconds) {
     int seconds = (milliseconds / 1000).truncate();
     int hours = seconds ~/ 3600;
     int minutes = (seconds % 3600) ~/ 60;
     int remainingSeconds = seconds % 60;
-
     return "${hours.toString().padLeft(2, '0')}:"
            "${minutes.toString().padLeft(2, '0')}:"
            "${remainingSeconds.toString().padLeft(2, '0')}";
   }
-
-
   @override
   Widget build(BuildContext context) {
     int? primaryIndex = context.read<Profile>().activeDayIndex;

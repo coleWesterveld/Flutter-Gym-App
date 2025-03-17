@@ -122,7 +122,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id TEXT NOT NULL,
         date TEXT NOT NULL,
-        numSets INTEGER NOT NULL,
+        num_sets INTEGER NOT NULL,
         reps INTEGER NOT NULL,
         weight INTEGER NOT NULL,
         rpe INTEGER NOT NULL,
@@ -225,23 +225,8 @@ class DatabaseHelper {
   // this is intended to be run when a user finishes a workout
   //this takes the session buffer populated during the workout 
   // and writes all the recorded sets to the database
-  Future<void> insertSetRecords(Database db, List<SetRecord> records) async {
-    if (records.isEmpty) return;
 
-    await db.transaction((txn) async {
-      final Batch batch = txn.batch();
 
-      for (var record in records) {
-        batch.insert(
-          'set_log',
-          record.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace, // Avoid duplicates
-        );
-      }
-
-      await batch.commit(noResult: true); // Improves performance by not returning results
-    });
-  }
 
 
   /////////////////////////////////////////////
@@ -600,17 +585,13 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   // SET RECORD (history) TABLE CRUD
 
   Future<int> insertSetRecord(
-        int exerciseId, String date, int numSets, int reps, int weight, int rpe, String historyNote) async {
+        SetRecord record) async {
     final db = await DatabaseHelper.instance.database;
-    return await db.insert('setRecord', {
-      'exercise_id': exerciseId,
-      'date': date,
-      'numSets': numSets,
-      'reps': reps,
-      'weight': weight,
-      'rpe': rpe,
-      'history_note': historyNote,
-    });
+    return await db.insert(
+      'set_log', 
+      record.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Map<String, dynamic>>> fetchSetRecords(int exerciseId) async {
@@ -627,7 +608,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     int setRecordId, Map<String, dynamic> newValues) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
-      'setRecord',
+      'set_log',
       newValues,
       where: 'id = ?',
       whereArgs: [setRecordId],
@@ -637,7 +618,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   Future<int> deleteSetRecord(int setRecordId) async {
     final db = await DatabaseHelper.instance.database;
     return await db.delete(
-      'setRecord',
+      'set_log',
       where: 'id = ?',
       whereArgs: [setRecordId],
     );

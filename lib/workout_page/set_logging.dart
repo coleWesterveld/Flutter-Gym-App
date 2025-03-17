@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
 import 'package:firstapp/user.dart';
+import '../database/profile.dart';
 
 class GymSetRow extends StatefulWidget {
   final double prevWeight;
@@ -72,6 +73,11 @@ class _GymSetRowState extends State<GymSetRow> {
 
   @override
   Widget build(BuildContext context) {
+
+    assert (context.read<Profile>().sessionID != null, "SessionID is null, this... uhh... shouldnt happen.");
+    assert(context.read<Profile>().activeDayIndex != null, "no active day index, this shouldnt happen.");
+    assert(context.read<Profile>().activeDay != null, "no active day, this shouldnt happen.");
+
     return Container(
       decoration: BoxDecoration(
         color: isChecked ? Colors.blue.withAlpha(100) : null,
@@ -98,9 +104,27 @@ class _GymSetRowState extends State<GymSetRow> {
                   HapticFeedback.heavyImpact();
                   context.read<Profile>().incrementSet([widget.exerciseIndex, widget.setIndex]);
                   debugPrint("Next set: ${context.read<Profile>().nextSet}");
+                  
                   setState(() {
                     isChecked = !isChecked;
                   });
+
+                  context.read<Profile>().logSet(
+                    SetRecord.fromDateTime(
+                    sessionID: context.read<Profile>().sessionID!, 
+                    exerciseID: context.read<Profile>().exercises[
+                      context.read<Profile>().activeDayIndex!
+                    ][widget.exerciseIndex].exerciseID, 
+                    date: DateTime.now(), 
+                    numSets: 1, 
+                    // maybe allow for floats at some point
+                    reps: int.parse(repsController.text), 
+
+                    weight: int.parse(weightController.text), 
+                    rpe: int.parse(rpeController.text))
+                  );
+
+
                 },
                 child: Container(
                   width: 24.0,

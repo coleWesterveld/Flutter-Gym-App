@@ -1,12 +1,9 @@
 // analyitcs page
-// not updated
-import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import "../user.dart";
-import 'package:provider/provider.dart';
-import 'dart:math';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../other_utilities/lightness.dart';
+
+//big page overhaul with search - links to DB to search for index
+// next step is to take that index, query history, and plot it
+// and clean up the UI
+
 // overall goal of this page:
 // metrics for motivation/acccountability
 // insights into effective exercises or routines 
@@ -28,10 +25,15 @@ import '../other_utilities/lightness.dart';
 // maybe good to have a smart feature which puts graphs that are important at the top automatically
 //  important could be "progressing exceptionally well/poorly"
 
-// for this, I may need to adjust my approach that I am taking currently: 
-// I may need a list of all exercises possible, otherwise for example:
-// "Dumbbell Press" would be different to "dumbbell press" to "dumbbell chest press"
-// which proably mean all the same thing
+import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
+import 'package:fl_chart/fl_chart.dart';
+import "../user.dart";
+import 'package:provider/provider.dart';
+import 'dart:math';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../other_utilities/lightness.dart';
+
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -46,8 +48,6 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
-
-  // these should be taken from database
   final List<FlSpot> dataPoints = const [
     FlSpot(0, 50),
     FlSpot(1, 52),
@@ -57,305 +57,49 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     FlSpot(5, 72),
   ];
 
-    final List<Map<String, dynamic>> _goals = [
+  final List<Map<String, dynamic>> _goals = [
     {'title': 'Bench Press', 'current': 275, 'goal': 315},
   ];
+
+  int? exerciseID;
+  String _searchQuery = "";
+  List<Map<String, dynamic>> _exercises = [];
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  final dbHelper = DatabaseHelper.instance;
+
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExercisesFromDatabase();
+
+    _searchFocus.addListener(() {
+      setState(() {
+        _isSearching = _searchFocus.hasFocus;
+      });
+    });
+  }
+
+  Future<void> _loadExercisesFromDatabase() async {
+    _exercises = await dbHelper.fetchExercisesWithIds();
+    setState(() {});
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = "";
+      _searchController.clear();
+      _isSearching = false;
+      _searchFocus.unfocus();
+    });
+  }
 
   void _addGoal() {
     setState(() {
       _goals.add({'title': 'New Goal', 'current': 0, 'goal': 100});
     });
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1e2025),
-        centerTitle: true,
-        title: const Text(
-          "Analytics",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
-          ),
-      ),
-
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-        
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: SearchBar(
-                  hintText: "Search exercise",
-        
-                  onTapOutside:(event) => WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
-                  constraints: BoxConstraints(
-                    minHeight: 40, // Set the minimum height
-                    maxHeight: 40, // Set the maximum height
-                  ),
-        
-                  backgroundColor: WidgetStateProperty.all( Color(0xFF1e2025)),
-                  leading: Icon(Icons.search, color: Color(0xFFdee3e5)),
-                ),
-              ),
-        
-              // const Center(
-              //   child: Text(
-              //     "Example Graph",
-              //     style: TextStyle(
-              //       fontSize: 20,
-              //       fontWeight: FontWeight.w900
-              //     )
-              //   )
-              // ),
-        
-              // SizedBox(
-              //   height: 200,
-              //   width: double.infinity,
-              //   child: LineChart(
-                  
-                  
-              //     LineChartData(
-                    
-              //       lineBarsData: [
-              //         LineChartBarData(
-              //           dotData: FlDotData(
-              //             show: true,
-              //             getDotPainter: (spot, percent, barData, index) {
-              //               return FlDotCirclePainter(
-              //                 radius: 4,
-              //                 color: Color(0xFF1e2025),
-              //                 strokeColor: Colors.blue,
-              //                 strokeWidth: 2,
-              //               );
-              //             },
-              //           ),
-              
-              //           spots: dataPoints,
-              //           isCurved: false,
-              //           color: Colors.blue,
-              //           barWidth: 4,
-              //           belowBarData: BarAreaData(
-              //             show: true,
-              //             color: Colors.blue.withAlpha(75),
-              //           ),
-              //           //dotData: FlDotData(show: false),
-              //         ),
-              //       ],
-              //       gridData: FlGridData(show: true),
-              //       borderData: FlBorderData(
-              //         show: true,
-              //         border: const Border(
-              //           left: BorderSide(color: Colors.grey),
-              //           bottom: BorderSide(color: Colors.grey),
-              //         ),
-              //       ),
-              //       titlesData: FlTitlesData(
-              //         leftTitles: AxisTitles(
-              //           sideTitles: SideTitles(
-              //             showTitles: true,
-              //             reservedSize: 40,
-              //             interval: 10,
-              //             getTitlesWidget: (value, _) => Text(
-              //               '${value.toInt()} kg',
-              //               style: const TextStyle(fontSize: 12),
-              //             ),
-              //           ),
-              //         ),
-              //         bottomTitles: AxisTitles(
-              //           sideTitles: SideTitles(
-              //             showTitles: true,
-              //             interval: 1,
-              //             getTitlesWidget: (value, _) {
-              //               final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-              //               return Text(
-              //                 labels[value.toInt()],
-              //                 style: const TextStyle(fontSize: 12),
-              //               );
-              //             },
-              //           ),
-              //         ),
-              //       ),
-              //       minX: 0,
-              //       maxX: 5,
-              //       minY: 40,
-              //       maxY: 80,
-              //     ),
-              //   ),
-              // ),
-        
-              Container(
-                height: 325,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Color(0xFF1e2025),  
-                ),
-        
-                
-                //height: 200,
-                child:  const Align( // this will not stay const 
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    children: [
-                      const Align(
-                        alignment: Alignment.topCenter,
-                        child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            // TODO: instead of current scroll, each card shoudl take fill page and there should be dot tab indiators on bottom
-                            "This Week",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                       Expanded(child: PageViewWithIndicator()),
-        
-                      // Expanded(
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                      //     child: Row(
-                      //       children: [
-                      //         Align(
-                      //           alignment: Alignment.centerLeft,
-                      //           child: Icon(Icons.arrow_back_ios),
-                      //         ),
-                          
-                      //         Expanded(
-                      //           child: ListView.builder(
-                      //             scrollDirection: Axis.horizontal,
-                      //             itemCount: context.read<Profile>().split.length,
-                      //             itemBuilder: (context, index) {
-                      //               return DayProgress(index: index);
-                      //             }
-                                
-                      //           ),
-                      //         ),
-                          
-                      //         Icon(Icons.arrow_forward_ios)
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-              
-                      
-                      
-                      // Column(children: [
-                      //   // good start make it look better and needs more metrics in the week view but overall good
-                      //   // maybe have an arrow for each exercise to take the user to see the full graph
-                      //   Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
-                      //   Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
-                      //   Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
-        
-                      
-                      // ],)
-        
-        
-        
-                    ],
-                  )
-                )
-              ),
-        
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Container(
-                  //height: 325,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: const Color(0xFF1e2025),  
-                  ),
-                        
-                  
-                  //height: 200,
-                  child: Align( // this will not stay const 
-                    alignment: Alignment.topCenter,
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0 ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  "Goals",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 20,
-                                  ),
-                                ),
-
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: ButtonTheme(
-                                    minWidth: 100,
-                                    //height: 130,
-                                    child: TextButton.icon(
-                                      onPressed: () {
-                                        _addGoal();
-                                      },
-                                    
-                                      style: ButtonStyle(
-                                        //when clicked, it splashes a lighter purple to show that button was clicked
-                                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                
-                                          borderRadius: BorderRadius.circular(12))),
-                                        backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
-                                        overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                                          if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
-                                          return null;
-                                        }),
-                                      ),
-                                      
-                                      label: 
-                                          const Text(
-                            
-                                            "Add Goal",
-                                            style: TextStyle(
-                                                color: Color.fromARGB(255, 255, 255, 255),
-                                                //fontSize: 18,
-                                                //fontWeight: FontWeight.w800,
-                                              ),
-                                          ),
-                                        
-                                      
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Wrap(
-                            //alignment: WrapAlignment.start,
-                            children: _buildGoalList(),
-                          ),
-                        ),
-                        
-                      ],
-                    )
-                  )
-                ),
-              ),
-        
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   List<Widget> _buildGoalList() {
@@ -406,6 +150,418 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return goalList;
      
   }
+
+
+  @override
+  Widget build(BuildContext context) {
+    List<Map<String, dynamic>> filteredExercises = _exercises
+        .where((exercise) =>
+            exercise['exercise_title']
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1e2025),
+        centerTitle: true,
+        title: const Text(
+          "Analytics",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          if (!_isSearching)
+            Column(
+              children: [
+                _buildSearchBar(),
+                Expanded(child: _buildAnalyticsContent()), // Your existing UI
+              ],
+            ),
+
+          if (_isSearching) _buildFullScreenSearch(filteredExercises),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _searchFocus,
+        onChanged: (query) {
+          setState(() {
+            _searchQuery = query;
+          });
+        },
+        decoration: InputDecoration(
+          hintText: "Search exercise",
+          prefixIcon: const Icon(Icons.search, color: Color(0xFFdee3e5)),
+          filled: true,
+          fillColor: const Color(0xFF1e2025),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        style: const TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildFullScreenSearch(List<Map<String, dynamic>> filteredExercises) {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: _clearSearch,
+        child: Container(
+          color: Colors.black.withOpacity(0.8),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: _clearSearch,
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocus,
+                        onChanged: (query) {
+                          setState(() {
+                            _searchQuery = query;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search exercise",
+                          filled: true,
+                          fillColor: Colors.grey[900],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredExercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = filteredExercises[index];
+                    return ListTile(
+                      title: Text(
+                        exercise['exercise_title'],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      onTap: () {
+                        
+                        setState(() {
+                          exerciseID = exercise['id'];
+                          _searchController.text = exercise['exercise_title'];
+                          _clearSearch();
+                        });
+                        debugPrint("ExerciseID: $exerciseID");
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  SingleChildScrollView _buildAnalyticsContent() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+      
+            // Padding(
+            //   padding: const EdgeInsets.only(bottom: 8.0),
+            //   child: SearchBar(
+            //     hintText: "Search exercise",
+      
+            //     onTapOutside:(event) => WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
+            //     constraints: BoxConstraints(
+            //       minHeight: 40, // Set the minimum height
+            //       maxHeight: 40, // Set the maximum height
+            //     ),
+      
+            //     backgroundColor: WidgetStateProperty.all( Color(0xFF1e2025)),
+            //     leading: Icon(Icons.search, color: Color(0xFFdee3e5)),
+            //   ),
+            // ),
+      
+            // const Center(
+            //   child: Text(
+            //     "Example Graph",
+            //     style: TextStyle(
+            //       fontSize: 20,
+            //       fontWeight: FontWeight.w900
+            //     )
+            //   )
+            // ),
+      
+            // SizedBox(
+            //   height: 200,
+            //   width: double.infinity,
+            //   child: LineChart(
+                
+                
+            //     LineChartData(
+                  
+            //       lineBarsData: [
+            //         LineChartBarData(
+            //           dotData: FlDotData(
+            //             show: true,
+            //             getDotPainter: (spot, percent, barData, index) {
+            //               return FlDotCirclePainter(
+            //                 radius: 4,
+            //                 color: Color(0xFF1e2025),
+            //                 strokeColor: Colors.blue,
+            //                 strokeWidth: 2,
+            //               );
+            //             },
+            //           ),
+            
+            //           spots: dataPoints,
+            //           isCurved: false,
+            //           color: Colors.blue,
+            //           barWidth: 4,
+            //           belowBarData: BarAreaData(
+            //             show: true,
+            //             color: Colors.blue.withAlpha(75),
+            //           ),
+            //           //dotData: FlDotData(show: false),
+            //         ),
+            //       ],
+            //       gridData: FlGridData(show: true),
+            //       borderData: FlBorderData(
+            //         show: true,
+            //         border: const Border(
+            //           left: BorderSide(color: Colors.grey),
+            //           bottom: BorderSide(color: Colors.grey),
+            //         ),
+            //       ),
+            //       titlesData: FlTitlesData(
+            //         leftTitles: AxisTitles(
+            //           sideTitles: SideTitles(
+            //             showTitles: true,
+            //             reservedSize: 40,
+            //             interval: 10,
+            //             getTitlesWidget: (value, _) => Text(
+            //               '${value.toInt()} kg',
+            //               style: const TextStyle(fontSize: 12),
+            //             ),
+            //           ),
+            //         ),
+            //         bottomTitles: AxisTitles(
+            //           sideTitles: SideTitles(
+            //             showTitles: true,
+            //             interval: 1,
+            //             getTitlesWidget: (value, _) {
+            //               final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            //               return Text(
+            //                 labels[value.toInt()],
+            //                 style: const TextStyle(fontSize: 12),
+            //               );
+            //             },
+            //           ),
+            //         ),
+            //       ),
+            //       minX: 0,
+            //       maxX: 5,
+            //       minY: 40,
+            //       maxY: 80,
+            //     ),
+            //   ),
+            // ),
+      
+            Container(
+              height: 325,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Color(0xFF1e2025),  
+              ),
+      
+              
+              //height: 200,
+              child:  const Align( // this will not stay const 
+                alignment: Alignment.topCenter,
+                child: Column(
+                  children: [
+                    const Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          // TODO: instead of current scroll, each card shoudl take fill page and there should be dot tab indiators on bottom
+                          "This Week",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                     Expanded(child: PageViewWithIndicator()),
+      
+                    // Expanded(
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                    //     child: Row(
+                    //       children: [
+                    //         Align(
+                    //           alignment: Alignment.centerLeft,
+                    //           child: Icon(Icons.arrow_back_ios),
+                    //         ),
+                        
+                    //         Expanded(
+                    //           child: ListView.builder(
+                    //             scrollDirection: Axis.horizontal,
+                    //             itemCount: context.read<Profile>().split.length,
+                    //             itemBuilder: (context, index) {
+                    //               return DayProgress(index: index);
+                    //             }
+                              
+                    //           ),
+                    //         ),
+                        
+                    //         Icon(Icons.arrow_forward_ios)
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
+            
+                    
+                    
+                    // Column(children: [
+                    //   // good start make it look better and needs more metrics in the week view but overall good
+                    //   // maybe have an arrow for each exercise to take the user to see the full graph
+                    //   Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
+                    //   Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
+                    //   Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
+      
+                    
+                    // ],)
+      
+      
+      
+                  ],
+                )
+              )
+            ),
+      
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Container(
+                //height: 325,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: const Color(0xFF1e2025),  
+                ),
+                      
+                
+                //height: 200,
+                child: Align( // this will not stay const 
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0 ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Goals",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
+                                ),
+                              ),
+
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: ButtonTheme(
+                                  minWidth: 100,
+                                  //height: 130,
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      _addGoal();
+                                    },
+                                  
+                                    style: ButtonStyle(
+                                      //when clicked, it splashes a lighter purple to show that button was clicked
+                                      shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              
+                                        borderRadius: BorderRadius.circular(12))),
+                                      backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
+                                      overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
+                                        if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
+                                        return null;
+                                      }),
+                                    ),
+                                    
+                                    label: 
+                                        const Text(
+                          
+                                          "Add Goal",
+                                          style: TextStyle(
+                                              color: Color.fromARGB(255, 255, 255, 255),
+                                              //fontSize: 18,
+                                              //fontWeight: FontWeight.w800,
+                                            ),
+                                        ),
+                                      
+                                    
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          //alignment: WrapAlignment.start,
+                          children: _buildGoalList(),
+                        ),
+                      ),
+                      
+                    ],
+                  )
+                )
+              ),
+            ),
+      
+          ],
+        ),
+      ),
+    );
+  }
+
+  
 }
 
 class GoalProgress extends StatefulWidget {
@@ -680,9 +836,9 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
   }
 }
 
-// cant even lie this whole class was written by ChatGPT
-// I wanted to have the circular progress indicator more customizeable
-// specifically, I can make the progressed part thicker than the non completed part
+// // cant even lie this whole class was written by ChatGPT
+// // I wanted to have the circular progress indicator more customizeable
+// // specifically, I can make the progressed part thicker than the non completed part
 class ThickCircularProgress extends StatelessWidget {
   final double progress; // Progress as a value between 0 and 1
   final double completedStrokeWidth;

@@ -200,7 +200,7 @@ class PlannedSet {
 
 // SET RECORD TABLE
 class SetRecord {
-  final int recordID;
+  final int? recordID;
   final int exerciseID;
   final String sessionID;
 
@@ -215,7 +215,7 @@ class SetRecord {
 
   SetRecord({
     required this.sessionID,
-    required this.recordID, 
+    this.recordID, 
     required this.exerciseID, 
     required this.date, 
     required this.numSets, 
@@ -234,7 +234,7 @@ class SetRecord {
       'reps': reps,
       'weight': weight,
       'rpe': rpe,
-      'history_note': historyNote,
+      'history_note': historyNote ?? '',
       'session_id' : sessionID,
     };
   }
@@ -261,7 +261,7 @@ class SetRecord {
 
   // Factory constructor to create a SetRecord with a DateTime object
   factory SetRecord.fromDateTime({
-    required int recordID,
+    int? recordID,
     required int exerciseID,
 
     required DateTime date,

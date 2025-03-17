@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 //import 'data_saving.dart';
 import 'database/database_helper.dart';
 import 'database/profile.dart';
+  import 'dart:math';
 //import 'dart:math';
 // split, sets, etc in provider
 // on opening app, set split data and other data to whatever is in database
@@ -56,7 +57,23 @@ class Profile extends ChangeNotifier {
   List<bool>? showHistory;
 
   // during a workout, logged sets will go here before being added to the database
-  //List<SetRecord> sessionBuffer;
+  // UPDATE: I am abandonning this, instant logging is more practical as of now
+  // TODO: keep an eye on performance, especially as setrecord becomes long
+  // List<SetRecord> sessionBuffer = [];
+
+  String? sessionID;
+
+  // returns sessionID, as well as sets in internally.
+  String generateWorkoutSessionId() {
+    final now = DateTime.now();
+    // Convert the current time to an ISO8601 string.
+    final timestamp = now.toIso8601String(); // e.g. "2025-03-16T14:22:31.123"
+    
+
+    sessionID = timestamp;
+    return timestamp;
+  }
+
 
   // this will keep track of what the expected next set will be
   // it will start as 0 but will change to be the set planned after the most recently logged set
@@ -86,6 +103,10 @@ class Profile extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  void logSet(SetRecord record){
+    dbHelper.insertSetRecord(record);
   }
 
   //defaults to monday of this week
@@ -123,6 +144,7 @@ class Profile extends ChangeNotifier {
     this.reps1TEC = const <List<List<TextEditingController>>>[],
     this.reps2TEC = const <List<List<TextEditingController>>>[],
     this.setsTEC = const <List<List<TextEditingController>>>[],
+    
     required this.dbHelper,
     this.splitLength = 7,
     this.activeDayIndex,
@@ -185,6 +207,7 @@ class Profile extends ChangeNotifier {
       notifyListeners(); // Notify widgets that listen to Profile
     }
   }
+
 
   // TODO: I think many of these methods could be simpler setters and getters?
   void changeDone(bool val){
