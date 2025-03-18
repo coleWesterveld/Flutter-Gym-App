@@ -33,7 +33,7 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../other_utilities/lightness.dart';
-
+import 'exercise_search.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -62,37 +62,31 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   ];
 
   int? exerciseID;
-  String _searchQuery = "";
-  List<Map<String, dynamic>> _exercises = [];
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocus = FocusNode();
-  final dbHelper = DatabaseHelper.instance;
 
+  // We now track whether the search overlay is active,
+  // as notified by our ExerciseSearchWidget.
   bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    _loadExercisesFromDatabase();
-
-    _searchFocus.addListener(() {
-      setState(() {
-        _isSearching = _searchFocus.hasFocus;
-      });
-    });
+    // Previously, you loaded exercises here.
+    // The search widget now loads its own exercise list.
   }
 
-  Future<void> _loadExercisesFromDatabase() async {
-    _exercises = await dbHelper.fetchExercisesWithIds();
-    setState(() {});
-  }
-
-  void _clearSearch() {
+  // Callback when an exercise is selected.
+  void _handleExerciseSelected(Map<String, dynamic> exercise) {
     setState(() {
-      _searchQuery = "";
-      _searchController.clear();
-      _isSearching = false;
-      _searchFocus.unfocus();
+      exerciseID = exercise['id'];
+      // Additional logic for when an exercise is selected can go here.
+    });
+    debugPrint("ExerciseID: $exerciseID");
+  }
+
+  // Callback to update the search mode state.
+  void _updateSearchMode(bool isSearching) {
+    setState(() {
+      _isSearching = isSearching;
     });
   }
 
@@ -102,7 +96,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     });
   }
 
-  List<Widget> _buildGoalList() {
+   List<Widget> _buildGoalList() {
     //debugPrint('${(MediaQuery.sizeOf(context).width - 48)/2}');
     List<Widget> goalList = [];
     for (var goal in _goals){
@@ -149,139 +143,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     return goalList;
      
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredExercises = _exercises
-        .where((exercise) =>
-            exercise['exercise_title']
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()))
-        .toList();
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1e2025),
-        centerTitle: true,
-        title: const Text(
-          "Analytics",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          if (!_isSearching)
-            Column(
-              children: [
-                _buildSearchBar(),
-                Expanded(child: _buildAnalyticsContent()), // Your existing UI
-              ],
-            ),
-
-          if (_isSearching) _buildFullScreenSearch(filteredExercises),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextField(
-        controller: _searchController,
-        focusNode: _searchFocus,
-        onChanged: (query) {
-          setState(() {
-            _searchQuery = query;
-          });
-        },
-        decoration: InputDecoration(
-          hintText: "Search exercise",
-          prefixIcon: const Icon(Icons.search, color: Color(0xFFdee3e5)),
-          filled: true,
-          fillColor: const Color(0xFF1e2025),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        style: const TextStyle(color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildFullScreenSearch(List<Map<String, dynamic>> filteredExercises) {
-    return Positioned.fill(
-      child: GestureDetector(
-        onTap: _clearSearch,
-        child: Container(
-          color: Colors.black.withOpacity(0.8),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: _clearSearch,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocus,
-                        onChanged: (query) {
-                          setState(() {
-                            _searchQuery = query;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Search exercise",
-                          filled: true,
-                          fillColor: Colors.grey[900],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredExercises.length,
-                  itemBuilder: (context, index) {
-                    final exercise = filteredExercises[index];
-                    return ListTile(
-                      title: Text(
-                        exercise['exercise_title'],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      onTap: () {
-                        
-                        setState(() {
-                          exerciseID = exercise['id'];
-                          _searchController.text = exercise['exercise_title'];
-                          _clearSearch();
-                        });
-                        debugPrint("ExerciseID: $exerciseID");
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   SingleChildScrollView _buildAnalyticsContent() {
@@ -561,8 +422,85 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  
+  // This is the persistent search bar shown as part of the AnalyticsPage.
+  // Tapping it sets _isSearching to true so the full-screen overlay appears.
+  Widget _buildPersistentSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _isSearching = true;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1e2025),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: const [
+              Icon(Icons.search, color: Color(0xFFdee3e5)),
+              SizedBox(width: 8),
+              Text(
+                "Search exercise",
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Instead of using a local _buildFullScreenSearch method,
+  // we simply return the ExerciseSearchWidget wrapped in Positioned.fill.
+  Widget _buildFullScreenSearch() {
+    return Positioned.fill(
+      child: ExerciseSearchWidget(
+        onExerciseSelected: _handleExerciseSelected,
+        onSearchModeChanged: _updateSearchMode,
+      ),
+    );
+  }
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: const Color(0xFF1e2025),
+      centerTitle: true,
+      title: const Text(
+        "Analytics",
+        style: TextStyle(
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ),
+    body: Stack(
+      children: [
+        // Show analytics content with the persistent search bar only when not searching.
+        if (!_isSearching)
+          Column(
+            children: [
+              _buildPersistentSearchBar(),
+              Expanded(child: _buildAnalyticsContent()),
+            ],
+          ),
+        // When search is active, show the full-screen search overlay.
+        if (_isSearching) _buildFullScreenSearch(),
+      ],
+    ),
+  );
 }
+
+}
+
+// ---------------------------------------------------------
+// The rest of your widget implementations below.
+// Leave space for you to add back your original code.
+
 
 class GoalProgress extends StatefulWidget {
   const GoalProgress({
@@ -916,3 +854,4 @@ class CircularProgressPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
