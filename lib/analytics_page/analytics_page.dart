@@ -25,6 +25,7 @@
 // maybe good to have a smart feature which puts graphs that are important at the top automatically
 //  important could be "progressing exceptionally well/poorly"
 
+import 'package:firstapp/analytics_page/weekly_progress.dart';
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -287,7 +288,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           // TODO: instead of current scroll, each card shoudl take fill page and there should be dot tab indiators on bottom
-                          "This Week",
+                            "Last 7 Days",
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 20,
@@ -747,46 +748,46 @@ class _DayProgressState extends State<DayProgress> {
 
 
 
-class PageViewWithIndicator extends StatefulWidget {
-  const PageViewWithIndicator({super.key});
+// class PageViewWithIndicator extends StatefulWidget {
+//   const PageViewWithIndicator({super.key});
 
-  @override
-  _PageViewWithIndicatorState createState() => _PageViewWithIndicatorState();
-}
+//   @override
+//   _PageViewWithIndicatorState createState() => _PageViewWithIndicatorState();
+// }
 
-class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
-  final PageController _pageController = PageController();
+// class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
+//   final PageController _pageController = PageController();
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: context.read<Profile>().split.length,
-            itemBuilder: (context, index) {
-              return DayProgress(index: index);
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SmoothPageIndicator(
-            controller: _pageController,
-            count: context.read<Profile>().split.length,
-            effect: const ExpandingDotsEffect(
-              dotHeight: 8.0,
-              dotWidth: 8.0,
-              activeDotColor: Colors.blue,
-              dotColor: Colors.grey,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         Expanded(
+//           child: PageView.builder(
+//             controller: _pageController,
+//             itemCount: context.read<Profile>().split.length,
+//             itemBuilder: (context, index) {
+//               return DayProgress(index: index);
+//             },
+//           ),
+//         ),
+//         Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: SmoothPageIndicator(
+//             controller: _pageController,
+//             count: context.read<Profile>().split.length,
+//             effect: const ExpandingDotsEffect(
+//               dotHeight: 8.0,
+//               dotWidth: 8.0,
+//               activeDotColor: Colors.blue,
+//               dotColor: Colors.grey,
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 // // cant even lie this whole class was written by ChatGPT
 // // I wanted to have the circular progress indicator more customizeable
