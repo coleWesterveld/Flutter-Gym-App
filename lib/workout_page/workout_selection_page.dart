@@ -341,6 +341,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                             }),
                                           ),
                                           onPressed: () {
+                                            context.read<Profile>().generateWorkoutSessionId();
                                             context.read<Profile>().setActiveDay(index);
                                             Navigator.push(
                                                 context,

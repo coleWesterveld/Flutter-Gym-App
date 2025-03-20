@@ -34,6 +34,8 @@ import 'dart:math';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../other_utilities/lightness.dart';
 import 'exercise_search.dart';
+import 'exercise_progress_chart.dart';
+import '../database/profile.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -62,10 +64,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   ];
 
   int? exerciseID;
+  Map<String, dynamic>? _exercise;
 
   // We now track whether the search overlay is active,
   // as notified by our ExerciseSearchWidget.
   bool _isSearching = false;
+  bool _displayChart = false;
 
   @override
   void initState() {
@@ -77,9 +81,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Callback when an exercise is selected.
   void _handleExerciseSelected(Map<String, dynamic> exercise) {
     setState(() {
-      exerciseID = exercise['id'];
+      _exercise = exercise;
       // Additional logic for when an exercise is selected can go here.
     });
+    _displayChart = true;
     debugPrint("ExerciseID: $exerciseID");
   }
 
@@ -146,11 +151,20 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   SingleChildScrollView _buildAnalyticsContent() {
+    if (_displayChart){
+
+      assert(_exercise != null, "to show exercise history, it should not be null");
+    }
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
+            // TODO: error check here maybe with the !
+  
+            if (_displayChart)
+              ExerciseProgressChart(exercise: _exercise!),
+
       
             // Padding(
             //   padding: const EdgeInsets.only(bottom: 8.0),

@@ -94,9 +94,9 @@ class _GymSetRowState extends State<GymSetRow> {
                 style: TextStyle(fontSize: 16),
               ),
             ),
-            _buildTextField(weightController, weightFocus, "Weight", 30),
-            _buildTextField(repsController, repsFocus, "Reps", 50),
-            _buildTextField(rpeController, rpeFocus, "RPE", 40),
+            _buildTextField(rpeController, weightFocus, "Weight", 30),
+            _buildTextField(weightController, repsFocus, "Reps", 50),
+            _buildTextField(repsController, rpeFocus, "RPE", 40),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: InkWell(

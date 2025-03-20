@@ -5,6 +5,9 @@ import 'package:firstapp/user.dart';
 import 'profile.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/foundation.dart'; // Import for kDebugMode
+import 'dart:math'; // For random variations
+
 // TODO: maybe add way to delete added exercises
 //TODO: set data not saving currently for some reason
 // database helper for interfacing with SQLite database
@@ -218,6 +221,54 @@ class DatabaseHelper {
       });
     }
 
+
+    /*
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        num_sets INTEGER NOT NULL,
+        reps INTEGER NOT NULL,
+        weight INTEGER NOT NULL,
+        rpe INTEGER NOT NULL,
+        history_note TEXT NOT NULL,
+        exercise_id INTEGER NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+      
+    */
+    // inserting mock data to test analytics page
+    // TODO: remove for release
+    // I think I should plot a first and second and potentially more sets on the same graph
+    // so the line for second set will either be on top of or likely beloow the top set
+    if (kDebugMode) {
+      List<String> feelings = [
+        "Doc", "Grumpy", "Happy", "Sleepy", "Bashful", "Sneezy", "Dopey"
+      ];
+      Random random = Random();
+
+      DateTime startDate = DateTime.now().subtract(const Duration(days: 15));
+      double baseWeight = 180; // Start weight lower to simulate progression
+
+      for (int i = 1; i <= 15; i++) {
+        double weight = baseWeight + (i * 2) + random.nextInt(10) - 5; // Linear increase + noise
+        int reps = 6 + random.nextInt(3) - 1; // Small variation in reps (5-7)
+        int rpe = 7 + random.nextInt(3) - 1; // RPE fluctuates (6-8)
+
+        batch.insert('set_log', {
+          'id': i,
+          'session_id': 1234,
+          'date': startDate.add(Duration(days: i)).toIso8601String(), // Dates increase over time
+          'num_sets': 2,
+          'reps': reps,
+          'weight': weight.round(), // Round to nearest whole number
+          'rpe': rpe,
+          'history_note': "Feeling ${feelings[i % feelings.length]} today.",
+          'exercise_id': 70 // Hardcoded to reference "bench press - medium grip"
+        });
+      }
+    }
+
+    
+
     // Execute all operations in a single batch
     await batch.commit();
   }
@@ -270,7 +321,8 @@ class DatabaseHelper {
       List<Exercise> exerciseDataList = exerciseData.map((exercise) {
 
         return Exercise(
-          exerciseID: exercise['id'],
+          id: exercise['id'],
+          exerciseID: exercise['exercise_id'],
           dayID: exercise['day_id'],
           exerciseTitle: exercise['exercise_title'],
           exerciseOrder: exercise['exercise_order'],
@@ -595,14 +647,14 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   }
 
   Future<List<Map<String, dynamic>>> fetchSetRecords(int exerciseId) async {
-  final db = await DatabaseHelper.instance.database;
-  return await db.query(
-    'set_log',
-    where: 'exercise_id = ?',
-    whereArgs: [exerciseId],
-    orderBy: 'datetime(date) DESC', // Order by date in descending order
-  );
-}
+    final db = await DatabaseHelper.instance.database;
+    return await db.query(
+      'set_log',
+      where: 'exercise_id = ?',
+      whereArgs: [exerciseId],
+      orderBy: 'datetime(date) DESC', // Order by date in descending order
+    );
+  }
 
   Future<int> updateSetRecord(
     int setRecordId, Map<String, dynamic> newValues) async {

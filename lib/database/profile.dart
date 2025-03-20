@@ -91,6 +91,7 @@ class Day {
 // exercise_instances TABLE
 // (one exercise -> many planned sets, many set records)
 class Exercise {
+  final int id;
   final int exerciseID;
   final int dayID;
   final String exerciseTitle;
@@ -98,6 +99,7 @@ class Exercise {
 
 
   Exercise({
+    required this.id,
     required this.exerciseID, 
     required this.dayID, 
     required this.exerciseTitle, 
@@ -106,7 +108,8 @@ class Exercise {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': exerciseID,
+      'id': id,
+      'exercise_id': exerciseID,
       'day_id': dayID,
       'exercise_title': exerciseTitle,
       'exercise_order': exerciseOrder,
@@ -115,7 +118,8 @@ class Exercise {
 
   factory Exercise.fromMap(Map<String, dynamic> map) {
     return Exercise(
-      exerciseID: map['id'],
+      id: map['id'],
+      exerciseID: map['exercise_id'],
       dayID: map['day_id'],
       exerciseTitle: map['exercise_title'],
       exerciseOrder: map['exercise_order']
@@ -126,8 +130,9 @@ class Exercise {
     return 'exercise{title: $exerciseTitle, id: $exerciseID, dayID: $dayID';
   }
 
-  Exercise copyWith({int? newDayID, int? newexerciseID, String? newexerciseTitle, int? newexerciseOrder}) {
+  Exercise copyWith({int? newDayID, int? newexerciseID, String? newexerciseTitle, int? newexerciseOrder, int? newID}) {
     return Exercise(
+      id: newID ?? id,
       exerciseID: newexerciseID ?? exerciseID,
       dayID: newDayID ?? dayID,
       exerciseTitle: newexerciseTitle ?? exerciseTitle,

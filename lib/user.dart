@@ -575,7 +575,8 @@ Future<void> updateDaysOrderInDatabase() async {
     // Add the exercise to the list with the fetched title
     exercises[index].add(
       Exercise(
-        exerciseID: id,
+        id: id,
+        exerciseID: exerciseId,
         dayID: split[index].dayID,
         exerciseTitle: exerciseTitle, // Use the title from the database
         exerciseOrder: exercises[index].length,
