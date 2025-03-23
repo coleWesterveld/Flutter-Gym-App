@@ -51,49 +51,122 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
-  final List<FlSpot> dataPoints = const [
-    FlSpot(0, 50),
-    FlSpot(1, 52),
-    FlSpot(2, 64),
-    FlSpot(3, 65),
-    FlSpot(4, 70),
-    FlSpot(5, 72),
-  ];
-
+  Map<String, dynamic>? _exercise;
+  bool _isSearching = false;
+  bool _displayChart = false;
+  List<SetRecord> _exerciseHistory = [];
   final List<Map<String, dynamic>> _goals = [
     {'title': 'Bench Press', 'current': 275, 'goal': 315},
   ];
 
-  int? exerciseID;
-  Map<String, dynamic>? _exercise;
-
-  // We now track whether the search overlay is active,
-  // as notified by our ExerciseSearchWidget.
-  bool _isSearching = false;
-  bool _displayChart = false;
-
   @override
-  void initState() {
-    super.initState();
-    // Previously, you loaded exercises here.
-    // The search widget now loads its own exercise list.
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1e2025),
+        centerTitle: true,
+        title: const Text(
+          "Analytics",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        leading: _displayChart
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _displayChart = false;
+                    _exercise = null;
+                    _exerciseHistory.clear();
+                  });
+                },
+              )
+            : null,
+      ),
+      body: Stack(
+        children: [
+          // Show analytics content with the persistent search bar only when not searching.
+          if (!_isSearching)
+            Column(
+              children: [
+                if (!_displayChart) _buildPersistentSearchBar(),
+                Expanded(
+                  child: _displayChart
+                      ? _buildExerciseHistory()
+                      : _buildAnalyticsContent(),
+                ),
+              ],
+            ),
+          // When search is active, show the full-screen search overlay.
+          if (_isSearching) _buildFullScreenSearch(),
+        ],
+      ),
+    );
   }
 
   // Callback when an exercise is selected.
-  void _handleExerciseSelected(Map<String, dynamic> exercise) {
+  void _handleExerciseSelected(Map<String, dynamic> exercise) async {
+    final dbHelper = DatabaseHelper.instance;
+    final records = await dbHelper.fetchSetRecords(exercise['id']);
     setState(() {
       _exercise = exercise;
-      // Additional logic for when an exercise is selected can go here.
+      _displayChart = true;
+      _exerciseHistory = records.map((record) => SetRecord.fromMap(record)).toList();
     });
-    _displayChart = true;
-    debugPrint("ExerciseID: $exerciseID");
   }
 
-  // Callback to update the search mode state.
-  void _updateSearchMode(bool isSearching) {
-    setState(() {
-      _isSearching = isSearching;
-    });
+  // Build the exercise history view.
+  Widget _buildExerciseHistory() {
+    // Group history by date
+    final Map<String, List<SetRecord>> groupedHistory = {};
+    for (var record in _exerciseHistory) {
+      final date = record.dateAsDateTime.toLocal().toString().split(' ')[0];
+      if (!groupedHistory.containsKey(date)) {
+        groupedHistory[date] = [];
+      }
+      groupedHistory[date]!.add(record);
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ExerciseProgressChart(exercise: _exercise!),
+          ...groupedHistory.entries.map((entry) {
+            final date = entry.key;
+            final records = entry.value;
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      date,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  ...records.map((record) {
+                    return ListTile(
+                      title: Text(
+                        "${record.numSets} sets x ${record.reps} reps @ ${record.weight} lbs (RPE: ${record.rpe})",
+                      ),
+                      subtitle: record.historyNote != null && record.historyNote!.isNotEmpty
+                          ? Text("Notes: ${record.historyNote}")
+                          : null,
+                    );
+                  }).toList(),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
   }
 
   void _addGoal() {
@@ -151,6 +224,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
      
   }
 
+  // Build the original analytics content.
   SingleChildScrollView _buildAnalyticsContent() {
     if (_displayChart){
 
@@ -165,108 +239,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   
             if (_displayChart)
               ExerciseProgressChart(exercise: _exercise!),
-
-      
-            // Padding(
-            //   padding: const EdgeInsets.only(bottom: 8.0),
-            //   child: SearchBar(
-            //     hintText: "Search exercise",
-      
-            //     onTapOutside:(event) => WidgetsBinding.instance.focusManager.primaryFocus?.unfocus(),
-            //     constraints: BoxConstraints(
-            //       minHeight: 40, // Set the minimum height
-            //       maxHeight: 40, // Set the maximum height
-            //     ),
-      
-            //     backgroundColor: WidgetStateProperty.all( Color(0xFF1e2025)),
-            //     leading: Icon(Icons.search, color: Color(0xFFdee3e5)),
-            //   ),
-            // ),
-      
-            // const Center(
-            //   child: Text(
-            //     "Example Graph",
-            //     style: TextStyle(
-            //       fontSize: 20,
-            //       fontWeight: FontWeight.w900
-            //     )
-            //   )
-            // ),
-      
-            // SizedBox(
-            //   height: 200,
-            //   width: double.infinity,
-            //   child: LineChart(
-                
-                
-            //     LineChartData(
-                  
-            //       lineBarsData: [
-            //         LineChartBarData(
-            //           dotData: FlDotData(
-            //             show: true,
-            //             getDotPainter: (spot, percent, barData, index) {
-            //               return FlDotCirclePainter(
-            //                 radius: 4,
-            //                 color: Color(0xFF1e2025),
-            //                 strokeColor: Colors.blue,
-            //                 strokeWidth: 2,
-            //               );
-            //             },
-            //           ),
-            
-            //           spots: dataPoints,
-            //           isCurved: false,
-            //           color: Colors.blue,
-            //           barWidth: 4,
-            //           belowBarData: BarAreaData(
-            //             show: true,
-            //             color: Colors.blue.withAlpha(75),
-            //           ),
-            //           //dotData: FlDotData(show: false),
-            //         ),
-            //       ],
-            //       gridData: FlGridData(show: true),
-            //       borderData: FlBorderData(
-            //         show: true,
-            //         border: const Border(
-            //           left: BorderSide(color: Colors.grey),
-            //           bottom: BorderSide(color: Colors.grey),
-            //         ),
-            //       ),
-            //       titlesData: FlTitlesData(
-            //         leftTitles: AxisTitles(
-            //           sideTitles: SideTitles(
-            //             showTitles: true,
-            //             reservedSize: 40,
-            //             interval: 10,
-            //             getTitlesWidget: (value, _) => Text(
-            //               '${value.toInt()} kg',
-            //               style: const TextStyle(fontSize: 12),
-            //             ),
-            //           ),
-            //         ),
-            //         bottomTitles: AxisTitles(
-            //           sideTitles: SideTitles(
-            //             showTitles: true,
-            //             interval: 1,
-            //             getTitlesWidget: (value, _) {
-            //               final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            //               return Text(
-            //                 labels[value.toInt()],
-            //                 style: const TextStyle(fontSize: 12),
-            //               );
-            //             },
-            //           ),
-            //         ),
-            //       ),
-            //       minX: 0,
-            //       maxX: 5,
-            //       minY: 40,
-            //       maxY: 80,
-            //     ),
-            //   ),
-            // ),
       
             Container(
               height: 325,
@@ -297,47 +269,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       ),
                     ),
                      Expanded(child: PageViewWithIndicator()),
-      
-                    // Expanded(
-                    //   child: Padding(
-                    //     padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                    //     child: Row(
-                    //       children: [
-                    //         Align(
-                    //           alignment: Alignment.centerLeft,
-                    //           child: Icon(Icons.arrow_back_ios),
-                    //         ),
-                        
-                    //         Expanded(
-                    //           child: ListView.builder(
-                    //             scrollDirection: Axis.horizontal,
-                    //             itemCount: context.read<Profile>().split.length,
-                    //             itemBuilder: (context, index) {
-                    //               return DayProgress(index: index);
-                    //             }
-                              
-                    //           ),
-                    //         ),
-                        
-                    //         Icon(Icons.arrow_forward_ios)
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-            
-                    
-                    
-                    // Column(children: [
-                    //   // good start make it look better and needs more metrics in the week view but overall good
-                    //   // maybe have an arrow for each exercise to take the user to see the full graph
-                    //   Row(children:[Text("Bench Press"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+5lbs")]),
-                    //   Row(children:[Text("Deadlifts"), Icon(Icons.arrow_drop_down, color: Colors.red), Text("-2.5lbs")]),
-                    //   Row(children:[Text("Squats"), Icon(Icons.arrow_drop_up, color: Colors.green), Text("+2.5lbs")])
-      
-                    
-                    // ],)
-      
-      
       
                   ],
                 )
@@ -437,8 +368,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // This is the persistent search bar shown as part of the AnalyticsPage.
-  // Tapping it sets _isSearching to true so the full-screen overlay appears.
+  // Persistent search bar.
   Widget _buildPersistentSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -469,51 +399,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // Instead of using a local _buildFullScreenSearch method,
-  // we simply return the ExerciseSearchWidget wrapped in Positioned.fill.
+  // Full-screen search overlay.
   Widget _buildFullScreenSearch() {
     return ExerciseSearchWidget(
       onExerciseSelected: _handleExerciseSelected,
-      onSearchModeChanged: _updateSearchMode,
+      onSearchModeChanged: (isSearching) {
+        setState(() {
+          _isSearching = isSearching;
+        });
+      },
     );
   }
-
-  @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      backgroundColor: const Color(0xFF1e2025),
-      centerTitle: true,
-      title: const Text(
-        "Analytics",
-        style: TextStyle(
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ),
-    body: Stack(
-      children: [
-        // Show analytics content with the persistent search bar only when not searching.
-        if (!_isSearching)
-          Column(
-            children: [
-              _buildPersistentSearchBar(),
-              Expanded(child: _buildAnalyticsContent()),
-            ],
-          ),
-        // When search is active, show the full-screen search overlay.
-        if (_isSearching) _buildFullScreenSearch(),
-      ],
-    ),
-  );
-}
-
 }
 
 // ---------------------------------------------------------
-// The rest of your widget implementations below.
-// Leave space for you to add back your original code.
-
+// The rest of the widget implementations
 
 class GoalProgress extends StatefulWidget {
   const GoalProgress({
@@ -637,8 +537,6 @@ class _DayProgressState extends State<DayProgress> {
           color: lighten(Color(0xFF1e2025), 10),
         ),
         
-        
-      
         width: 200,
         height: 200,
         child: Padding(
@@ -744,49 +642,6 @@ class _DayProgressState extends State<DayProgress> {
   }
 }
 
-
-
-// class PageViewWithIndicator extends StatefulWidget {
-//   const PageViewWithIndicator({super.key});
-
-//   @override
-//   _PageViewWithIndicatorState createState() => _PageViewWithIndicatorState();
-// }
-
-// class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
-//   final PageController _pageController = PageController();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Expanded(
-//           child: PageView.builder(
-//             controller: _pageController,
-//             itemCount: context.read<Profile>().split.length,
-//             itemBuilder: (context, index) {
-//               return DayProgress(index: index);
-//             },
-//           ),
-//         ),
-//         Padding(
-//           padding: const EdgeInsets.all(16.0),
-//           child: SmoothPageIndicator(
-//             controller: _pageController,
-//             count: context.read<Profile>().split.length,
-//             effect: const ExpandingDotsEffect(
-//               dotHeight: 8.0,
-//               dotWidth: 8.0,
-//               activeDotColor: Colors.blue,
-//               dotColor: Colors.grey,
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
 // // cant even lie this whole class was written by ChatGPT
 // // I wanted to have the circular progress indicator more customizeable
 // // specifically, I can make the progressed part thicker than the non completed part
@@ -867,4 +722,3 @@ class CircularProgressPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-
