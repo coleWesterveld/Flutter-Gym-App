@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import '../program_page/custom_exercise_form.dart';
 
 class ExerciseSearchWidget extends StatefulWidget {
   const ExerciseSearchWidget({
@@ -26,6 +27,7 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
   bool _isSearching = false;
   String _searchQuery = "";
   List<Map<String, dynamic>> _exercises = [];
+  bool _showCustomMaker = false;
 
   @override
   void initState() {
@@ -86,7 +88,13 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
   }
 
   Widget _buildFullScreenSearch(List<Map<String, dynamic>> filteredExercises) {
-    return Positioned.fill(
+    return _showCustomMaker ? CustomExerciseForm(
+      height: MediaQuery.of(context).size.height-MediaQuery.of(context).viewInsets.bottom,
+      exit: ()=> setState(() {
+        _showCustomMaker=false;
+      })
+    ): 
+    Positioned.fill(
       child: GestureDetector(
         onTap: _clearSearch,
         child: Container(
@@ -169,7 +177,7 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
                       onPressed: () {
                         // Prevent the outer GestureDetector from handling this tap.
                         // Call your custom logic to show a modal or add a new exercise.
-                        debugPrint("Add New Exercise tapped");
+                        setState(()=>_showCustomMaker = true);
                       },
                       child: const Text(
                         'Add New Exercise',
@@ -196,11 +204,12 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
             .contains(_searchQuery.toLowerCase()))
         .toList();
 
-    return Stack(
-      children: [
-        _buildSearchBar(),
-        if (_isSearching) _buildFullScreenSearch(filteredExercises),
-      ],
-    );
+    return _buildFullScreenSearch(filteredExercises);
+    // return Stack(
+    //   children: [
+    //      if (!_isSearching) _buildSearchBar(),
+    //     if (_isSearching) ,
+    //   ],
+    // );
   }
 }

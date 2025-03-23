@@ -5,8 +5,13 @@ import 'package:firstapp/database/database_helper.dart';
 
 class CustomExerciseForm extends StatefulWidget {
   final double height;
-  const CustomExerciseForm({Key? key, required this.height}) : super(key: key);
+  const CustomExerciseForm({
+    Key? key, 
+    required this.height,
+    required this.exit,
+    }) : super(key: key);
 
+  final void Function() exit;
 
   @override
   _CustomExerciseFormState createState() => _CustomExerciseFormState();
@@ -168,12 +173,14 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                               musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
                             
                      
-                          Navigator.of(context).pop(
+                        
                             dbHelper.insertCustomExercise(
                               exerciseTitle: formattedExercise, 
                               musclesWorked: formattedMuscles
-                            ),
-                          );
+                            );
+
+                            widget.exit();
+                          
                                           
                         },
                         child: Center(
@@ -209,7 +216,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                         borderRadius: BorderRadius.circular(16),
                         
                         onTap: () {
-                          Navigator.of(context).pop(null);
+                          widget.exit!();
                                         
                         },
                         child: Center(

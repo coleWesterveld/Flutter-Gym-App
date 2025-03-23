@@ -32,15 +32,16 @@ DateTime getDayOfCurrentWeek(int desiredWeekday) {
 
 class Profile extends ChangeNotifier {
   static const List<Color> colors = [
+    Colors.indigo,
     Colors.red,
+    Colors.green,
+    Colors.deepPurple,
     Colors.pink,
     Colors.purple,
-    Colors.deepPurple,
-    Colors.indigo,
     Colors.blue,
     Colors.cyan,
     Colors.teal,
-    Colors.green,
+
     Colors.yellow,
   ];
 

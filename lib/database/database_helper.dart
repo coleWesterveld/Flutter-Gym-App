@@ -8,17 +8,20 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'dart:math'; // For random variations
 
+// 
+
+/*
+TODO: currently, when a user adds an exercise it shows up at the end of the query
+this is not intuitive though, since if theyve gone to the effort to add it, 
+they probably intend to use it, so it should be at the top. At the same time, 
+I like the alphabetic order, and the record gets added to the end (I could add top start but shifting indices and stuff is slow and hard to keep track of). 
+I think the best way to fix this is to reverse the order of all saved exercises, and then continue to add exercises to the end.
+THEN, when the user queries, it will display in REVERSE order. Alphabetic preserved, recent adds at the top still :)
+*/
 // TODO: maybe add way to delete added exercises
-//TODO: set data not saving currently for some reason
-// database helper for interfacing with SQLite database
 // setup tables, CRUD operations, initialization
 // TODO: maybe switch some integers to real to allow decimals. ie weight and even reps
 
-// TODO: unify ordering index start
-// currently I think some start at 0 and some at 1
-// it technically doesnt matter since its all relative but just weird
-// in inserting, we do not want to use the Day or Exercise objects since they require an ID which we dont have prior to inserting
-// unless we want to make that optional I guess but I think it would be better to not
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;

@@ -3,22 +3,11 @@
 
 /*
 Still Todo on this page:
-- DONE change colours, make customizeable by user
-- move random functions to their own files
-- make more modular, this file feels unnecessarily long 
 - ability to add notes per exercise
-- change look of title
-- PERSISTENCE for exercises and set data, notes, title
-  - either through shared preferences or local SQLite database
-- Change look of calendar, right now big blocks of colour are too much
-- stop bottom from being like stuck too low
-- DONE I think i dont need focusnodes in user profile? would probably be a lot easier on memory and stuff to get rid
 - fix double digit days - they dont show up well
 - LATER: add sidebar, user can have multiple different programs to swap between
-- the day indices should be their own container, not gradients
-    this will prevent doubvle digit num overflow, be more flexible for multiple devices and is just better
 - make a max of all user input fields - make them as long as possible but stop them from being absurd
-I think the not saving problem is because i am unfocusing but not saving when I click done or scaffold
+- after search, it should put the user back at the opened expansiontile (it should not revert to being closed)
 */
 
 //import 'package:firstapp/main.dart';
@@ -39,6 +28,7 @@ import 'package:flutter/services.dart';
 import "exercise_search.dart";
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
+import '../analytics_page/exercise_search.dart';
 
 //program page, where user defines the overall program by days,
 // then exercises for each day with sets, rep range and notes
@@ -58,7 +48,11 @@ enum Viewer {title, color}
 // title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class _MyListState extends State<ProgramPage> {
   DateTime today = DateTime.now();
+
+  bool _isEditing = false;
   final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
+  int? _exerciseID;
+  int? _activeIndex;
 
 
   DateTime startDay = DateTime(2024, 8, 10);
@@ -98,7 +92,7 @@ class _MyListState extends State<ProgramPage> {
   }
 
 
-    Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
+  Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
     Orientation orientation = MediaQuery.of(context).orientation;
 
     return SizedBox(
@@ -126,10 +120,48 @@ class _MyListState extends State<ProgramPage> {
         );
   }
 
+    // Callback when an exercise is selected.
+  // void _handleExerciseSelected(BuildContext context, int index, int exerciseId) {
+  //   setState(() {
+  //     _exerciseID = exerciseId;
+  //     // Additional logic for when an exercise is selected can go here.
+  //   });
+  //   if (_exerciseID == null) return;
+
+  //   context.read<Profile>().exerciseAppend(
+  //     index: index,
+  //     exerciseId: _exerciseID!,
+      
+  //   );
+  //   debugPrint("ExerciseID: $_exerciseID");
+  // }
+
+void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
+  setState(() {
+    _exerciseID = exercise['id'];
+  });
+
+  if (_exerciseID == null) return;
+
+  context.read<Profile>().exerciseAppend(
+    index: index,
+    exerciseId: _exerciseID!,
+  );
+
+  debugPrint("ExerciseID: $_exerciseID");
+}
+
+
+  // Callback to update the search mode state.
+  void _updateSearchMode(bool isEditing) {
+    setState(() {
+      _isEditing = isEditing;
+    });
+  }
+
 
   //TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
   @override
-  // main scaffold, putting it all together
   Widget build(BuildContext context) {
     
     //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
@@ -154,22 +186,15 @@ class _MyListState extends State<ProgramPage> {
       
         bottomSheet: buildBottomSheet(),
       
-      
-      
-        // with image background
-        // cant decide if I like it, ill leave code here to decide
-        // for now, ill keep it simple
-        // DecoratedBox(
-        //   decoration: BoxDecoration( 
-            
-        //       // Image set to background of the body
-        //       image: DecorationImage( 
-        //           image: AssetImage("darkbg.png"), fit: BoxFit.cover),
-        //     ),
-        //   child:
-      
         //list of day cards
-        body: Column(
+        body: _isEditing ? Stack(
+          children: [ExerciseSearchWidget(
+            onExerciseSelected: (exercise) {
+              _handleExerciseSelected(context, exercise, _activeIndex!);
+            },
+            onSearchModeChanged: _updateSearchMode,
+          ),]
+        ): Column(
           children: [
             Expanded(
               child: listDays(context),
@@ -177,6 +202,7 @@ class _MyListState extends State<ProgramPage> {
             SizedBox(height: 82),
           ],
         ),
+        
       ),
     );
   }
@@ -549,18 +575,19 @@ class _MyListState extends State<ProgramPage> {
               onPressed: () async {
                 HapticFeedback.heavyImpact();
                 
-                  int? exerciseID = await openDialog();
+                  setState(
 
-                  if (exerciseID == null) return;
-
-                  context.read<Profile>().exerciseAppend(
-                    index: index,
-                    exerciseId: exerciseID,
-                    
+                    () {
+                      _activeIndex = index;
+                      _isEditing = true;
+                    }
                   );
+                  //int? exerciseID = await openDialog();
+
                   
                   
-                setState(() {});  
+                  
+                //setState(() {});  
               },
             
               style: ButtonStyle(
@@ -1066,7 +1093,9 @@ Future<dynamic> openDialog() {
                       color: Colors.blue,
                     )
                   ),
-                  CustomExerciseForm(height: maxHeight - 48),
+                  CustomExerciseForm(height: maxHeight - 48, exit: ()=> setState(() {
+                    _isEditing=false;
+                  })),
                 ],
               ),
             );
@@ -1133,9 +1162,10 @@ Future<dynamic> openDialog() {
 
 // TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
 // also, it goes away when clicking directly from one textbox to another
-  Widget buildBottomSheet(){
+  Widget? buildBottomSheet(){
     // if we should be displaying done button for numeric keyboard, then create.
     // else display calendar
+  if (_isEditing) return null;
   if (context.read<Profile>().done){ 
     //return done bottom sheet
     return Container(

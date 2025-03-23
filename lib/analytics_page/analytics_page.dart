@@ -472,11 +472,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Instead of using a local _buildFullScreenSearch method,
   // we simply return the ExerciseSearchWidget wrapped in Positioned.fill.
   Widget _buildFullScreenSearch() {
-    return Positioned.fill(
-      child: ExerciseSearchWidget(
-        onExerciseSelected: _handleExerciseSelected,
-        onSearchModeChanged: _updateSearchMode,
-      ),
+    return ExerciseSearchWidget(
+      onExerciseSelected: _handleExerciseSelected,
+      onSearchModeChanged: _updateSearchMode,
     );
   }
 
