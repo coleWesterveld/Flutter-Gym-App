@@ -645,9 +645,10 @@ Future<void> insertPlannedSetsBatch({
   ////////////////////////////////////////////////////////////
   // exercise_instances TABLE CRUD
 
-  Future<int> insertExercise({required int dayID, required int exerciseOrder, required int exerciseID}) async {
+  Future<int> insertExercise({required int dayID, required int exerciseOrder, required int exerciseID, int? id}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('exercise_instances', {
+      if (id != null) 'id': id,
       'day_id': dayID,
       'exercise_order': exerciseOrder,
       'exercise_id' : exerciseID,
@@ -759,10 +760,11 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         FOREIGN KEY (exercise_instance_id) REFERENCES exercise_instances (id) ON DELETE CASCADE
       );
 */
-  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe) async {
+  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe, int? id) async {
 
     final db = await DatabaseHelper.instance.database;
     return await db.insert('plannedSets', {
+      if (id != null) 'id': id,
       'exercise_instance_id': exerciseId,
       'num_sets': numSets,
       'set_lower': setLower,

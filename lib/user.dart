@@ -624,7 +624,7 @@ Future<void> updateDaysOrderInDatabase() async {
     required int index1,
     required int index2,
   }) async {
-    dbHelper.deleteExerciseInstance(exercises[index1][index2].exerciseID);
+    dbHelper.deleteExerciseInstance(exercises[index1][index2].id);
     exercises[index1].removeAt(index2);
     sets[index1].removeAt(index2);
     setsTEC[index1].removeAt(index2);
@@ -705,7 +705,8 @@ void exerciseInsert({
   await dbHelper.insertExercise(
     dayID: exercises[index1][index2].dayID, 
     exerciseOrder: index2, 
-    exerciseID: data.exerciseID
+    exerciseID: data.exerciseID,
+    id: data.id,
   );
   await dbHelper.insertPlannedSetsBatch(
     // CAREFUL: DO NOT CONFUSE EXERCISEID WITH ID FOR EXERCISES
@@ -795,7 +796,7 @@ void exerciseInsert({
     reps2TEC[index1][index2].insert(index3, newReps2TEC);
     rpeTEC[index1][index2].insert(index3, newRpeTEC);
 
-    dbHelper.insertPlannedSet(data.exerciseID, data.numSets, data.setLower, data.setUpper ?? 0, index3, data.rpe);
+    dbHelper.insertPlannedSet(data.exerciseID, data.numSets, data.setLower, data.setUpper ?? 0, index3, data.rpe, data.setID);
     notifyListeners();
   }
 
@@ -811,7 +812,7 @@ void exerciseInsert({
     // TextEditingController? newReps1TEC,
 
   }) async {
-    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].exerciseID, 0, 0, 0, sets[index1][index2].length, 0);
+    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].exerciseID, 0, 0, 0, sets[index1][index2].length, 0, null);
     
     sets[index1][index2].add(PlannedSet(
       exerciseID: exercises[index1][index2].exerciseID,
