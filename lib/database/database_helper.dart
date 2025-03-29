@@ -139,6 +139,17 @@ class DatabaseHelper {
     '''
     );
 
+    db.execute(
+      '''
+      CREATE TABLE goals(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        goal_weight INTEGER NOT NULL,
+        exercise_id INTEGER NOT NULL,
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+      );
+      '''
+    );
+
     // load all excercises from text file into database
     await _loadExercisesFromText(db);
 
@@ -371,6 +382,8 @@ class DatabaseHelper {
     }
     return setList;
   }
+
+ 
   
 
   // CRUD OPERATIONS FOR TABLES
@@ -378,6 +391,144 @@ class DatabaseHelper {
   // read
   // update
   // delete
+
+    /// Inserts a complete day with exercises and sets in a single transaction
+  Future<void> restoreDayWithContents({
+  required Day day,
+  required List<Exercise> exercises,
+  required List<List<PlannedSet>> setsForExercises,
+}) async {
+  final db = await database;
+  
+  await db.transaction((txn) async {
+    try {
+      // 1. Restore the day with original ID
+      await txn.insert(
+        'days',
+        day.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // 2. Restore all exercises and their sets
+      for (int i = 0; i < exercises.length; i++) {
+        final exercise = exercises[i];
+        
+        // Insert exercise with original ID
+        final exerciseId = await txn.insert(
+          'exercise_instances',
+          exercise.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+
+        // 3. Restore all sets for this exercise using direct index access
+        final sets = setsForExercises[i];
+        for (final set in sets) {
+          await txn.insert(
+            'plannedSets',
+            {
+              'id': set.setID, // Preserve original set ID
+              'num_sets': set.numSets,
+              'set_lower': set.setLower,
+              'set_upper': set.setUpper,
+              'exercise_instance_id': exerciseId,
+              'set_order': set.setOrder,
+              'rpe': set.rpe ?? 0,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Restore failed: $e');
+      rethrow;
+    }
+  });
+}
+
+  ////////////////////////////////////////////////////////////
+  // GOAL TABLE CRUD
+
+  // Create a goal
+  Future<int> insertGoal(Goal goal) async {
+    final db = await database;
+    return await db.insert('goals', goal.toMap());
+  }
+
+  // Get all goals with progress
+  Future<List<Goal>> fetchGoalsWithProgress() async {
+    final db = await database;
+    
+    // Get goals with exercise titles
+    final goalsData = await db.rawQuery('''
+      SELECT goals.id, goals.goal_weight, goals.exercise_id, 
+             exercises.exercise_title
+      FROM goals
+      INNER JOIN exercises ON goals.exercise_id = exercises.id
+    ''');
+
+    // Calculate current progress for each
+    final List<Goal> goals = [];
+    for (var goalData in goalsData) {
+      final exerciseId = goalData['exercise_id'] as int;
+      
+      // Get most recent set
+      final recentSet = await _getMostRecentSet(exerciseId);
+      
+      // Calculate 1RM
+      final currentOneRm = recentSet != null 
+          ? _calculateOneRm(recentSet['weight'], recentSet['reps'])
+          : 0;
+      
+      goals.add(Goal(
+        id: goalData['id'] as int?,
+        exerciseId: exerciseId,
+        exerciseTitle: goalData['exercise_title'] as String,
+        targetWeight: goalData['goal_weight'] as int,
+        currentOneRm: currentOneRm,
+      ));
+    }
+
+    return goals;
+  }
+
+  // Helper to get most recent set for an exercise
+  Future<Map<String, dynamic>?> _getMostRecentSet(int exerciseId) async {
+    final db = await database;
+    final results = await db.query(
+      'set_log',
+      where: 'exercise_id = ?',
+      whereArgs: [exerciseId],
+      orderBy: 'date DESC',
+      limit: 1,
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  // Calculate 1RM using Epley formula
+  int _calculateOneRm(int weight, int reps) {
+    return (weight * (1 + (reps / 30)).round());
+  }
+
+  // Update a goal
+  Future<int> updateGoal(Goal goal) async {
+    final db = await database;
+    return await db.update(
+      'goals',
+      goal.toMap(),
+      where: 'id = ?',
+      whereArgs: [goal.id],
+    );
+  }
+
+  // Delete a goal
+  Future<int> deleteGoal(int id) async {
+    final db = await database;
+    return await db.delete(
+      'goals',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 
   ////////////////////////////////////////////////////////////
   // PROGRAM TABLE CRUD
@@ -414,28 +565,18 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // DAY TABLE CRUD
 
-  Future<int> insertDay(int programId, String dayTitle, int dayOrder) async {
+  // by default, it will assign a new ID to the day.
+  // but if re-adding (ie. undo a day delete), need to add with existing ID to re-link with exercises
+  Future<int> insertDay({required int programId, required String dayTitle, required int dayOrder, int? id}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('days', {
+      if (id != null) 'id': id,
       'program_id': programId,
       'day_title': dayTitle,
       'day_order': dayOrder,
-      // CAREFUL HERE TODO: user could have a ton of days, more than colours, then crash.
-      // fixed with mod (i think), it resets back 
       'day_color': Profile.colors[dayOrder % (Profile.colors.length - 1)].value
     });
   }
-
-  // this should be done using updateDay method which is a superset of this
-  // Future<int> updateDayOrder(int dayId, int newOrder) async {
-  //   final db = await DatabaseHelper.instance.database;
-  //   return await db.update(
-  //     'days',
-  //     {'day_order': newOrder},
-  //     where: 'id = ?',
-  //     whereArgs: [dayId],
-  //   );
-  // }
 
   //fetches days for given program ID, ordered by day_order
   Future<List<Map<String, dynamic>>> fetchDays(int programId) async {
@@ -458,15 +599,6 @@ class DatabaseHelper {
       whereArgs: [dayId],
     );
   } 
-  // Future<int> updateDay(int dayId, String newTitle) async {
-  //   final db = await DatabaseHelper.instance.database;
-  //   return await db.update(
-  //     'days',
-  //     {'day_title': newTitle},
-  //     where: 'id = ?',
-  //     whereArgs: [dayId],
-  //   );
-  // }
 
   Future<int> deleteDay(int dayId) async {
     final db = await DatabaseHelper.instance.database;

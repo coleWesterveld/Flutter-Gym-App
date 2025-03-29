@@ -111,7 +111,7 @@ class Exercise {
       'id': id,
       'exercise_id': exerciseID,
       'day_id': dayID,
-      'exercise_title': exerciseTitle,
+      //'exercise_title': exerciseTitle,
       'exercise_order': exerciseOrder,
     };
   }
@@ -296,5 +296,69 @@ class SetRecord {
   @override
   String toString() {
     return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $exerciseID}';
+  }
+}
+
+class Goal {
+  final int? id; // Nullable for new goals not yet saved
+  final int exerciseId;
+  final String exerciseTitle;
+  final int targetWeight;
+  final int? currentOneRm; // Nullable (calculated when fetched)
+
+  Goal({
+    this.id,
+    required this.exerciseId,
+    required this.exerciseTitle,
+    required this.targetWeight,
+    this.currentOneRm,
+  });
+
+  // Convert to map for database operations
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'exercise_id': exerciseId,
+      'goal_weight': targetWeight,
+      // Note: exerciseTitle and currentOneRm aren't stored in DB
+    };
+  }
+
+  // Create from database map
+  factory Goal.fromMap(Map<String, dynamic> map) {
+    return Goal(
+      id: map['id'],
+      exerciseId: map['exercise_id'],
+      exerciseTitle: map['exercise_title'] ?? '',
+      targetWeight: map['goal_weight'],
+      currentOneRm: map['current_one_rm'],
+    );
+  }
+
+  // Progress percentage (0-100)
+  double get progressPercentage {
+    if (currentOneRm == null || currentOneRm == 0) return 0;
+    return (currentOneRm! / targetWeight) * 100;
+  }
+
+  Goal copyWith({
+    int? id,
+    int? exerciseId,
+    String? exerciseTitle,
+    int? targetWeight,
+    int? currentOneRm,
+  }) {
+    return Goal(
+      id: id ?? this.id,
+      exerciseId: exerciseId ?? this.exerciseId,
+      exerciseTitle: exerciseTitle ?? this.exerciseTitle,
+      targetWeight: targetWeight ?? this.targetWeight,
+      currentOneRm: currentOneRm ?? this.currentOneRm,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Goal(id: $id, exercise: $exerciseTitle, target: $targetWeight, current: $currentOneRm)';
   }
 }

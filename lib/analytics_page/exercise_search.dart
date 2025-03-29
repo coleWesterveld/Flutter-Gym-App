@@ -213,3 +213,4 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
     // );
   }
 }
+

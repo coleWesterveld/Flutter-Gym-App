@@ -260,10 +260,9 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
         itemCount: context.watch<Profile>().split.length,
         itemBuilder: (context, index) {
           // todo: currently, some are slideable and some are dismissable. make all slideable
-          // todo: add undo button in snackbar, make easy to use on mobile
+          // Undos currently caches then restores item, may want to switch to a soft delete first in DB as undo method? just an idea, for now im happy, it works.
           return Slidable(
             closeOnScroll: true,
-            
             direction: Axis.horizontal,
 
             key: ValueKey(context.watch<Profile>().split[index]),
@@ -281,12 +280,12 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                 icon: Icons.delete,
                 onPressed: (direction) {
                   HapticFeedback.heavyImpact();
-                  final deletedItem = context.read<Profile>().split[index];
-                  // Remove the item from the data source.
+                  final deletedDay = context.read<Profile>().split[index];
+                  final deletedExercises = context.read<Profile>().exercises[index];
+                  final deletedSets = context.read<Profile>().sets[index];
                   setState(() {
                     context.read<Profile>().splitPop(index: index);    
                   });
-                  //widget.writePrefs();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -299,12 +298,26 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                         label: 'Undo',
                         textColor: Colors.white,
                         onPressed: () {
-                          debugPrint("readd: ${deletedItem.toString()}");
-                          // setState(() {
+                          try{
+                          debugPrint("re-add: ${deletedDay.toString()}");
 
-                          //   // TODO: this requires some work...
-                          //   //context.read<Profile>().splitInsert(index: index, deletedItem);
-                          // });
+                          setState(() {
+
+                            
+                            context.read<Profile>().splitInsert(
+                              index: index, 
+                              day: deletedDay, 
+                              exerciseList: deletedExercises, 
+                              newSets: deletedSets,
+                            );
+                          });
+                          } catch(e){
+                            debugPrint('Undo failed: $e');
+                            // Show error message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to undo deletion :(')),
+                            );
+                          }
                         },
                       ),
                     ),

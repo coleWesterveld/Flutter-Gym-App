@@ -235,7 +235,7 @@ class Profile extends ChangeNotifier {
 
   void splitAppend() async {
 
-    int id = await dbHelper.insertDay(1, "New Day", split.length);
+    int id = await dbHelper.insertDay(programId: 1, dayTitle: "New Day", dayOrder: split.length);
 
     split.add(
       Day(
@@ -276,6 +276,8 @@ class Profile extends ChangeNotifier {
     rpeTEC.removeAt(index);
 
     // this *should* cascade in database and delete all other associated exercises n stuff
+    // testing shows it does work btw
+    // but a test is only as good as its tester...
     dbHelper.deleteDay(id);
     
     updateDaysOrderInDatabase();
@@ -543,11 +545,28 @@ Future<void> updateDaysOrderInDatabase() async {
     required Day day,
     required List<Exercise> exerciseList,
     required List<List<PlannedSet>> newSets,
-    required List<List<TextEditingController>> newSetsTEC,
-    required List<List<TextEditingController>> newReps1TEC,
-    required List<List<TextEditingController>> newReps2TEC,
-    required List<List<TextEditingController>> newRpeTEC,
+    List<List<TextEditingController>>? newSetsTEC,
+    List<List<TextEditingController>>? newReps1TEC,
+    List<List<TextEditingController>>? newReps2TEC,
+    List<List<TextEditingController>>? newRpeTEC,
   }) async {
+    // Create default TEC lists if not provided
+    newSetsTEC ??= newSets.map((exerciseSets) => 
+        exerciseSets.map((_) => TextEditingController()).toList()
+    ).toList();
+    
+    newReps1TEC ??= newSets.map((exerciseSets) => 
+        exerciseSets.map((_) => TextEditingController()).toList()
+    ).toList();
+    
+    newReps2TEC ??= newSets.map((exerciseSets) => 
+        exerciseSets.map((_) => TextEditingController()).toList()
+    ).toList();
+    
+    newRpeTEC ??= newSets.map((exerciseSets) => 
+        exerciseSets.map((_) => TextEditingController()).toList()
+    ).toList();
+
     split.insert(index, day);
     exercises.insert(index, exerciseList);
     sets.insert(index, newSets);
@@ -556,7 +575,12 @@ Future<void> updateDaysOrderInDatabase() async {
     reps1TEC.insert(index, newReps1TEC);
     setsTEC.insert(index, newSetsTEC);
 
-    dbHelper.insertDay(day.programID, day.dayTitle, index);
+    dbHelper.insertDay(programId: day.programID, dayTitle: day.dayTitle, dayOrder: index, id: day.dayID);
+    dbHelper.restoreDayWithContents(
+      day: day, 
+      exercises: exerciseList,
+      setsForExercises: newSets,
+    );
 
     updateSplitLength();
     notifyListeners();

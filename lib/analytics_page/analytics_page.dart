@@ -25,6 +25,8 @@
 // maybe good to have a smart feature which puts graphs that are important at the top automatically
 //  important could be "progressing exceptionally well/poorly"
 
+// TODO: add goals to DB for persistence
+
 import 'package:firstapp/analytics_page/weekly_progress.dart';
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
@@ -55,9 +57,20 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   bool _isSearching = false;
   bool _displayChart = false;
   List<SetRecord> _exerciseHistory = [];
-  final List<Map<String, dynamic>> _goals = [
-    {'title': 'Bench Press', 'current': 275, 'goal': 315},
-  ];
+  List<Goal> _goals = [];
+  bool _isAddingGoal = false;
+  String? tempGoalTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    final dbHelper = DatabaseHelper.instance;
+    _goals = await dbHelper.fetchGoalsWithProgress();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +78,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1e2025),
         centerTitle: true,
-        title: const Text(
-          "Analytics",
+        title:  Text(
+          _isAddingGoal ? "Add Goal": "Analytics",
           style: TextStyle(
             fontWeight: FontWeight.w900,
           ),
@@ -87,7 +100,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       body: Stack(
         children: [
           // Show analytics content with the persistent search bar only when not searching.
-          if (!_isSearching)
+          if (!_isSearching && !_isAddingGoal)
             Column(
               children: [
                 if (!_displayChart) _buildPersistentSearchBar(),
@@ -99,7 +112,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ],
             ),
           // When search is active, show the full-screen search overlay.
-          if (_isSearching) _buildFullScreenSearch(),
+          if (_isSearching || _isAddingGoal) _buildFullScreenSearch(),
         ],
       ),
     );
@@ -115,6 +128,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       _exerciseHistory = records.map((record) => SetRecord.fromMap(record)).toList();
     });
   }
+
+  void _exerciseForGoalSelected (Map<String, dynamic> exercise) async {
+    tempGoalTitle = exercise['exercise_title'];
+    // then prompt user for weight here
+  }
+
 
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
@@ -169,10 +188,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  void _addGoal() {
+  Future<void> _addGoalInDatabase (Goal goal, int index) async {
+    final dbHelper = DatabaseHelper.instance;
+    final goalId = await dbHelper.insertGoal(goal);
+    _goals[index] = _goals[index].copyWith(id: goalId);
+  }
+
+  void _addGoal(Goal goal) {
     setState(() {
-      _goals.add({'title': 'New Goal', 'current': 0, 'goal': 100});
+      _goals.add(goal);
     });
+    _addGoalInDatabase(goal, _goals.length - 1); 
   }
 
    List<Widget> _buildGoalList() {
@@ -187,7 +213,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             children: [
               Text(
                 // goal has title, current, goal
-                    "${goal['title']}",
+                    "${goal.exerciseTitle}",
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 18,
@@ -208,8 +234,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.0),
                   child: GoalProgress(
-                    current: goal['current'],
-                    goal: goal['goal']
+                    
+                    goal: goal,
                   ),
                 ),
                             
@@ -313,7 +339,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                   //height: 130,
                                   child: TextButton.icon(
                                     onPressed: () {
-                                      _addGoal();
+                                      setState(() => _isAddingGoal = true,);
+                                      
                                     },
                                   
                                     style: ButtonStyle(
@@ -401,11 +428,25 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Full-screen search overlay.
   Widget _buildFullScreenSearch() {
+    debugPrint(_isAddingGoal.toString());
     return ExerciseSearchWidget(
-      onExerciseSelected: _handleExerciseSelected,
+      onExerciseSelected: _isAddingGoal ? _exerciseForGoalSelected : _handleExerciseSelected,
       onSearchModeChanged: (isSearching) {
         setState(() {
           _isSearching = isSearching;
+          if (!isSearching) _isAddingGoal = false;
+          
+        });
+      },
+    );
+  }
+
+  Widget _createGoal(){
+    return ExerciseSearchWidget(
+      onExerciseSelected: _exerciseForGoalSelected,
+      onSearchModeChanged: (isSearching) {
+        setState(() {
+          _isAddingGoal = isSearching;
         });
       },
     );
@@ -418,11 +459,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 class GoalProgress extends StatefulWidget {
   const GoalProgress({
     super.key,
-    required this.current,
+    //required this.current,
     required this.goal
   });
-  final int current;
-  final int goal;
+  //final int current;
+  final Goal goal;
 
   @override
   State<GoalProgress> createState() => _GoalProgressState();
@@ -439,7 +480,7 @@ class _GoalProgressState extends State<GoalProgress> {
         children: [
             Center(
               child: ThickCircularProgress(
-                progress: widget.current/widget.goal, // Example progress (75%)
+                progress: widget.goal.progressPercentage, // Example progress (75%)
                 completedStrokeWidth: 25.0,
                 backgroundStrokeWidth: 18.0,
                 completedColor: Color(0XFF1A78EB),
@@ -462,7 +503,7 @@ class _GoalProgressState extends State<GoalProgress> {
                 const SizedBox(height: 5),
                 
                 Text(
-                  '${widget.current} lbs',
+                  '${widget.goal.currentOneRm} lbs',
                   textHeightBehavior: TextHeightBehavior(
                     applyHeightToFirstAscent: false,
                     applyHeightToLastDescent: false,
@@ -487,7 +528,7 @@ class _GoalProgressState extends State<GoalProgress> {
                     applyHeightToLastDescent: false,
                   ),
                                 
-                  '${widget.goal} lbs',
+                  '${widget.goal.targetWeight} lbs',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
