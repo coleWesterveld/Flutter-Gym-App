@@ -668,29 +668,56 @@ Future<void> updateDaysOrderInDatabase() async {
   }
 
   //inserts exercise onto a specific day in list
-  void exerciseInsert({
-    required int index1,
-    required int index2,
-    required Exercise data,
-    required List<PlannedSet> newSets,
+void exerciseInsert({
+  required int index1,
+  required int index2,
+  required Exercise data,
+  required List<PlannedSet> newSets,
+  List<TextEditingController>? newSetsTEC,
+  List<TextEditingController>? newReps1TEC,
+  List<TextEditingController>? newReps2TEC,
+  List<TextEditingController>? newRpeTEC,
+}) async {
+  // Insert the exercise data
+  exercises[index1].insert(index2, data);
+  
+  // Insert the sets
+  sets[index1].insert(index2, newSets);
 
-    required List<TextEditingController> newSetsTEC,
-    required List<TextEditingController> newReps1TEC,
-    required List<TextEditingController> newReps2TEC,
-    required List<TextEditingController> newRpeTEC,
-  }) async {
-    exercises[index1].insert(index2, data);
-    exercises[index1].insert(index2, data);
-    sets[index1].insert(index2, newSets);
-    setsTEC[index1].insert(index2, newSetsTEC);
-    reps1TEC[index1].insert(index2, newReps1TEC);
-    reps2TEC[index1].insert(index2, newReps2TEC);
-    rpeTEC[index1].insert(index2, newRpeTEC);
+  // Handle TextEditingControllers - create new ones if null
+  setsTEC[index1].insert(index2, 
+    newSetsTEC ?? List.generate(newSets.length, (_) => TextEditingController())
+  );
+  
+  reps1TEC[index1].insert(index2, 
+    newReps1TEC ?? List.generate(newSets.length, (_) => TextEditingController())
+  );
+  
+  reps2TEC[index1].insert(index2, 
+    newReps2TEC ?? List.generate(newSets.length, (_) => TextEditingController())
+  );
+  
+  rpeTEC[index1].insert(index2, 
+    newRpeTEC ?? List.generate(newSets.length, (_) => TextEditingController())
+  );
 
-    dbHelper.insertExercise(dayID: exercises[index1][index2].dayID, exerciseOrder: index2, exerciseID: data.exerciseID);
+  // Insert into database
+  await dbHelper.insertExercise(
+    dayID: exercises[index1][index2].dayID, 
+    exerciseOrder: index2, 
+    exerciseID: data.exerciseID
+  );
+  await dbHelper.insertPlannedSetsBatch(
+    // CAREFUL: DO NOT CONFUSE EXERCISEID WITH ID FOR EXERCISES
+    // exercise objects store instances of exercises, which reference in DB to specific exercises
+    // the exerciseID is the row in the table of the exercise, ie. bench press, 
+    // and the id is the row where the exercise INSTANCE of that exercise is stored in the DB
+    exerciseInstanceId: exercises[index1][index2].id, 
+    sets: sets[index1][index2]
+  );
 
-    notifyListeners();
-  }
+  notifyListeners();
+}
 
   //removes an exercise  from certain index in certain day in list
   void setsPop({

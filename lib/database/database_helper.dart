@@ -8,7 +8,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'dart:math'; // For random variations
 
-// 
+// you may notice that I have separate methods to insert exercises, lists of exercises, and same with sets, 
+// when I could just loop inserting a single exercise.
+// but by using batches and transactions, this helps ensure data integrity and efficiency
 
 /*
 TODO: currently, when a user adds an exercise it shows up at the end of the query
@@ -442,6 +444,37 @@ class DatabaseHelper {
       debugPrint('Restore failed: $e');
       rethrow;
     }
+  });
+}
+
+// this is for undo delete of an exercise - inserting back list of planned sets
+//socks
+Future<void> insertPlannedSetsBatch({
+  required int exerciseInstanceId,
+  required List<PlannedSet> sets,
+}) async {
+  final db = await database;
+  
+  await db.transaction((txn) async {
+    final batch = txn.batch();
+    
+    for (final set in sets) {
+      batch.insert(
+        'plannedSets',
+        {
+          'id': set.setID, // Preserve original ID
+          'num_sets': set.numSets,
+          'set_lower': set.setLower,
+          'set_upper': set.setUpper,
+          'exercise_instance_id': exerciseInstanceId,
+          'set_order': set.setOrder,
+          'rpe': set.rpe ?? 0,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit(noResult: true);
   });
 }
 
