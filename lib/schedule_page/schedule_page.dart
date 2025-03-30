@@ -327,10 +327,9 @@ class _MyScheduleState extends State<SchedulePage> {
                               );
                             }
                             
-                          
                             return null;
                           },
-                                            ),
+                          ),
                           rowHeight: 70,
                           focusedDay: _selectedDay!, 
                           firstDay: DateTime.utc(2010, 10, 16), 
@@ -347,6 +346,24 @@ class _MyScheduleState extends State<SchedulePage> {
                             
                             selectedDecoration: _buildSelected(),
                             todayDecoration: _buildToday(),
+
+                            // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
+                            // idk a better way to do this, but this works, even if its maybe not elegant
+                            rangeEndDecoration: BoxDecoration(
+                              //color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              shape: BoxShape.rectangle,
+                            ),
+                            weekendDecoration: BoxDecoration(
+                              //color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              shape: BoxShape.rectangle,
+                            ),
+                            outsideDecoration: BoxDecoration(
+                              //color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              shape: BoxShape.rectangle,
+                            ),
 
                             selectedTextStyle: const TextStyle(
                               color: Colors.white, 
