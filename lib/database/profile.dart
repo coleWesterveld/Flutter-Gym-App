@@ -1,4 +1,4 @@
-
+import 'package:flutter/material.dart';
 // at some point, this should be merged with Profile class in user.dart
 // for now, I am setting up relational local database to store user data, 
 // and so I will start fresh 
@@ -29,11 +29,14 @@ class Program {
   }
 
   factory Program.fromMap(Map<String, dynamic> map) {
+
+    debugPrint("maps: ${map.toString()}");
     return Program(
-      programID: map['program_id'],
+      programID: map['id'],
       programTitle: map['program_title'],
     );
   }
+
   @override
   String toString() {
     return 'Program{title: $programTitle, id: $programID}';

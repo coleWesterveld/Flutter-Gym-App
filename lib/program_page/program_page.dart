@@ -29,6 +29,7 @@ import "exercise_search.dart";
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../analytics_page/exercise_search.dart';
+import 'programs_drawer.dart';
 
 //program page, where user defines the overall program by days,
 // then exercises for each day with sets, rep range and notes
@@ -39,14 +40,14 @@ class ProgramPage extends StatefulWidget {
   
   const ProgramPage({Key? programkey, required this.dbHelper,}) : super(key: programkey);
   @override
-  _MyListState createState() => _MyListState();
+  ProgramPageState createState() => ProgramPageState();
 }
 
 
 enum Viewer {title, color}
 // this class contains the list view of expandable card tiles 
 // title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
-class _MyListState extends State<ProgramPage> {
+class ProgramPageState extends State<ProgramPage> {
   DateTime today = DateTime.now();
 
   bool _isEditing = false;
@@ -174,15 +175,28 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          backgroundColor: Color(0xFF1e2025),
-          centerTitle: true,
-          title: const Text(
-            "Build Program",
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-            ),
-            ),
+        backgroundColor: Color(0xFF1e2025),
+        centerTitle: true,
+        title: Text(
+          context.watch<Profile>().currentProgram.programTitle, // Show current program title
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
         ),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ),
+      drawer: ProgramsDrawer(
+        //dbHelper: dbHelper,
+        currentProgramId: context.read<Profile>().currentProgram.programID,
+        onProgramSelected: (selectedProgram) {
+          context.read<Profile>().updateProgram(selectedProgram);
+        },
+      ),
       
         bottomSheet: buildBottomSheet(),
       

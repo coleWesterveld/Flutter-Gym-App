@@ -51,6 +51,7 @@ class Profile extends ChangeNotifier {
   List<List<Exercise>> exercises = [];
   //stores information on each set of each exercise of each day
   List<List<List<PlannedSet>>> sets = [];
+  late Program currentProgram;
 
   DatabaseHelper dbHelper;
   int? activeDayIndex;
@@ -156,10 +157,12 @@ class Profile extends ChangeNotifier {
   }
 
   Future<void> _init() async {
+    currentProgram = await dbHelper.initializeProgram();
     // Fetch data from DB and assign to in-memory lists
-    split = await dbHelper.initializeSplitList();
+    split = await dbHelper.initializeSplitList(currentProgram.programID);
     exercises = await dbHelper.initializeExerciseList();
     sets = await dbHelper.initializeSetList();
+
 
 
     // intiializing Text editing and expansion tile controllers
@@ -233,15 +236,34 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeProgram(int programID) async {
+    final newProgram = await dbHelper.fetchProgramById(programID);
+    if (newProgram.programID != -1) {
+      currentProgram = newProgram;
+    } else{
+      debugPrint("No program found with ID : $programID");
+    }
+
+    notifyListeners();
+  }
+
+  void updateProgram(Program program) async {
+    currentProgram = program;
+    split = await dbHelper.initializeSplitList(currentProgram.programID);
+    exercises = await dbHelper.initializeExerciseList();
+    sets = await dbHelper.initializeSetList();
+    notifyListeners();
+  }
+
   void splitAppend() async {
 
-    int id = await dbHelper.insertDay(programId: 1, dayTitle: "New Day", dayOrder: split.length);
+    int id = await dbHelper.insertDay(programId: currentProgram.programID, dayTitle: "New Day", dayOrder: split.length);
 
     split.add(
       Day(
         dayOrder: split.length + 1,
         dayTitle: "New Day", 
-        programID: 1,
+        programID: currentProgram.programID,
         dayColor: colors[(split.length + 1) % (colors.length)].value,
         dayID: id,
       )

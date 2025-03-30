@@ -56,7 +56,20 @@ class DatabaseHelper {
 
   // create initial tables on startup
   // this runs once, on first opening app after download
+
+  // this is to store any user preferences - current program, maybe if theres an active workout, etc. 
+  // kinda just miscellaneous things that need to be persisted
+  // this will probably be a single-record table
   Future _createDB(Database db, int version) async {
+    await db.execute(
+      '''
+      CREATE TABLE user_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        current_program_id INTEGER,
+        FOREIGN KEY (current_program_id) REFERENCES programs(id)
+      )
+    '''
+    );
 
     await db.execute(
     '''
@@ -237,20 +250,9 @@ class DatabaseHelper {
       });
     }
 
+    // Insert initial row if none exists
+    batch.insert('user_settings', {'current_program_id': 1}); // Default to first program
 
-    /*
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        num_sets INTEGER NOT NULL,
-        reps INTEGER NOT NULL,
-        weight INTEGER NOT NULL,
-        rpe INTEGER NOT NULL,
-        history_note TEXT NOT NULL,
-        exercise_id INTEGER NOT NULL,
-        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
-      
-    */
     // inserting mock data to test analytics page
     // TODO: remove for release
     // I think I should plot a first and second and potentially more sets on the same graph
@@ -299,20 +301,20 @@ class DatabaseHelper {
   /////////////////////////////////////////////
   // INITIAL LIST POPULATING
   // the following functions run every app opening, retrieve data from database and populates lists in memory
-  Future<List<Day>> initializeSplitList() async {
+  Future<List<Day>> initializeSplitList(int programId) async {
     
     // TODO: allow more than one program
     // Right now, we are just allowing 1 program, but in the future, 
     // I want to expand to allow user to have multiple programs saved
 
     // Fetch days from the database
-    final List<Map<String, dynamic>> daysData = await fetchDays(1/*only one program - program 1 for now*/);
+    final List<Map<String, dynamic>> daysData = await fetchDays(programId);
 
     // Map the database rows to day objects
     final List<Day> splitList = daysData.map((day) {
       return Day(
         dayOrder: day['day_order'],
-        programID: 1,
+        programID: programId,
         dayColor: day['day_color'],
         dayTitle: day['day_title'], 
         dayID: day['id'],
@@ -448,7 +450,7 @@ class DatabaseHelper {
 }
 
 // this is for undo delete of an exercise - inserting back list of planned sets
-//socks
+
 Future<void> insertPlannedSetsBatch({
   required int exerciseInstanceId,
   required List<PlannedSet> sets,
@@ -566,6 +568,22 @@ Future<void> insertPlannedSetsBatch({
   ////////////////////////////////////////////////////////////
   // PROGRAM TABLE CRUD
 
+  Future<int> getCurrentProgramId() async {
+    final db = await database;
+    final maps = await db.query('user_settings', limit: 1);
+    if (maps.isEmpty) return 1; // Default fallback
+    return maps.first['current_program_id'] as int? ?? 1;
+  }
+
+  Future<void> setCurrentProgramId(int programId) async {
+    final db = await database;
+    await db.update(
+      'user_settings',
+      {'current_program_id': programId},
+      where: 'id = 1', // Assuming single row
+    );
+  }
+
   Future<int> insertProgram(String programTitle) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('programs', {'program_title': programTitle});
@@ -593,6 +611,42 @@ Future<void> insertPlannedSetsBatch({
       where: 'id = ?',
       whereArgs: [programId],
     );
+  }
+
+  Future<Program> fetchProgramById(int programId) async {
+    final db = await DatabaseHelper.instance.database;
+    
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'programs',
+        where: 'id = ?',
+        whereArgs: [programId],
+        limit: 1,
+      );
+
+      debugPrint("program retrieved at ID $programId: ${maps.toString()}");
+
+  
+
+      // if (maps.isEmpty) {
+      //   return null; // No program found with this ID
+      // }
+
+      return Program.fromMap(maps.first);
+    // } catch (e) {
+    //   // I dont really see this ever happening, unless DB gets corrupted or user-deleted
+    //   // but then again, of course I wouldnt I guess
+    //   debugPrint('Error fetching program by ID: $e');
+    //   return Program(programID: -1, programTitle: "Error");
+    // }
+  }
+
+  Future<Program> initializeProgram() async {
+
+    final programID = await getCurrentProgramId();
+    debugPrint("id: ${programID.toString()}");
+    return fetchProgramById(programID);
+    
   }
 
   ////////////////////////////////////////////////////////////
