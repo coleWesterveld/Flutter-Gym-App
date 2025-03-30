@@ -234,7 +234,10 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
             // if (newIndex > oldIndex) {
             //   newIndex -= 1;
             // }
-            context.read<Profile>().moveDay(oldIndex: oldIndex, newIndex: newIndex, programID: 1);
+            context.read<Profile>().moveDay(
+              oldIndex: oldIndex, 
+              newIndex: newIndex, 
+              programID: context.read<Profile>().currentProgram.programID);
     
     
           });

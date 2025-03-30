@@ -208,7 +208,7 @@ class DatabaseHelper {
     final batch = db.batch();
 
     // Insert initial program
-    batch.insert('programs', {'program_title': 'Program1'});
+    batch.insert('programs', {'program_title': 'Simple PPL Split'});
 
     // Insert initial days for the program
     batch.insert('days', {'program_id': 1, 'day_title': 'Push', 'day_order': 0, 'day_color': Profile.colors[0].value});
@@ -594,13 +594,13 @@ Future<void> insertPlannedSetsBatch({
     return await db.query('programs');
   }
 
-  Future<int> updateProgram(int programId, String newTitle) async {
+  Future<int> updateProgram(Program program) async {
     final db = await DatabaseHelper.instance.database;
     return await db.update(
       'programs',
-      {'program_title': newTitle},
+      {'program_title': program.programTitle},
       where: 'id = ?',
-      whereArgs: [programId],
+      whereArgs: [program.programID],
     );
   }
 

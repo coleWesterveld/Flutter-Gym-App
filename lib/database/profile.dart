@@ -37,6 +37,13 @@ class Program {
     );
   }
 
+  Program copyWith({int? newID, String? newTitle}) {
+    return Program(
+      programID: newID ?? programID,
+      programTitle: newTitle ?? programTitle,
+    );
+  }
+
   @override
   String toString() {
     return 'Program{title: $programTitle, id: $programID}';
