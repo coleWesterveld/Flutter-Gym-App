@@ -293,74 +293,155 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
     _goals[index] = _goals[index].copyWith(id: goalId);
   }
 
-  void _addGoal(Goal goal) {
-    debugPrint('''
-      Goal Debug:
-      Current 1RM: ${goal.currentOneRm}
-      Target: ${goal.targetWeight}
-      Progress: ${goal.progressPercentage}%
-    ''');
-    setState(() {
-      _goals.add(goal);
-    });
-    _addGoalInDatabase(goal, _goals.length - 1); 
-  }
+  // void _addGoal(Goal goal) {
+  //   debugPrint('''
+  //     Goal Debug:
+  //     Current 1RM: ${goal.currentOneRm}
+  //     Target: ${goal.targetWeight}
+  //     Progress: ${goal.progressPercentage}%
+  //   ''');
+  //   setState(() {
+  //     _goals.add(goal);
+  //   });
+  //   _addGoalInDatabase(goal, _goals.length - 1); 
+  // }
 
-   List<Widget> _buildGoalList() {
-    //debugPrint('${(MediaQuery.sizeOf(context).width - 48)/2}');
-    List<Widget> goalList = [];
-    for (var goal in _goals){
-      goalList.add(
-        Padding(
-          padding: const EdgeInsets.only(left:  8.0, right: 8.0, bottom: 8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: (MediaQuery.sizeOf(context).width - 48)/2,
-                ),
-                child: Text(
-                  // goal has title, current, goal
-                      "${goal.exerciseTitle}",
-                      
-                      style: TextStyle(
-                        
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
+List<Widget> _buildGoalList() {
+  return _goals.map((goal) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+    child: GestureDetector(
+      onTap: () => _showGoalOptions(goal),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: (MediaQuery.sizeOf(context).width - 48)/2,
+            ),
+            child: Text(
+              goal.exerciseTitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
               ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: lighten(Color(0xFF1e2025), 10),
-                ),
-                
-                
-                // TODO: currently the conainer resizes, but the child does not, this must be fixed or it will overlap on smaller screens
-                width:  (MediaQuery.sizeOf(context).width - 48)/2,
-                //height: 250,
-                // TODO: make customzeable
-                // right now this is a mockup but I need values to be able to be added
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: GoalProgress(
-                    
-                    goal: goal,
-                  ),
-                ),
-                            
-              ),
-            ],
+            ),
           ),
-        ),
-      );
-    }
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: lighten(Color(0xFF1e2025), 10),
+            ),
+            width: (MediaQuery.sizeOf(context).width - 48)/2,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: GoalProgress(goal: goal),
+            ),
+          ),
+        ],
+      ),
+    ),
+  )).toList();
+}
 
-    return goalList;
-     
+void _showGoalOptions(Goal goal) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) => Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: Icon(Icons.edit),
+            title: Text('Edit Target'),
+            onTap: () {
+              Navigator.pop(context);
+              _editGoalWeight(goal);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.delete, color: Colors.red),
+            title: Text('Delete Goal', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              Navigator.pop(context);
+              _deleteGoal(goal);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _editGoalWeight(Goal goal) async {
+      final dbHelper = DatabaseHelper.instance;
+  final weightController = TextEditingController(text: goal.targetWeight.toString());
+
+  final newWeight = await showDialog<int>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Edit Target for ${goal.exerciseTitle}'),
+      content: TextField(
+        controller: weightController,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: 'Target Weight (lbs)',
+          border: OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (weightController.text.isNotEmpty) {
+              Navigator.pop(context, int.parse(weightController.text));
+            }
+          },
+          child: Text('Save'),
+        ),
+      ],
+    ),
+  );
+
+  if (newWeight != null) {
+    final updatedGoal = goal.copyWith(targetWeight: newWeight);
+    await dbHelper.updateGoal(updatedGoal);
+    await _fetchData(); // Refresh goals list
   }
+}
+
+Future<void> _deleteGoal(Goal goal) async {
+    final dbHelper = DatabaseHelper.instance;
+      final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Delete Goal?'),
+      content: Text('This will remove your ${goal.exerciseTitle} target'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    await dbHelper.deleteGoal(goal.id!);
+    setState(() {
+      _goals.removeWhere((g) => g.id == goal.id);
+    });
+  }
+}
 
   // Build the original analytics content.
   SingleChildScrollView _buildAnalyticsContent() {
@@ -492,7 +573,7 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
                         // this might be overkill - loading is realtime and the half rendered progress looks janky
                         // but idk how would perform on slow phones - will test
                         child: _isLoadingGoals ?  Center(child: CircularProgressIndicator()): Wrap(
-                          //alignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.end,
                           children: _buildGoalList(),
                         ),
                       ),

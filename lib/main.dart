@@ -160,7 +160,7 @@ class NavigationExampleState extends State<NavigationExample> {
           ),
           NavigationDestination(
             selectedIcon: Icon(Icons.calendar_month),
-            icon: Badge(child: Icon(Icons.calendar_month_outlined)),
+            icon: Icon(Icons.calendar_month_outlined),
             label: 'Schedule',
           ),
           NavigationDestination(
