@@ -26,6 +26,11 @@
 //  important could be "progressing exceptionally well/poorly"
 
 // TODO: add goals to DB for persistence
+// if performance becomes a problem, I think its safe to pre-query exercises and load to memory
+// cuz rn, whenever I load up a search, the exercises need to be retrieved from files, and then are lost. 
+// these could maybe be saved after only one load or precached, since its reasonably likely the user will want to query when on this page
+
+// TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
 import 'package:firstapp/analytics_page/weekly_progress.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +65,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<Goal> _goals = [];
   bool _isAddingGoal = false;
   String? tempGoalTitle;
+  bool _isLoadingGoals = true;
 
   @override
   void initState() {
@@ -68,8 +74,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   Future<void> _fetchData() async {
-    final dbHelper = DatabaseHelper.instance;
-    _goals = await dbHelper.fetchGoalsWithProgress();
+    setState(() => _isLoadingGoals = true);
+    try {
+      final dbHelper = DatabaseHelper.instance;
+      _goals = await dbHelper.fetchGoalsWithProgress();
+    } catch (e) {
+      debugPrint('Failed to load goals: $e');
+    } finally {
+      setState(() => _isLoadingGoals = false);
+    }
   }
 
   @override
@@ -79,7 +92,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         backgroundColor: const Color(0xFF1e2025),
         centerTitle: true,
         title:  Text(
-          _isAddingGoal ? "Add Goal": "Analytics",
+          _isAddingGoal ? "Select Exercise For Goal": "Analytics",
           style: TextStyle(
             fontWeight: FontWeight.w900,
           ),
@@ -112,7 +125,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ],
             ),
           // When search is active, show the full-screen search overlay.
-          if (_isSearching || _isAddingGoal) _buildFullScreenSearch(),
+          if (_isSearching) _buildFullScreenSearch(),
+          if (_isAddingGoal) _createGoal(),
         ],
       ),
     );
@@ -129,10 +143,95 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     });
   }
 
-  void _exerciseForGoalSelected (Map<String, dynamic> exercise) async {
-    tempGoalTitle = exercise['exercise_title'];
-    // then prompt user for weight here
+  void _exerciseForGoalSelected(Map<String, dynamic> exercise) async {
+  final dbHelper = DatabaseHelper.instance;
+  final weightController = TextEditingController();
+  final exerciseName = exercise['exercise_title'];
+
+  final weight = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Set Target for $exerciseName"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: weightController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Target Weight",
+                suffixText: "lbs",
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (weightController.text.isNotEmpty) {
+                Navigator.pop(context, int.parse(weightController.text));
+              }
+            },
+            child: Text("Save"),
+          ),
+        ],
+      ),
+    ); // (keep your existing dialog code)
+
+  if (weight != null) {
+    // 1. First calculate current 1RM for this exercise
+    final currentOneRm = await _calculateCurrentOneRm(exercise['id']);
+
+    // 2. Create and save the goal with accurate progress
+    final newGoal = Goal(
+      exerciseId: exercise['id'],
+      exerciseTitle: exerciseName,
+      targetWeight: weight,
+      currentOneRm: currentOneRm, // Now has real value immediately
+    );
+
+    final insertedId = await dbHelper.insertGoal(newGoal);
+    final savedGoal = newGoal.copyWith(id: insertedId);
+
+    debugPrint('''
+      Goal Debug:
+      Current 1RM: ${savedGoal.currentOneRm}
+      Target: ${savedGoal.targetWeight}
+      Progress: ${savedGoal.progressPercentage}%
+    ''');
+    // 3. Update UI
+    setState(() {
+      _goals.add(savedGoal);
+    });
+
+    // 4. Still refresh later for any other updates
+    _fetchData(); // Runs in background without await
   }
+}
+
+Future<int> _calculateCurrentOneRm(int exerciseId) async {
+  final db = await DatabaseHelper.instance.database;
+  final recentSet = await db.query(
+    'set_log',
+    where: 'exercise_id = ?',
+    whereArgs: [exerciseId],
+    orderBy: 'date DESC',
+    limit: 1,
+  );
+
+  if (recentSet.isEmpty) return 0;
+  
+  // Use your preferred 1RM formula (here's Epley)
+  final weight = recentSet.first['weight'] as int;
+  final reps = recentSet.first['reps'] as int;
+  return (weight * (1 + reps / 30)).round();
+}
 
 
   // Build the exercise history view.
@@ -195,6 +294,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   void _addGoal(Goal goal) {
+    debugPrint('''
+      Goal Debug:
+      Current 1RM: ${goal.currentOneRm}
+      Target: ${goal.targetWeight}
+      Progress: ${goal.progressPercentage}%
+    ''');
     setState(() {
       _goals.add(goal);
     });
@@ -211,14 +316,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                // goal has title, current, goal
-                    "${goal.exerciseTitle}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: (MediaQuery.sizeOf(context).width - 48)/2,
+                ),
+                child: Text(
+                  // goal has title, current, goal
+                      "${goal.exerciseTitle}",
+                      
+                      style: TextStyle(
+                        
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
+              ),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -377,7 +489,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Wrap(
+                        // this might be overkill - loading is realtime and the half rendered progress looks janky
+                        // but idk how would perform on slow phones - will test
+                        child: _isLoadingGoals ?  Center(child: CircularProgressIndicator()): Wrap(
                           //alignment: WrapAlignment.start,
                           children: _buildGoalList(),
                         ),
@@ -430,11 +544,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Widget _buildFullScreenSearch() {
     debugPrint(_isAddingGoal.toString());
     return ExerciseSearchWidget(
-      onExerciseSelected: _isAddingGoal ? _exerciseForGoalSelected : _handleExerciseSelected,
+      onExerciseSelected: _handleExerciseSelected,
       onSearchModeChanged: (isSearching) {
         setState(() {
           _isSearching = isSearching;
-          if (!isSearching) _isAddingGoal = false;
+          //if (!isSearching) _isAddingGoal = false;
           
         });
       },
@@ -480,7 +594,7 @@ class _GoalProgressState extends State<GoalProgress> {
         children: [
             Center(
               child: ThickCircularProgress(
-                progress: widget.goal.progressPercentage, // Example progress (75%)
+                progress: widget.goal.progressPercentage/100, 
                 completedStrokeWidth: 25.0,
                 backgroundStrokeWidth: 18.0,
                 completedColor: Color(0XFF1A78EB),
