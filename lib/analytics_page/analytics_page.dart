@@ -44,6 +44,7 @@ import '../other_utilities/lightness.dart';
 import 'exercise_search.dart';
 import 'exercise_progress_chart.dart';
 import '../database/profile.dart';
+import '../other_utilities/info_popup.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -152,6 +153,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Set Target for $exerciseName"),
+        
+
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -517,12 +520,27 @@ Future<void> _deleteGoal(Goal goal) async {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                "Goals",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    "Goals",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+
+                                  InfoPopupWidget(
+                                    popupContent: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('Your \'Actual\' weight is your calculated approximate n rep max using the Epley formula:'),
+                                        Center(child: Text(" \n 1 Rep Max = Weight • (1 + reps / 30)")),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
 
                               Align(
