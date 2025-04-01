@@ -136,7 +136,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Callback when an exercise is selected.
   void _handleExerciseSelected(Map<String, dynamic> exercise) async {
     final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.fetchSetRecords(exercise['id']);
+    final records = await dbHelper.fetchSetRecords(exerciseId: exercise['id']);
     setState(() {
       _exercise = exercise;
       _displayChart = true;
@@ -248,6 +248,8 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
       }
       groupedHistory[date]!.add(record);
     }
+
+    //debugPrint("History: ${groupedHistory}");
 
     return SingleChildScrollView(
       child: Column(

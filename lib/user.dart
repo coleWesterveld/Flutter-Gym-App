@@ -834,10 +834,10 @@ void exerciseInsert({
     // TextEditingController? newReps1TEC,
 
   }) async {
-    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].exerciseID, 0, 0, 0, sets[index1][index2].length, 0, null);
+    int id = await dbHelper.insertPlannedSet(exercises[index1][index2].id, 0, 0, 0, sets[index1][index2].length, 0, null);
     
     sets[index1][index2].add(PlannedSet(
-      exerciseID: exercises[index1][index2].exerciseID,
+      exerciseID: exercises[index1][index2].id,
       setID: id,
       numSets: 1,
       setLower: 0,

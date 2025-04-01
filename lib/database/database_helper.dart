@@ -60,14 +60,35 @@ class DatabaseHelper {
   // this is to store any user preferences - current program, maybe if theres an active workout, etc. 
   // kinda just miscellaneous things that need to be persisted
   // this will probably be a single-record table
+
+  // hmm so 'on workout start' I can set most recent workout to selected, and is_mid_workout to true
+  // and maybe the workout icon should glow or something
+  // and the timer should run even in the background
+  // and then if the user closes the app, then we can check the following on opening: 
+  // if a workkout is in progress, and if so, which workout it was, and what the last logged set was. 
+  // then, we allow them to resume the workout, and put them at the set after the most recently logged one
+  // then as the user
   Future _createDB(Database db, int version) async {
     await db.execute(
       '''
       CREATE TABLE user_settings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         current_program_id INTEGER,
-        FOREIGN KEY (current_program_id) REFERENCES programs(id)
-      )
+        theme_mode TEXT CHECK(theme_mode IN ('light', 'dark', 'system')) DEFAULT 'system',
+        program_start_date TEXT, -- ISO8601 string (YYYY-MM-DD)
+        program_duration_days INTEGER DEFAULT 28, -- Typical 4-week program
+        is_mid_workout BOOLEAN DEFAULT 0, -- 0 = false, 1 = true
+        weight_units TEXT CHECK(weight_units IN ('kg', 'lbs')) DEFAULT 'lbs',
+        last_workout_id INTEGER, -- For resume functionality
+        last_workout_timestamp TEXT, -- When they paused
+        rest_timer_seconds INTEGER DEFAULT 90, -- Common default rest time
+        enable_sound BOOLEAN DEFAULT 1,
+        enable_haptics BOOLEAN DEFAULT 1,
+        auto_rest_timer BOOLEAN DEFAULT 0,
+        
+        FOREIGN KEY (current_program_id) REFERENCES programs(id),
+        FOREIGN KEY (last_workout_id) REFERENCES workouts(id)
+      );
     '''
     );
 
@@ -870,13 +891,14 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchSetRecords(int exerciseId) async {
+  Future<List<Map<String, dynamic>>> fetchSetRecords({required int exerciseId, int? lim}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
       'set_log',
       where: 'exercise_id = ?',
       whereArgs: [exerciseId],
       orderBy: 'datetime(date) DESC', // Order by date in descending order
+      limit: lim, // number of records returned
     );
   }
 

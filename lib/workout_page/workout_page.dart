@@ -7,7 +7,8 @@ import '../user.dart';
 import 'set_logging.dart';
 import '../other_utilities/lightness.dart';
 import 'dart:async';
-
+import '../database/database_helper.dart';
+import '../database/profile.dart';
 
 // for set logging this is how it should prolly be done:
 // when the user opens an active workout, it should create a "session" which buffers the setdata in memory
@@ -34,6 +35,32 @@ class _WorkoutState extends State<Workout> {
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
   bool _isPaused = false;
+  Map<int, SetRecord> _exerciseHistory = {};
+
+
+  // I will preload history so that it loads fast - doesnt take much memory since its only most recent record for any given exercise
+  // then if user wishes to see extended history, they can select and we will return without limit
+  // or maybe, we should have a limit, and then they can load more (past a month back) if they want
+  void _preloadHistory() async {
+    final dbHelper = DatabaseHelper.instance;
+    int index = 0;
+    // go through each exercise from today, fetch its history
+    int? primaryIndex =  context.read<Profile>().activeDayIndex;
+    for (Exercise exercise in context.read<Profile>().exercises[primaryIndex!]){
+      final record = await dbHelper.fetchSetRecords(exerciseId: exercise.exerciseID, lim: 1);
+
+      // a list of records, but should just contain one element since we specified lim 1
+      // this should be just the most recent recorded set of the exercise
+      if (record.isNotEmpty){
+        _exerciseHistory[index] = (SetRecord.fromMap(record[0]));
+      }
+
+      index ++;
+      
+    }
+
+    debugPrint("history: ${_exerciseHistory.toString()}");
+  } 
 
   @override
   void didChangeDependencies() {
@@ -57,6 +84,7 @@ class _WorkoutState extends State<Workout> {
   @override
   void initState() {
     super.initState();
+    _preloadHistory();
     // Start the stopwatch.
     _startStopwatch();
   }
@@ -289,19 +317,6 @@ class _WorkoutState extends State<Workout> {
             collapsedIconColor: Colors.white,
             title: Row(
               children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      context.read<Profile>().showHistory![index] =
-                          !context.read<Profile>().showHistory![index];
-                    });
-                  },
-                  icon: Icon(
-                    context.watch<Profile>().showHistory![index]
-                        ? Icons.swap_horiz
-                        : Icons.history,
-                  ),
-                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -317,10 +332,56 @@ class _WorkoutState extends State<Workout> {
                     ),
                   ),
                 ),
+
+                // show history
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // const Text(
+                    //   "History",
+                    //   style: TextStyle(
+                    //     fontSize: 14,
+                    //     color: Colors.grey
+                    //   )
+                    // ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          context.read<Profile>().showHistory![index] =
+                              !context.read<Profile>().showHistory![index];
+                        });
+                      },
+                      icon: Icon(
+                        context.watch<Profile>().showHistory![index]
+                            ? Icons.swap_horiz
+                            : Icons.history,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             children: context.watch<Profile>().showHistory![index]
-                ? [Text("Hello there")]
+                ? [
+                  _exerciseHistory.containsKey(index) ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        
+                        ListTile(
+                            title: Text(
+                              "${_exerciseHistory[index]!.numSets} sets x ${_exerciseHistory[index]!.reps} reps @ ${_exerciseHistory[index]!.weight} lbs (RPE: ${_exerciseHistory[index]!.rpe})",
+                            ),
+                            subtitle: _exerciseHistory[index]!.historyNote != null && _exerciseHistory[index]!.historyNote!.isNotEmpty
+                                ? Text("Notes: ${_exerciseHistory[index]!.historyNote}")
+                                : null,
+                        )
+                  
+                    ],
+              ),
+            ): const Text("No History Found For This Exercise")
+                  ]
                 : [
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -354,6 +415,74 @@ class _WorkoutState extends State<Workout> {
                         },
                       ),
                     ),
+
+                    Container(
+                      width: 70,
+                      height: 30,
+        
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: const Offset(0.0, 0.0),
+                            blurRadius: 12.0,
+                          ),
+                        ],
+                      ),
+                      
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
+                          //alignment: Alignment.centerLeft,
+                          backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
+                          shape:
+                            RoundedRectangleBorder(
+                                side: BorderSide(
+                                width: 2,
+                                color: Color(0XFF1A78EB),
+                                ),
+                                borderRadius: BorderRadius.all(Radius.circular(8))
+                            ),
+                          
+                        ),
+                      
+                        onPressed: () {
+                          debugPrint("exercise at $primaryIndex, $index");
+                          //HapticFeedback.heavyImpact();
+                          
+                            context.read<Profile>().setsAppend(
+                              // newSets: 
+                              // SplitDayData(data: "New Set", dayColor: Colors.black), 
+                              index1: primaryIndex,
+                              index2: index,
+                            );
+                            
+                            // editIndex = [index, 
+                            //       exerciseIndex, 
+                            //       context.read<Profile>().sets[index][exerciseIndex].length
+                            // ];
+                          setState(() {});
+                        },
+                        label: Row(
+                          children:  [
+                            Icon(
+                              Icons.add,
+                              color: lighten(Color(0xFF141414), 70),
+                            ),
+                            Text(
+                              "Set",
+                              style: TextStyle(
+                                color: lighten(Color(0xFF141414), 70),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextFormField(

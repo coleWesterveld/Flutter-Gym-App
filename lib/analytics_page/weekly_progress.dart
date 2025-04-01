@@ -154,7 +154,7 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
   /// - Find the most recent record within the last 7 days and the most recent record older than 7 days.
   Future<Map<String, dynamic>?> fetchProgress() async {
     final records = await DatabaseHelper.instance
-        .fetchSetRecords(widget.exercise.exerciseID); // using exercise id
+        .fetchSetRecords(exerciseId: widget.exercise.exerciseID); // using exercise id
     if (records.isEmpty) return null;
 
     DateTime now = DateTime.now();
