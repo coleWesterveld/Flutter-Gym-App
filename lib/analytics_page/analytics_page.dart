@@ -232,7 +232,8 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
   
   // Use your preferred 1RM formula (here's Epley)
   final weight = recentSet.first['weight'] as int;
-  final reps = recentSet.first['reps'] as int;
+  final reps = (recentSet.first['reps'] as int) + (10 - (recentSet.first['rpe'] as int));
+  debugPrint("Reps: $reps");
   return (weight * (1 + reps / 30)).round();
 }
 

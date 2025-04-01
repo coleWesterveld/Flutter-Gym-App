@@ -36,7 +36,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
       final record = records[i];
       DateTime date = DateTime.parse(record['date']);
       double weight = record['weight'].toDouble();
-      int reps = record['reps'];
+      int reps = record['reps'] + (10-record['rpe']);
       
       // Epley formula for estimated 1RM
       int e1RM = (weight * (1 + reps / 30)).round();

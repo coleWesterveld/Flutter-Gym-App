@@ -1,5 +1,3 @@
-
-
 // ignore_for_file: prefer_const_constructors
 //import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -28,6 +26,11 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 // to work with database data retrieval
 // i think i should extract some of my widgets for performance and change methods to widgets where possible
 
+
+// thing to be aware: exercise class has id and Exercise id, do not confuse them! (this causes most of my bugs)
+// this should maybe be fixed and is a bit unclear since a db restructure
+// since exercise class itself references an exercise instance, which has an ID to which specific exercise it is an instance of
+// id identifies the instance uniquely, exerciseID references the exercise in the big table of all the exercises.
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();

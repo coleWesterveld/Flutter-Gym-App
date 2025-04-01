@@ -87,7 +87,7 @@ class DatabaseHelper {
         auto_rest_timer BOOLEAN DEFAULT 0,
         
         FOREIGN KEY (current_program_id) REFERENCES programs(id),
-        FOREIGN KEY (last_workout_id) REFERENCES workouts(id)
+        FOREIGN KEY (last_workout_id) REFERENCES days(id)
       );
     '''
     );

@@ -416,68 +416,74 @@ class _WorkoutState extends State<Workout> {
                       ),
                     ),
 
-                    Container(
-                      width: 70,
-                      height: 30,
-        
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            offset: const Offset(0.0, 0.0),
-                            blurRadius: 12.0,
-                          ),
-                        ],
-                      ),
-                      
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
-                          //alignment: Alignment.centerLeft,
-                          backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
-                          shape:
-                            RoundedRectangleBorder(
-                                side: BorderSide(
-                                width: 2,
-                                color: Color(0XFF1A78EB),
-                                ),
-                                borderRadius: BorderRadius.all(Radius.circular(8))
-                            ),
-                          
-                        ),
-                      
-                        onPressed: () {
-                          debugPrint("exercise at $primaryIndex, $index");
-                          //HapticFeedback.heavyImpact();
-                          
-                            context.read<Profile>().setsAppend(
-                              // newSets: 
-                              // SplitDayData(data: "New Set", dayColor: Colors.black), 
-                              index1: primaryIndex,
-                              index2: index,
-                            );
-                            
-                            // editIndex = [index, 
-                            //       exerciseIndex, 
-                            //       context.read<Profile>().sets[index][exerciseIndex].length
-                            // ];
-                          setState(() {});
-                        },
-                        label: Row(
-                          children:  [
-                            Icon(
-                              Icons.add,
-                              color: lighten(Color(0xFF141414), 70),
-                            ),
-                            Text(
-                              "Set",
-                              style: TextStyle(
-                                color: lighten(Color(0xFF141414), 70),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                        child: Container(
+                          width: 70,
+                          height: 30,
+                                
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                offset: const Offset(0.0, 0.0),
+                                blurRadius: 12.0,
                               ),
+                            ],
+                          ),
+                          
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
+                              //alignment: Alignment.centerLeft,
+                              backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
+                              shape:
+                                RoundedRectangleBorder(
+                                    side: BorderSide(
+                                    width: 2,
+                                    color: Color(0XFF1A78EB),
+                                    ),
+                                    borderRadius: BorderRadius.all(Radius.circular(8))
+                                ),
+                              
                             ),
-                          ],
+                          
+                            onPressed: () {
+                              debugPrint("exercise at $primaryIndex, $index");
+                              //HapticFeedback.heavyImpact();
+                              
+                                context.read<Profile>().setsAppend(
+                                  // newSets: 
+                                  // SplitDayData(data: "New Set", dayColor: Colors.black), 
+                                  index1: primaryIndex,
+                                  index2: index,
+                                );
+                                
+                                // editIndex = [index, 
+                                //       exerciseIndex, 
+                                //       context.read<Profile>().sets[index][exerciseIndex].length
+                                // ];
+                              setState(() {});
+                            },
+                            label: Row(
+                              children:  [
+                                Icon(
+                                  Icons.add,
+                                  color: lighten(Color(0xFF141414), 70),
+                                ),
+                                Text(
+                                  "Set",
+                                  style: TextStyle(
+                                    color: lighten(Color(0xFF141414), 70),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
