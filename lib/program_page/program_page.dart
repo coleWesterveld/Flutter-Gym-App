@@ -48,6 +48,7 @@ enum Viewer {title, color}
 // this class contains the list view of expandable card tiles 
 // title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class ProgramPageState extends State<ProgramPage> {
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey();
   DateTime today = DateTime.now();
 
   bool _isEditing = false;
@@ -173,6 +174,8 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
             Provider.of<Profile>(context, listen: false).changeDone(false);
         },
       child: Scaffold(
+        // required for snackbars to work after navigating away
+        key: scaffoldMessengerKey, 
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
         backgroundColor: Color(0xFF1e2025),
@@ -194,6 +197,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
         //dbHelper: dbHelper,
         currentProgramId: context.read<Profile>().currentProgram.programID,
         onProgramSelected: (selectedProgram) {
+          debugPrint("New: $selectedProgram");
           context.read<Profile>().updateProgram(selectedProgram);
         },
       ),
@@ -318,7 +322,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                           try{
                           debugPrint("re-add: ${deletedDay.toString()}");
 
-                          setState(() {
+                          //setState(() {
 
                             
                             context.read<Profile>().splitInsert(
@@ -327,7 +331,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                               exerciseList: deletedExercises, 
                               newSets: deletedSets,
                             );
-                          });
+                          //});
                           } catch(e){
                             debugPrint('Undo failed: $e');
                             // Show error message
@@ -909,6 +913,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
 
       //displaying list of sets for that exercise
       //TODO: add sets here too, centre text boxes, add notes option on dropdown
+      // TODO: fix bug when user navigates away from program page and presses undo
       itemBuilder: (context, setIndex) {
         return Slidable(
           closeOnScroll: true,

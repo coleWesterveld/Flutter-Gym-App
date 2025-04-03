@@ -157,11 +157,18 @@ class Profile extends ChangeNotifier {
   }
 
   Future<void> _init() async {
+    controllers.clear();
+    setsTEC.clear();
+    reps1TEC.clear();
+    reps2TEC.clear();
+    rpeTEC.clear();
+
     currentProgram = await dbHelper.initializeProgram();
     // Fetch data from DB and assign to in-memory lists
     split = await dbHelper.initializeSplitList(currentProgram.programID);
-    exercises = await dbHelper.initializeExerciseList();
-    sets = await dbHelper.initializeSetList();
+    exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
+    sets = await dbHelper.initializeSetList(currentProgram.programID);
+    
 
 
 
@@ -249,10 +256,15 @@ class Profile extends ChangeNotifier {
 
   void updateProgram(Program program) async {
     currentProgram = program;
-    split = await dbHelper.initializeSplitList(currentProgram.programID);
-    exercises = await dbHelper.initializeExerciseList();
-    sets = await dbHelper.initializeSetList();
+    dbHelper.setCurrentProgramId(currentProgram.programID);
+    _init();
+    // split = await dbHelper.initializeSplitList(currentProgram.programID);
+    // exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
+    // sets = await dbHelper.initializeSetList(currentProgram.programID);
     notifyListeners();
+
+    
+   
   }
 
   void splitAppend() async {

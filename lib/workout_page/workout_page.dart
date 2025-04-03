@@ -1,34 +1,24 @@
-// workout page
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../user.dart';
-//import 'package:flutter/cupertino.dart';
-//import '../schedule_page/schedule_page.dart';
 import 'set_logging.dart';
 import '../other_utilities/lightness.dart';
 import 'dart:async';
 import '../database/database_helper.dart';
 import '../database/profile.dart';
-
-// for set logging this is how it should prolly be done:
-// when the user opens an active workout, it should create a "session" which buffers the setdata in memory
-// when they are working out, maybe it would be good to load up the history for that exercise in the background so that it is fast to retrieve
-// TODO: fix animations here. I have an error 
+import 'package:intl/intl.dart';
 
 class Workout extends StatefulWidget {
-  const Workout({
-    super.key,
-  });
+  const Workout({super.key});
 
   @override
   State<Workout> createState() => _WorkoutState();
 }
 
 class _WorkoutState extends State<Workout> {
-  // -1 indicates no tile is expanded.
-  int expandedTileIndex = 0; 
-
-  // Declare a private variable for the Profile and a listener callback.
+  int expandedTileIndex = 0;
+  bool _userHasInteracted =
+      false; // Track if user has manually expanded/collapsed
   Profile? _profile;
   late final VoidCallback _profileListener;
 
@@ -36,42 +26,31 @@ class _WorkoutState extends State<Workout> {
   Timer? _timer;
   bool _isPaused = false;
   Map<int, SetRecord> _exerciseHistory = {};
+  List<SetRecord> _fullHistory = [];
 
-
-  // I will preload history so that it loads fast - doesnt take much memory since its only most recent record for any given exercise
-  // then if user wishes to see extended history, they can select and we will return without limit
-  // or maybe, we should have a limit, and then they can load more (past a month back) if they want
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
     int index = 0;
-    // go through each exercise from today, fetch its history
-    int? primaryIndex =  context.read<Profile>().activeDayIndex;
-    for (Exercise exercise in context.read<Profile>().exercises[primaryIndex!]){
-      final record = await dbHelper.fetchSetRecords(exerciseId: exercise.exerciseID, lim: 1);
-
-      // a list of records, but should just contain one element since we specified lim 1
-      // this should be just the most recent recorded set of the exercise
-      if (record.isNotEmpty){
+    int? primaryIndex = context.read<Profile>().activeDayIndex;
+    for (Exercise exercise
+        in context.read<Profile>().exercises[primaryIndex!]) {
+      final record = await dbHelper.fetchSetRecords(
+          exerciseId: exercise.exerciseID, lim: 1);
+      if (record.isNotEmpty) {
         _exerciseHistory[index] = (SetRecord.fromMap(record[0]));
       }
-
-      index ++;
-      
+      index++;
     }
-
-    debugPrint("history: ${_exerciseHistory.toString()}");
-  } 
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Initialize the provider only once.
     if (_profile == null) {
       _profile = Provider.of<Profile>(context, listen: false);
       expandedTileIndex = _profile!.nextSet[0];
-      // Define and add the listener.
       _profileListener = () {
-        if (mounted) {
+        if (mounted && !_userHasInteracted) {
           setState(() {
             expandedTileIndex = _profile!.nextSet[0];
           });
@@ -85,14 +64,12 @@ class _WorkoutState extends State<Workout> {
   void initState() {
     super.initState();
     _preloadHistory();
-    // Start the stopwatch.
     _startStopwatch();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    // Remove the listener using the stored reference.
     _profile?.removeListener(_profileListener);
     super.dispose();
   }
@@ -100,10 +77,32 @@ class _WorkoutState extends State<Workout> {
   void _startStopwatch() {
     _stopwatch.start();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {}); // Update UI every second.
-      }
+      if (mounted) setState(() {});
     });
+  }
+
+  void _handleExerciseSelected(int id) async {
+    setState(() {
+      _fullHistory = [];
+    });
+
+    final dbHelper = DatabaseHelper.instance;
+    try {
+      final records = await dbHelper.fetchSetRecords(exerciseId: id);
+      if (mounted) {
+        setState(() {
+          _fullHistory =
+              records.map((record) => SetRecord.fromMap(record)).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching history: $e");
+      if (mounted) {
+        setState(() {
+          _fullHistory = [];
+        });
+      }
+    }
   }
 
   void _stopStopwatch() {
@@ -117,13 +116,14 @@ class _WorkoutState extends State<Workout> {
     int minutes = (seconds % 3600) ~/ 60;
     int remainingSeconds = seconds % 60;
     return "${hours.toString().padLeft(2, '0')}:"
-           "${minutes.toString().padLeft(2, '0')}:"
-           "${remainingSeconds.toString().padLeft(2, '0')}";
+        "${minutes.toString().padLeft(2, '0')}:"
+        "${remainingSeconds.toString().padLeft(2, '0')}";
   }
+
   @override
   Widget build(BuildContext context) {
     int? primaryIndex = context.read<Profile>().activeDayIndex;
-   
+
     return GestureDetector(
       onTap: () {
         WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
@@ -135,10 +135,7 @@ class _WorkoutState extends State<Workout> {
             ? Container(
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(
-                      color: lighten(Color(0xFF141414), 20),
-                    ),
-                  ),
+                      top: BorderSide(color: lighten(Color(0xFF141414), 20))),
                   color: Color(0xFF1e2025),
                 ),
                 height: 50,
@@ -149,22 +146,19 @@ class _WorkoutState extends State<Workout> {
                   children: [
                     ElevatedButton(
                       style: ButtonStyle(
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e)),
+                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4))),
+                        backgroundColor:
+                            WidgetStateProperty.all(Color(0xFF6c6e6e)),
                       ),
                       onPressed: () {
-                        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                        WidgetsBinding.instance.focusManager.primaryFocus
+                            ?.unfocus();
                         context.read<Profile>().done = false;
                         setState(() {});
                       },
-                      child: Text(
-                        'Done',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      child: const Text('Done',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -177,102 +171,89 @@ class _WorkoutState extends State<Workout> {
             style: TextStyle(fontWeight: FontWeight.w900),
           ),
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50), // Adjust height as needed
+            preferredSize: const Size.fromHeight(50),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Stopwatch Text (Placeholder for now)
                   Container(
                     height: 40,
                     width: 110,
                     decoration: BoxDecoration(
-                      
-                      color: _isPaused ? lighten( Color(0xFF1e2025), 10) : darken( Color(0xFF1e2025), 10),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(width: 2, color: lighten( Color(0xFF1e2025), 20) /*_isPaused ? lighten(Colors.blue, 10): Colors.blue*/)
-                    ),
+                        color: _isPaused
+                            ? lighten(Color(0xFF1e2025), 10)
+                            : darken(Color(0xFF1e2025), 10),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            width: 2, color: lighten(Color(0xFF1e2025), 20))),
                     child: Center(
                       child: Text(
-                        _formatTime(_stopwatch.elapsedMilliseconds), // Replace this with a real stopwatch widget
+                        _formatTime(_stopwatch.elapsedMilliseconds),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color:  Colors.white,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  // Finish Button
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       OutlinedButton(
-          onPressed: () {
-            if (_isPaused) {
-              _startStopwatch();
-            } else {
-              _stopStopwatch();
-            }
-            setState(() {
-              _isPaused = !_isPaused;
-            });
-          },
-          style: OutlinedButton.styleFrom(
-            backgroundColor: _isPaused ? lighten( Color(0xFF1e2025), 10) : null,
-            minimumSize: const Size(90, 40),
-            side: const BorderSide(color: Colors.blue, width: 2), // Blue outline
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-          child: Text(
-            _isPaused ? "Resume" : "Pause",
-            style: const TextStyle(color: Colors.blue), // Blue text
-          ),
-        ),
-
-                      SizedBox(width: 8),
-                      // Finish Button
-                  ElevatedButton(
-
-                    onPressed: () {
-                      // Handle finish button tap
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(90, 40), // Set width and height
-                      
-                      backgroundColor:  Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // Border radius set to 8
+                        onPressed: () {
+                          if (_isPaused) {
+                            _startStopwatch();
+                          } else {
+                            _stopStopwatch();
+                          }
+                          setState(() {
+                            _isPaused = !_isPaused;
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor:
+                              _isPaused ? lighten(Color(0xFF1e2025), 10) : null,
+                          minimumSize: const Size(90, 40),
+                          side: const BorderSide(color: Colors.blue, width: 2),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                        ),
+                        child: Text(
+                          _isPaused ? "Resume" : "Pause",
+                          style: const TextStyle(color: Colors.blue),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                    child: Text(
-                      "Finish",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(90, 40),
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                        ),
+                        child: const Text("Finish",
+                            style: TextStyle(color: Colors.white)),
+                      ),
                     ],
                   ),
-
-                  
                 ],
               ),
             ),
           ),
         ),
-
         body: primaryIndex == null
-            ? Center(child: Text("Something Went Wrong."))
+            ? const Center(child: Text("Something Went Wrong."))
             : ListView.builder(
-                itemCount: context.watch<Profile>().exercises[primaryIndex].length,
-                itemBuilder: (context, index) {
-                  return exerciseBuild(context, index);
-                },
+                itemCount:
+                    context.watch<Profile>().exercises[primaryIndex].length,
+                itemBuilder: (context, index) => exerciseBuild(context, index),
               ),
       ),
     );
@@ -280,15 +261,18 @@ class _WorkoutState extends State<Workout> {
 
   Padding exerciseBuild(BuildContext context, int index) {
     int? primaryIndex = context.read<Profile>().activeDayIndex;
+    bool isNextSet = index == context.watch<Profile>().nextSet[0];
 
     return Padding(
       key: ValueKey(context.watch<Profile>().exercises[primaryIndex!][index]),
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
       child: Container(
         decoration: BoxDecoration(
-          // the colour should maybe change with what is reccomended to be next (next after most recently logged set)
-          // but for now its fine IG
-          border: Border.all(width: (index == context.watch<Profile>().nextSet[0]) ? 2 :1,color: (index == context.watch<Profile>().nextSet[0]) ? Colors.blue : lighten(const Color(0xFF141414), 20)),
+          border: Border.all(
+              width: isNextSet ? 2 : 1,
+              color: isNextSet
+                  ? Colors.blue
+                  : lighten(const Color(0xFF141414), 20)),
           color: const Color(0xFF1e2025),
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -296,20 +280,18 @@ class _WorkoutState extends State<Workout> {
           data: Theme.of(context).copyWith(
             dividerColor: Colors.transparent,
             listTileTheme: const ListTileThemeData(
-              contentPadding: EdgeInsets.only(left: 4, right: 16),
-            ),
+                contentPadding: EdgeInsets.only(left: 4, right: 16)),
           ),
           child: ExpansionTile(
-            // Use a unique key that changes based on expansion state
-            key: ValueKey(expandedTileIndex == index ? "expanded_$index" : "collapsed_$index"),
+            key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
             onExpansionChanged: (isExpanded) {
-              // When a tile is expanded, update the state variable to rebuild tiles
               setState(() {
                 if (isExpanded) {
                   expandedTileIndex = index;
+                  _userHasInteracted = true;
                 } else if (expandedTileIndex == index) {
-                  expandedTileIndex = -1; // none expanded
+                  expandedTileIndex = -1;
                 }
               });
             },
@@ -321,7 +303,10 @@ class _WorkoutState extends State<Workout> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
-                      context.watch<Profile>().exercises[primaryIndex][index].exerciseTitle,
+                      context
+                          .watch<Profile>()
+                          .exercises[primaryIndex][index]
+                          .exerciseTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -332,55 +317,67 @@ class _WorkoutState extends State<Workout> {
                     ),
                   ),
                 ),
-
-                // show history
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // const Text(
-                    //   "History",
-                    //   style: TextStyle(
-                    //     fontSize: 14,
-                    //     color: Colors.grey
-                    //   )
-                    // ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          context.read<Profile>().showHistory![index] =
-                              !context.read<Profile>().showHistory![index];
-                        });
-                      },
-                      icon: Icon(
-                        context.watch<Profile>().showHistory![index]
-                            ? Icons.swap_horiz
-                            : Icons.history,
-                      ),
-                    ),
-                  ],
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      // Expand the tile if not already expanded
+                      if (expandedTileIndex != index) {
+                        expandedTileIndex = index;
+                        _userHasInteracted = true;
+                      }
+                      // Toggle history visibility
+                      context.read<Profile>().showHistory![index] =
+                          !context.read<Profile>().showHistory![index];
+                    });
+                  },
+                  icon: Icon(
+                    context.watch<Profile>().showHistory![index]
+                        ? Icons.swap_horiz
+                        : Icons.history,
+                  ),
                 ),
               ],
             ),
             children: context.watch<Profile>().showHistory![index]
                 ? [
-                  _exerciseHistory.containsKey(index) ? Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        
-                        ListTile(
-                            title: Text(
-                              "${_exerciseHistory[index]!.numSets} sets x ${_exerciseHistory[index]!.reps} reps @ ${_exerciseHistory[index]!.weight} lbs (RPE: ${_exerciseHistory[index]!.rpe})",
+                    _exerciseHistory.containsKey(index)
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("History From Last Session: "),
+                                ListTile(
+                                  title: Text(
+                                      "${_exerciseHistory[index]!.numSets} sets x ${_exerciseHistory[index]!.reps} reps @ ${_exerciseHistory[index]!.weight} lbs (RPE: ${_exerciseHistory[index]!.rpe})"),
+                                  subtitle: _exerciseHistory[index]!
+                                                  .historyNote !=
+                                              null &&
+                                          _exerciseHistory[index]!
+                                              .historyNote!
+                                              .isNotEmpty
+                                      ? Text(
+                                          "Notes: ${_exerciseHistory[index]!.historyNote}")
+                                      : null,
+                                ),
+                                TextButton(
+                                    onPressed: () {
+                                      _showFullHistoryModal(
+                                        context
+                                            .read<Profile>()
+                                            .exercises[primaryIndex][index]
+                                            .exerciseID,
+                                        context
+                                            .read<Profile>()
+                                            .exercises[primaryIndex][index]
+                                            .exerciseTitle,
+                                      );
+                                    },
+                                    child: const Text("Show Full History")),
+                              ],
                             ),
-                            subtitle: _exerciseHistory[index]!.historyNote != null && _exerciseHistory[index]!.historyNote!.isNotEmpty
-                                ? Text("Notes: ${_exerciseHistory[index]!.historyNote}")
-                                : null,
-                        )
-                  
-                    ],
-              ),
-            ): const Text("No History Found For This Exercise")
+                          )
+                        : const Text("No History Found For This Exercise")
                   ]
                 : [
                     const Padding(
@@ -401,7 +398,10 @@ class _WorkoutState extends State<Workout> {
                       child: ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: context.read<Profile>().sets[primaryIndex][index].length,
+                        itemCount: context
+                            .read<Profile>()
+                            .sets[primaryIndex][index]
+                            .length,
                         itemBuilder: (context, setIndex) {
                           return GymSetRow(
                             prevWeight: 12,
@@ -415,15 +415,14 @@ class _WorkoutState extends State<Workout> {
                         },
                       ),
                     ),
-
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 4),
                         child: Container(
                           width: 70,
                           height: 30,
-                                
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(
@@ -433,62 +432,39 @@ class _WorkoutState extends State<Workout> {
                               ),
                             ],
                           ),
-                          
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
-                              //alignment: Alignment.centerLeft,
-                              backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
-                              shape:
-                                RoundedRectangleBorder(
-                                    side: BorderSide(
-                                    width: 2,
-                                    color: Color(0XFF1A78EB),
-                                    ),
-                                    borderRadius: BorderRadius.all(Radius.circular(8))
-                                ),
-                              
+                              padding: const EdgeInsets.only(
+                                  top: 0, bottom: 0, right: 0, left: 8),
+                              backgroundColor: const Color(0xFF1e2025),
+                              shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                      width: 2, color: Color(0XFF1A78EB)),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8))),
                             ),
-                          
                             onPressed: () {
                               debugPrint("exercise at $primaryIndex, $index");
-                              //HapticFeedback.heavyImpact();
-                              
-                                context.read<Profile>().setsAppend(
-                                  // newSets: 
-                                  // SplitDayData(data: "New Set", dayColor: Colors.black), 
-                                  index1: primaryIndex,
-                                  index2: index,
-                                );
-                                
-                                // editIndex = [index, 
-                                //       exerciseIndex, 
-                                //       context.read<Profile>().sets[index][exerciseIndex].length
-                                // ];
+                              context.read<Profile>().setsAppend(
+                                    index1: primaryIndex,
+                                    index2: index,
+                                  );
                               setState(() {});
                             },
                             label: Row(
-                              children:  [
-                                Icon(
-                                  Icons.add,
-                                  color: lighten(Color(0xFF141414), 70),
-                                ),
-                                Text(
-                                  "Set",
-                                  style: TextStyle(
-                                    color: lighten(Color(0xFF141414), 70),
-                                  ),
-                                ),
+                              children: [
+                                Icon(Icons.add,
+                                    color: lighten(Color(0xFF141414), 70)),
+                                Text("Set",
+                                    style: TextStyle(
+                                        color: lighten(Color(0xFF141414), 70))),
                               ],
                             ),
                           ),
                         ),
                       ),
                     ),
-
-
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextFormField(
@@ -498,10 +474,11 @@ class _WorkoutState extends State<Workout> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: const Color(0xFF1e2025),
-                          contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
+                          contentPadding:
+                              const EdgeInsets.only(bottom: 10, left: 8),
                           border: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                          ),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8))),
                           hintText: "Notes: ",
                         ),
                       ),
@@ -510,6 +487,152 @@ class _WorkoutState extends State<Workout> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showFullHistoryModal(int exerciseId, String exerciseTitle) async {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final dbHelper = DatabaseHelper.instance;
+    try {
+      final records = await dbHelper.fetchSetRecords(exerciseId: exerciseId);
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => _buildHistoryBottomSheet(records, exerciseTitle),
+      );
+    } catch (e) {
+      debugPrint("Error fetching history: $e");
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text("Error loading history: ${e.toString()}"),
+        ),
+      );
+    }
+  }
+
+  Widget _buildHistoryBottomSheet(
+      List<Map<String, dynamic>> records, String title) {
+    final history = records.map((record) => SetRecord.fromMap(record)).toList();
+
+    if (history.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("No History Found",
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Text("No recorded sets found for $title"),
+          ],
+        ),
+      );
+    }
+
+    final groupedHistory = <String, List<SetRecord>>{};
+    for (var record in history) {
+      if (record.dateAsDateTime == null) continue;
+      final date = DateFormat('yyyy-MM-dd').format(record.dateAsDateTime);
+      groupedHistory.putIfAbsent(date, () => []).add(record);
+    }
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.7,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text("History for $title",
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    ...groupedHistory.entries.map((entry) {
+                      final date = entry.key;
+                      final records = entry.value;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(date,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(height: 8),
+                          ...records
+                              .map((record) => Card(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              "${record.numSets} sets × ${record.reps} reps @ ${record.weight} lbs",
+                                              style: const TextStyle(
+                                                  fontSize: 16)),
+                                          if (record.rpe != null)
+                                            Text("RPE: ${record.rpe}"),
+                                          if (record.historyNote?.isNotEmpty ??
+                                              false)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 8.0),
+                                              child: Text(
+                                                "Notes: ${record.historyNote}",
+                                                style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontStyle:
+                                                        FontStyle.italic),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

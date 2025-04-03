@@ -61,6 +61,14 @@ class _WorkoutPageState extends State<WorkoutPage>
 
   @override
   Widget build(BuildContext context) {
+
+    //debugPrint("split here: ${context.watch<Profile>().split}");
+    // expansion tiles here are lowkey tweakin out
+    // thats for some other bozo to fix haha (future me)
+    //Another exception was thrown: 'package:flutter/src/material/expansion_tile.dart': Failed assertion: line 107 pos 12:
+    // '_state != null': is not true.
+    // recreated by opening a tile, changing programs and then coming back
+    // I should really just reset the list of controllers.
     int todaysWorkout = toExpand();
     return Scaffold(
       appBar: AppBar(
@@ -418,22 +426,9 @@ class _WorkoutPageState extends State<WorkoutPage>
                                               ),
                                             ),
                                           ),
-                                          
-                                          // SizedBox(
-                                          //   height: 100,
-                                          //   width: 100,
-                                          //   child: ListView(
-                                          //     physics: const NeverScrollableScrollPhysics(),
-                                          //     children: [
-                                          //       for(int i = 0; i <5 ; i++) const Text("Stff"),
-                                          //     ]
-                                          //   ),
-                                          // )
                                         ],
                                       ),
                                       
-                              
-
                                     ],
                                   ),
                                 ),

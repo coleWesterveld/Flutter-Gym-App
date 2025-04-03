@@ -345,11 +345,11 @@ class DatabaseHelper {
     return splitList;
   }
 
-  Future<List<List<Exercise>>> initializeExerciseList() async {
+  Future<List<List<Exercise>>> initializeExerciseList(int programID) async {
     List<List<Exercise>> exerciseList = [];
 
     // Fetch days from the database
-    List<Map<String, dynamic>> days = await fetchDays(1);
+    List<Map<String, dynamic>> days = await fetchDays(programID);//socks
 
     for (var day in days){
       // for each day, fetch its corresponding exercises
@@ -375,10 +375,10 @@ class DatabaseHelper {
     return exerciseList;
   }
 
-  Future<List<List<List<PlannedSet>>>> initializeSetList() async {
+  Future<List<List<List<PlannedSet>>>> initializeSetList(int programID) async {
     List<List<List<PlannedSet>>> setList = [];
 
-    List<Map<String, dynamic>> days = await fetchDays(1);
+    List<Map<String, dynamic>> days = await fetchDays(programID);
 
     // initialize 3d list indexed setList[day][exercise][set] to get data
     for (int i = 0; i < days.length; i++){//(var day in days){
