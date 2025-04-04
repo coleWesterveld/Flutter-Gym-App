@@ -87,6 +87,10 @@ class _MainPage extends State<NavigationBarApp> {
             reps2TEC: [],
             rpeTEC: [],
             setsTEC: [],
+            workoutNotesTEC: [],
+            workoutRepsTEC: [],
+            workoutRpeTEC: [],
+            workoutWeightTEC: [],
 
           ),
         ),
@@ -138,6 +142,7 @@ class NavigationExampleState extends State<NavigationExample> {
     //var exercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
     return Scaffold(
       resizeToAvoidBottomInset: true,
+
 
       bottomNavigationBar: NavigationBar(
         //backgroundColor: Color(0xFF643f00),
@@ -196,6 +201,92 @@ class NavigationExampleState extends State<NavigationExample> {
         ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
+
+      bottomSheet: _buildWorkoutBottomBar(),
     );
   }
+
+Widget _buildWorkoutBottomBar() {
+  return Consumer<Profile>(
+    builder: (context, profile, child) {
+      return Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            // Timers Column
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Workout: ${_formatDuration(profile.workoutStopwatch.elapsed)}",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    "Rest: ${_formatDuration(profile.restStopwatch.elapsed)}",
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Control Buttons
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(profile.isPaused ? Icons.play_arrow : Icons.pause),
+                  onPressed: profile.togglePause,
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    debugPrint("Do smthn Idk");
+                  },
+                  child: Text("Resume"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    profile.workoutStopwatch.reset();
+                    profile.restStopwatch.reset();
+                    profile.timer?.cancel();
+                    
+                    debugPrint("Do smthn Idk");
+                  
+                    // final prefs = await SharedPreferences.getInstance();
+                    // await prefs.remove('timerActive');
+                  },
+                  child: Text("Finish"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    final hours = twoDigits(duration.inHours);
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$hours:$minutes:$seconds";
+  }
+}
+

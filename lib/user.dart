@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'database/database_helper.dart';
 import 'database/profile.dart';
   import 'dart:math';
+  import 'dart:async';
+
 //import 'dart:math';
 // split, sets, etc in provider
 // on opening app, set split data and other data to whatever is in database
@@ -58,12 +60,45 @@ class Profile extends ChangeNotifier {
   Day? activeDay;
   List<bool>? showHistory;
 
+  final Stopwatch workoutStopwatch = Stopwatch();
+  final Stopwatch restStopwatch = Stopwatch();
+  Timer? timer;
+  bool isPaused = false;
+
   // during a workout, logged sets will go here before being added to the database
   // UPDATE: I am abandonning this, instant logging is more practical as of now
   // TODO: keep an eye on performance, especially as setrecord becomes long
   // List<SetRecord> sessionBuffer = [];
 
   String? sessionID;
+
+  void togglePause() {
+  
+    isPaused = !isPaused;
+    if (isPaused) {
+      workoutStopwatch.stop();
+      restStopwatch.stop();
+    } else {
+      workoutStopwatch.start();
+      restStopwatch.start();
+    }
+    notifyListeners();
+    // TODO: persist in DB
+    //_saveWorkoutState();
+}
+  void startTimers() {
+    timer = Timer.periodic(Duration(seconds: 1), (_) {
+    if (!isPaused) {
+      notifyListeners(); // This makes the UI update
+    }
+  });
+    togglePause();
+    timer = Timer.periodic(Duration(seconds: 1), (_) {
+
+      //if (mounted) setState(() {});
+    });
+    notifyListeners();
+  }
 
   // returns sessionID, as well as sets in internally.
   String generateWorkoutSessionId() {
@@ -123,6 +158,8 @@ class Profile extends ChangeNotifier {
 
   DateTime get origin => _origin;
 
+
+
   //for expansion tiles in workout page
 
   //this feels a bit inefficient but idk a better way to do it rn so...
@@ -132,6 +169,12 @@ class Profile extends ChangeNotifier {
   List<List<List<TextEditingController>>> rpeTEC;
   List<List<List<TextEditingController>>> reps1TEC;
   List<List<List<TextEditingController>>> reps2TEC;
+
+  // I am trying to also make TEC's for the workout page
+  List<List<TextEditingController>> workoutRpeTEC;
+  List<List<TextEditingController>> workoutWeightTEC;
+  List<List<TextEditingController>> workoutRepsTEC;
+  List<TextEditingController> workoutNotesTEC;
 
   int splitLength;
   bool _done = false;
@@ -146,6 +189,10 @@ class Profile extends ChangeNotifier {
     this.reps1TEC = const <List<List<TextEditingController>>>[],
     this.reps2TEC = const <List<List<TextEditingController>>>[],
     this.setsTEC = const <List<List<TextEditingController>>>[],
+    this.workoutNotesTEC = const <TextEditingController>[],
+    this.workoutRepsTEC = const <List<TextEditingController>>[],
+    this.workoutRpeTEC = const <List<TextEditingController>>[],
+    this.workoutWeightTEC = const <List<TextEditingController>>[],
     
     required this.dbHelper,
     this.splitLength = 7,
@@ -157,11 +204,16 @@ class Profile extends ChangeNotifier {
   }
 
   Future<void> _init() async {
+    // TODO: I think these need to be disposed first, memory is leaking
     controllers.clear();
     setsTEC.clear();
     reps1TEC.clear();
     reps2TEC.clear();
     rpeTEC.clear();
+    workoutNotesTEC.clear();
+    workoutRepsTEC.clear();
+    workoutRpeTEC.clear();
+    workoutWeightTEC.clear();
 
     currentProgram = await dbHelper.initializeProgram();
     // Fetch data from DB and assign to in-memory lists
@@ -169,8 +221,6 @@ class Profile extends ChangeNotifier {
     exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
     sets = await dbHelper.initializeSetList(currentProgram.programID);
     
-
-
 
     // intiializing Text editing and expansion tile controllers
     // there may be a better way to do this...
@@ -204,6 +254,7 @@ class Profile extends ChangeNotifier {
         }
       }
     }
+    startTimers();
     
     //_initialized = true;
     notifyListeners();
@@ -228,9 +279,38 @@ class Profile extends ChangeNotifier {
 
   // sets whatever day the user is currently doing
   void setActiveDay(int? index){
-    activeDayIndex = (index != null && index >= 0 && index < split.length) ? index: null;
-    activeDay = (index != null && index >= 0 && index < split.length) ? split[index]: null;
-    showHistory = (index != null && index >= 0 && index < split.length) ? List.filled(exercises[index].length, false):null;
+    if ((index != null && index >= 0 && index < split.length)){
+      activeDayIndex = index;
+      activeDay = split[index];
+      showHistory = List.filled(exercises[index].length, false);
+      workoutNotesTEC = List.generate(growable: true, exercises[index].length,  (_) => TextEditingController());
+      workoutRepsTEC = List.generate(
+        growable: true, 
+        exercises[index].length,  
+        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+      );
+
+      workoutRpeTEC = List.generate(
+        growable: true, 
+        exercises[index].length,  
+        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+      );
+
+      workoutWeightTEC = List.generate(
+        growable: true, 
+        exercises[index].length,  
+        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+      );
+    }else{
+      activeDayIndex = null;
+      activeDay = null;
+      showHistory = null;
+      workoutWeightTEC.clear();
+      workoutNotesTEC.clear();
+      workoutRepsTEC.clear();
+      workoutRpeTEC.clear();
+    }
+    
     notifyListeners();
   }
 

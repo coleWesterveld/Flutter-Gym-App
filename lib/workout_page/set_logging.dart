@@ -12,6 +12,8 @@ class GymSetRow extends StatefulWidget {
   final int expectedReps;
   final double expectedRPE;
   final int exerciseIndex, setIndex;
+  final Function(bool) onChanged;
+  final  bool? initiallyChecked;
 
   const GymSetRow({
     super.key,
@@ -22,6 +24,9 @@ class GymSetRow extends StatefulWidget {
     required this.expectedRPE,
     required this.exerciseIndex,
     required this.setIndex,
+    required this.onChanged,
+    this.initiallyChecked,
+
   });
 
   @override
@@ -37,11 +42,12 @@ class _GymSetRowState extends State<GymSetRow> {
   final FocusNode repsFocus = FocusNode();
   final FocusNode rpeFocus = FocusNode();
 
-  bool isChecked = false;
+  bool _isChecked = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.initiallyChecked != null) _isChecked = widget.initiallyChecked!;
 
     // Add listeners to focus nodes
     weightFocus.addListener(_updateDoneState);
@@ -80,7 +86,7 @@ class _GymSetRowState extends State<GymSetRow> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isChecked ? Colors.blue.withAlpha(100) : null,
+        color: _isChecked ? Colors.blue.withAlpha(100) : null,
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -106,7 +112,8 @@ class _GymSetRowState extends State<GymSetRow> {
                   debugPrint("Next set: ${context.read<Profile>().nextSet}");
                   
                   setState(() {
-                    isChecked = !isChecked;
+                    _isChecked = !_isChecked;
+                    widget.onChanged(_isChecked);
                   });
 
                   context.read<Profile>().logSet(
@@ -132,17 +139,19 @@ class _GymSetRowState extends State<GymSetRow> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isChecked ? Colors.blue : Colors.grey,
+                      color: _isChecked ? Colors.blue : Colors.grey,
                       width: 2,
                     ),
                   ),
-                  child: Center(
-                    child: Icon(
-                      Icons.check,
-                      size: 16.0,
-                      color: isChecked ? Colors.blue : Colors.grey,
-                    ),
-                  ),
+                  child: _isChecked
+                    ? Center(
+                        child: Icon(
+                          Icons.check,
+                          size: 16.0,
+                          color: _isChecked ? Colors.blue : Colors.grey,
+                        ),
+                      ) 
+                    : null
                 ),
               ),
             ),

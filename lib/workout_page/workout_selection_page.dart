@@ -309,6 +309,8 @@ class _WorkoutPageState extends State<WorkoutPage>
                                             onPressed: () {
                                               context.read<Profile>().generateWorkoutSessionId();
                                               context.read<Profile>().setActiveDay(index);
+
+                                              //context.read<Profile>().startTimers();
                                               Navigator.push(
                                                   context,
                                                   MaterialPageRoute(

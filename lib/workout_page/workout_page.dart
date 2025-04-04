@@ -17,14 +17,12 @@ class Workout extends StatefulWidget {
 
 class _WorkoutState extends State<Workout> {
   int expandedTileIndex = 0;
-  bool _userHasInteracted =
-      false; // Track if user has manually expanded/collapsed
+  //bool _userHasInteracted = false; // Track if user has manually expanded/collapsed
   Profile? _profile;
   late final VoidCallback _profileListener;
 
-  final Stopwatch _stopwatch = Stopwatch();
-  Timer? _timer;
-  bool _isPaused = false;
+
+
   Map<int, SetRecord> _exerciseHistory = {};
   List<SetRecord> _fullHistory = [];
 
@@ -48,9 +46,9 @@ class _WorkoutState extends State<Workout> {
     super.didChangeDependencies();
     if (_profile == null) {
       _profile = Provider.of<Profile>(context, listen: false);
-      expandedTileIndex = _profile!.nextSet[0];
+      expandedTileIndex = _profile!.nextSet[0]; // Initial expansion
       _profileListener = () {
-        if (mounted && !_userHasInteracted) {
+        if (mounted /*&& !_userHasInteracted*/) { // Only auto-expand if no interaction
           setState(() {
             expandedTileIndex = _profile!.nextSet[0];
           });
@@ -69,16 +67,16 @@ class _WorkoutState extends State<Workout> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    //_timer?.cancel();
     _profile?.removeListener(_profileListener);
     super.dispose();
   }
 
   void _startStopwatch() {
-    _stopwatch.start();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() {});
-    });
+    context.read<Profile>().workoutStopwatch.start();
+    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) setState(() {});
+    // });
   }
 
   void _handleExerciseSelected(int id) async {
@@ -105,10 +103,10 @@ class _WorkoutState extends State<Workout> {
     }
   }
 
-  void _stopStopwatch() {
-    _stopwatch.stop();
-    _timer?.cancel();
-  }
+  // void _stopStopwatch() {
+  //   _stopwatch.stop();
+  //   _timer?.cancel();
+  // }
 
   String _formatTime(int milliseconds) {
     int seconds = (milliseconds / 1000).truncate();
@@ -181,7 +179,7 @@ class _WorkoutState extends State<Workout> {
                     height: 40,
                     width: 110,
                     decoration: BoxDecoration(
-                        color: _isPaused
+                        color: context.read<Profile>().isPaused
                             ? lighten(Color(0xFF1e2025), 10)
                             : darken(Color(0xFF1e2025), 10),
                         borderRadius: BorderRadius.circular(12),
@@ -189,7 +187,7 @@ class _WorkoutState extends State<Workout> {
                             width: 2, color: lighten(Color(0xFF1e2025), 20))),
                     child: Center(
                       child: Text(
-                        _formatTime(_stopwatch.elapsedMilliseconds),
+                        _formatTime(context.read<Profile>().workoutStopwatch.elapsedMilliseconds),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -203,18 +201,14 @@ class _WorkoutState extends State<Workout> {
                     children: [
                       OutlinedButton(
                         onPressed: () {
-                          if (_isPaused) {
-                            _startStopwatch();
-                          } else {
-                            _stopStopwatch();
-                          }
+                          context.read<Profile>().togglePause();
                           setState(() {
-                            _isPaused = !_isPaused;
+                            context.read<Profile>().isPaused = !context.read<Profile>().isPaused;
                           });
                         },
                         style: OutlinedButton.styleFrom(
                           backgroundColor:
-                              _isPaused ? lighten(Color(0xFF1e2025), 10) : null,
+                              context.read<Profile>().isPaused ? lighten(Color(0xFF1e2025), 10) : null,
                           minimumSize: const Size(90, 40),
                           side: const BorderSide(color: Colors.blue, width: 2),
                           shape: RoundedRectangleBorder(
@@ -223,7 +217,7 @@ class _WorkoutState extends State<Workout> {
                               horizontal: 16, vertical: 8),
                         ),
                         child: Text(
-                          _isPaused ? "Resume" : "Pause",
+                          context.read<Profile>().isPaused ? "Resume" : "Pause",
                           style: const TextStyle(color: Colors.blue),
                         ),
                       ),
@@ -289,7 +283,7 @@ class _WorkoutState extends State<Workout> {
               setState(() {
                 if (isExpanded) {
                   expandedTileIndex = index;
-                  _userHasInteracted = true;
+                  //_userHasInteracted = true;
                 } else if (expandedTileIndex == index) {
                   expandedTileIndex = -1;
                 }
@@ -323,7 +317,7 @@ class _WorkoutState extends State<Workout> {
                       // Expand the tile if not already expanded
                       if (expandedTileIndex != index) {
                         expandedTileIndex = index;
-                        _userHasInteracted = true;
+                        //_userHasInteracted = true;
                       }
                       // Toggle history visibility
                       context.read<Profile>().showHistory![index] =
@@ -411,6 +405,14 @@ class _WorkoutState extends State<Workout> {
                             expectedWeight: 200,
                             exerciseIndex: index,
                             setIndex: setIndex,
+                            initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged,
+                            
+                            
+                            onChanged: (isChecked){
+                              // record that the set has been completed 
+                              setState(()=>context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked);
+                              debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
+                            },
                           );
                         },
                       ),

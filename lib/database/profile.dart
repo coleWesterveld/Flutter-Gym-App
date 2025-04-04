@@ -161,6 +161,10 @@ class PlannedSet {
   final int? rpe;
   final int setOrder;
 
+  // is not persisted, for now at least
+  // may want to later on to save state, even if user closes app mid workout.
+  bool? hasBeenLogged;
+
 
   PlannedSet({
     required this.setID, 
@@ -170,6 +174,7 @@ class PlannedSet {
     this.setUpper,
     required this.setOrder,
     this.rpe,
+    this.hasBeenLogged,
   });
 
   Map<String, dynamic> toMap() {
