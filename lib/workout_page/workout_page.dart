@@ -36,12 +36,19 @@ class _WorkoutState extends State<Workout> {
   Map<int, SetRecord> _exerciseHistory = {};
   List<SetRecord> _fullHistory = [];
 
-  Map<int, bool> isExerciseComplete = {}; // will be false until all sets in an exercise are logged.
+  // will be false until all sets in an exercise are logged.
+  List<bool> isExerciseComplete = [];
 
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
     int index = 0;
     int? primaryIndex = context.read<Profile>().activeDayIndex;
+
+    isExerciseComplete = List.filled(
+      context.read<Profile>().exercises[primaryIndex!].length,
+      false
+    );
+
     for (Exercise exercise
         in context.read<Profile>().exercises[primaryIndex!]) {
       final record = await dbHelper.fetchSetRecords(
@@ -53,22 +60,6 @@ class _WorkoutState extends State<Workout> {
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // if (_profile == null) {
-    //   _profile = Provider.of<Profile>(context, listen: false);
-    //   expandedTileIndex = _profile!.nextSet[0]; // Initial expansion
-    //   _profileListener = () {
-    //     if (mounted /*&& !_userHasInteracted*/) { // Only auto-expand if no interaction
-    //       setState(() {
-    //         expandedTileIndex = _profile!.nextSet[0];
-    //       });
-    //     }
-    //   };
-    //   _profile!.addListener(_profileListener);
-    // }
-  }
 
   @override
   void initState() {
@@ -187,86 +178,6 @@ class _WorkoutState extends State<Workout> {
                 ),
               ),
             ),
-        // appBar: AppBar(
-        //   backgroundColor: const Color(0xFF1e2025),
-        //   title: Text(
-        //     "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
-        //     style: TextStyle(fontWeight: FontWeight.w900),
-        //   ),
-        //   bottom: PreferredSize(
-        //     preferredSize: const Size.fromHeight(50),
-        //     child: Padding(
-        //       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        //       child: Row(
-        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //         children: [
-        //           Container(
-        //             height: 40,
-        //             width: 110,
-        //             decoration: BoxDecoration(
-        //                 color: context.read<Profile>().isPaused
-        //                     ? lighten(Color(0xFF1e2025), 10)
-        //                     : darken(Color(0xFF1e2025), 10),
-        //                 borderRadius: BorderRadius.circular(12),
-        //                 border: Border.all(
-        //                     width: 2, color: lighten(Color(0xFF1e2025), 20))),
-        //             child: Center(
-        //               child: Text(
-        //                 _formatTime(context.read<Profile>().workoutStopwatch.elapsedMilliseconds),
-        //                 style: TextStyle(
-        //                   fontSize: 18,
-        //                   fontWeight: FontWeight.bold,
-        //                   color: Colors.white,
-        //                 ),
-        //               ),
-        //             ),
-        //           ),
-        //           Row(
-        //             mainAxisSize: MainAxisSize.min,
-        //             children: [
-        //               OutlinedButton(
-        //                 onPressed: () {
-        //                   context.read<Profile>().togglePause();
-        //                   setState(() {
-        //                     context.read<Profile>().isPaused = !context.read<Profile>().isPaused;
-        //                   });
-        //                 },
-        //                 style: OutlinedButton.styleFrom(
-        //                   backgroundColor:
-        //                       context.read<Profile>().isPaused ? lighten(Color(0xFF1e2025), 10) : null,
-        //                   minimumSize: const Size(90, 40),
-        //                   side: const BorderSide(color: Colors.blue, width: 2),
-        //                   shape: RoundedRectangleBorder(
-        //                       borderRadius: BorderRadius.circular(12)),
-        //                   padding: const EdgeInsets.symmetric(
-        //                       horizontal: 16, vertical: 8),
-        //                 ),
-        //                 child: Text(
-        //                   context.read<Profile>().isPaused ? "Resume" : "Pause",
-        //                   style: const TextStyle(color: Colors.blue),
-        //                 ),
-        //               ),
-        //               const SizedBox(width: 8),
-        //               ElevatedButton(
-        //                 onPressed: () {},
-        //                 style: ElevatedButton.styleFrom(
-        //                   minimumSize: const Size(90, 40),
-        //                   backgroundColor: Colors.blue,
-        //                   shape: RoundedRectangleBorder(
-        //                       borderRadius: BorderRadius.circular(12)),
-        //                   padding: const EdgeInsets.symmetric(
-        //                       horizontal: 16, vertical: 8),
-        //                 ),
-        //                 child: const Text("Finish",
-        //                     style: TextStyle(color: Colors.white)),
-        //               ),
-        //             ],
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
-        //),
         body: primaryIndex == null
             ? const Center(child: Text("Something Went Wrong."))
             : ListView.builder(
@@ -292,7 +203,7 @@ class _WorkoutState extends State<Workout> {
               color: isNextSet
                   ? Colors.blue
                   : lighten(const Color(0xFF141414), 20)),
-          color: const Color(0xFF1e2025),
+          color: isExerciseComplete[index] ? Colors.blue.withAlpha(64) :const Color(0xFF1e2025),
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Theme(
@@ -305,16 +216,6 @@ class _WorkoutState extends State<Workout> {
             key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
             controller: context.read<Profile>().workoutExpansionControllers[index],
-            // onExpansionChanged: (isExpanded) {
-            //   setState(() {
-            //     if (isExpanded) {
-            //       expandedTileIndex = index;
-            //       //_userHasInteracted = true;
-            //     } else if (expandedTileIndex == index) {
-            //       expandedTileIndex = -1;
-            //     }
-            //   });
-            // },
             iconColor: Colors.white,
             collapsedIconColor: Colors.white,
             title: Row(
@@ -451,7 +352,23 @@ class _WorkoutState extends State<Workout> {
                                     context.read<Profile>().workoutExpansionControllers[index].collapse();
                                   }
                                 }
-                              });
+                              
+
+
+                              bool allLogged = true;
+                              // check if all sets in an exercise have been completed. if so, log that on the map
+                              for (final plannedSet in context.read<Profile>().sets[primaryIndex][index]){
+                                if (plannedSet.hasBeenLogged != true){
+                                  allLogged = false;
+                                  break;
+                                }
+                              }
+
+                              if (allLogged){
+                                isExerciseComplete[index] = true;
+                              }
+                            });
+
                               //debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
                             },
                           );
