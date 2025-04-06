@@ -13,8 +13,10 @@ import 'schedule_page/schedule_page.dart';
 import 'program_page/program_page.dart';
 import 'analytics_page/analytics_page.dart';
 import 'user.dart';
+import 'workout_page/workout_page.dart';
 //import 'data_saving.dart';
 import 'database/database_helper.dart';
+import 'other_utilities/workout_stopwatch.dart';
 //import 'database/profile.dart';
 
 /* colour choices:
@@ -202,91 +204,17 @@ class NavigationExampleState extends State<NavigationExample> {
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
 
-      bottomSheet: _buildWorkoutBottomBar(),
+      bottomSheet: WorkoutControlBar(),
     );
   }
 
-Widget _buildWorkoutBottomBar() {
-  return Consumer<Profile>(
-    builder: (context, profile, child) {
-      return Container(
-        height: 80,
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(top: BorderSide(color: Colors.grey.shade300)),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // Timers Column
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Workout: ${_formatDuration(profile.workoutStopwatch.elapsed)}",
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  Text(
-                    "Rest: ${_formatDuration(profile.restStopwatch.elapsed)}",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Control Buttons
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(profile.isPaused ? Icons.play_arrow : Icons.pause),
-                  onPressed: profile.togglePause,
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    debugPrint("Do smthn Idk");
-                  },
-                  child: Text("Resume"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    profile.workoutStopwatch.reset();
-                    profile.restStopwatch.reset();
-                    profile.timer?.cancel();
-                    
-                    debugPrint("Do smthn Idk");
-                  
-                    // final prefs = await SharedPreferences.getInstance();
-                    // await prefs.remove('timerActive');
-                  },
-                  child: Text("Finish"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    final hours = twoDigits(duration.inHours);
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$hours:$minutes:$seconds";
-  }
+  // String _formatDuration(Duration duration) {
+  //   String twoDigits(int n) => n.toString().padLeft(2, "0");
+  //   final hours = twoDigits(duration.inHours);
+  //   final minutes = twoDigits(duration.inMinutes.remainder(60));
+  //   final seconds = twoDigits(duration.inSeconds.remainder(60));
+  //   return "$hours:$minutes:$seconds";
+  // }
 }
 

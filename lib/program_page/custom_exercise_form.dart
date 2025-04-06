@@ -65,23 +65,23 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                   decoration: InputDecoration(
                     errorText: _exerciseError,
                     hintText: "Enter Exercise",
-                    errorBorder: OutlineInputBorder(
+                    errorBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
                       borderSide: BorderSide(width: 2.0), // Optional focus border
                     ),
-                    border: OutlineInputBorder(
+                    border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
                       borderSide: BorderSide(color: Colors.blue, width: 2.0),                    ),
-                    enabledBorder: OutlineInputBorder(
+                    enabledBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
                       borderSide: BorderSide(color: Colors.grey), // Optional border color
                     ),
-                    focusedBorder: OutlineInputBorder(
+                    focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
                       borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
                     ),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.highlight_remove),
+                      icon:const  Icon(Icons.highlight_remove),
                       onPressed: _exerciseTEC.clear,
                     ),
                   ),
@@ -104,15 +104,15 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                 controller: _musclesTEC,
                 
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
                       borderSide: BorderSide.none, // Removes the border if you want only the filled background
                     ),
-                    enabledBorder: OutlineInputBorder(
+                    enabledBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
                       borderSide: BorderSide(color: Colors.grey), // Optional border color
                     ),
-                    focusedBorder: OutlineInputBorder(
+                    focusedBorder: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
                       borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
                     ),
@@ -120,7 +120,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                   hintText: "Muscles Worked (Optional)",
   
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.highlight_remove),
+                    icon: const Icon(Icons.highlight_remove),
                     onPressed: _musclesTEC.clear,
                   ),
                 ),
@@ -183,8 +183,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                           
                                           
                         },
-                        child: Center(
-                          child: const Text(
+                        child: const Center(
+                          child: Text(
                             "Done",
                             style: TextStyle(
                               fontSize: 18,
@@ -203,8 +203,8 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12), // Optional: Rounded corners
-                        side: BorderSide(
-                          color: const Color(0XFF1A78EB), // Outline color
+                        side: const BorderSide(
+                          color: Color(0XFF1A78EB), // Outline color
                           width: 2, // Outline width
                         ),
                       ),
@@ -216,15 +216,15 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                         borderRadius: BorderRadius.circular(16),
                         
                         onTap: () {
-                          widget.exit!();
+                          widget.exit();
                                         
                         },
-                        child: Center(
-                          child: const Text(
+                        child: const Center(
+                          child: Text(
                             "Cancel",
                             
                             style: TextStyle(
-                              color: const Color(0XFF1A78EB),
+                              color: Color(0XFF1A78EB),
                               fontSize: 18,
                               fontWeight: FontWeight.w600
                             )

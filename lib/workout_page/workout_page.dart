@@ -8,6 +8,10 @@ import '../database/database_helper.dart';
 import '../database/profile.dart';
 import 'package:intl/intl.dart';
 
+// I think it may be more clear to change all imports to this package version
+// then again, idk if it really matters
+import 'package:firstapp/other_utilities/workout_stopwatch.dart';
+
 class Workout extends StatefulWidget {
   const Workout({super.key});
 
@@ -162,86 +166,99 @@ class _WorkoutState extends State<Workout> {
                 ),
               )
             : null,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF1e2025),
-          title: Text(
-            "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
-            style: TextStyle(fontWeight: FontWeight.w900),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    height: 40,
-                    width: 110,
-                    decoration: BoxDecoration(
-                        color: context.read<Profile>().isPaused
-                            ? lighten(Color(0xFF1e2025), 10)
-                            : darken(Color(0xFF1e2025), 10),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            width: 2, color: lighten(Color(0xFF1e2025), 20))),
-                    child: Center(
-                      child: Text(
-                        _formatTime(context.read<Profile>().workoutStopwatch.elapsedMilliseconds),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () {
-                          context.read<Profile>().togglePause();
-                          setState(() {
-                            context.read<Profile>().isPaused = !context.read<Profile>().isPaused;
-                          });
-                        },
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor:
-                              context.read<Profile>().isPaused ? lighten(Color(0xFF1e2025), 10) : null,
-                          minimumSize: const Size(90, 40),
-                          side: const BorderSide(color: Colors.blue, width: 2),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                        ),
-                        child: Text(
-                          context.read<Profile>().isPaused ? "Resume" : "Pause",
-                          style: const TextStyle(color: Colors.blue),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(90, 40),
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                        ),
-                        child: const Text("Finish",
-                            style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
-                  ),
-                ],
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF1e2025),
+              title: Text(
+                "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(80), // Increased height to accommodate the control bar
+                child: WorkoutControlBar(
+                  positionAtTop: true,
+                ),
               ),
             ),
-          ),
-        ),
+        // appBar: AppBar(
+        //   backgroundColor: const Color(0xFF1e2025),
+        //   title: Text(
+        //     "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
+        //     style: TextStyle(fontWeight: FontWeight.w900),
+        //   ),
+        //   bottom: PreferredSize(
+        //     preferredSize: const Size.fromHeight(50),
+        //     child: Padding(
+        //       padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        //       child: Row(
+        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //         children: [
+        //           Container(
+        //             height: 40,
+        //             width: 110,
+        //             decoration: BoxDecoration(
+        //                 color: context.read<Profile>().isPaused
+        //                     ? lighten(Color(0xFF1e2025), 10)
+        //                     : darken(Color(0xFF1e2025), 10),
+        //                 borderRadius: BorderRadius.circular(12),
+        //                 border: Border.all(
+        //                     width: 2, color: lighten(Color(0xFF1e2025), 20))),
+        //             child: Center(
+        //               child: Text(
+        //                 _formatTime(context.read<Profile>().workoutStopwatch.elapsedMilliseconds),
+        //                 style: TextStyle(
+        //                   fontSize: 18,
+        //                   fontWeight: FontWeight.bold,
+        //                   color: Colors.white,
+        //                 ),
+        //               ),
+        //             ),
+        //           ),
+        //           Row(
+        //             mainAxisSize: MainAxisSize.min,
+        //             children: [
+        //               OutlinedButton(
+        //                 onPressed: () {
+        //                   context.read<Profile>().togglePause();
+        //                   setState(() {
+        //                     context.read<Profile>().isPaused = !context.read<Profile>().isPaused;
+        //                   });
+        //                 },
+        //                 style: OutlinedButton.styleFrom(
+        //                   backgroundColor:
+        //                       context.read<Profile>().isPaused ? lighten(Color(0xFF1e2025), 10) : null,
+        //                   minimumSize: const Size(90, 40),
+        //                   side: const BorderSide(color: Colors.blue, width: 2),
+        //                   shape: RoundedRectangleBorder(
+        //                       borderRadius: BorderRadius.circular(12)),
+        //                   padding: const EdgeInsets.symmetric(
+        //                       horizontal: 16, vertical: 8),
+        //                 ),
+        //                 child: Text(
+        //                   context.read<Profile>().isPaused ? "Resume" : "Pause",
+        //                   style: const TextStyle(color: Colors.blue),
+        //                 ),
+        //               ),
+        //               const SizedBox(width: 8),
+        //               ElevatedButton(
+        //                 onPressed: () {},
+        //                 style: ElevatedButton.styleFrom(
+        //                   minimumSize: const Size(90, 40),
+        //                   backgroundColor: Colors.blue,
+        //                   shape: RoundedRectangleBorder(
+        //                       borderRadius: BorderRadius.circular(12)),
+        //                   padding: const EdgeInsets.symmetric(
+        //                       horizontal: 16, vertical: 8),
+        //                 ),
+        //                 child: const Text("Finish",
+        //                     style: TextStyle(color: Colors.white)),
+        //               ),
+        //             ],
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        //),
         body: primaryIndex == null
             ? const Center(child: Text("Something Went Wrong."))
             : ListView.builder(
