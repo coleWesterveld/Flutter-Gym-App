@@ -8,6 +8,12 @@ import '../database/database_helper.dart';
 import '../database/profile.dart';
 import 'package:intl/intl.dart';
 
+// list todo: 
+// TACKLING: expanded index should expand once, initially, and when a user finishes an exercise, but should not interfere further with user interaction
+// the text should remain in the fields even upon closing/expanding a tile
+// the logged sets should be indicated even upon expanding/collapsing
+// the timer could work better I think - need to ingtegrate with set logging
+
 // I think it may be more clear to change all imports to this package version
 // then again, idk if it really matters
 import 'package:firstapp/other_utilities/workout_stopwatch.dart';
@@ -22,13 +28,15 @@ class Workout extends StatefulWidget {
 class _WorkoutState extends State<Workout> {
   int expandedTileIndex = 0;
   //bool _userHasInteracted = false; // Track if user has manually expanded/collapsed
-  Profile? _profile;
-  late final VoidCallback _profileListener;
+  // Profile? _profile;
+  // late final VoidCallback _profileListener;
 
 
 
   Map<int, SetRecord> _exerciseHistory = {};
   List<SetRecord> _fullHistory = [];
+
+  Map<int, bool> isExerciseComplete = {}; // will be false until all sets in an exercise are logged.
 
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
@@ -48,18 +56,18 @@ class _WorkoutState extends State<Workout> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_profile == null) {
-      _profile = Provider.of<Profile>(context, listen: false);
-      expandedTileIndex = _profile!.nextSet[0]; // Initial expansion
-      _profileListener = () {
-        if (mounted /*&& !_userHasInteracted*/) { // Only auto-expand if no interaction
-          setState(() {
-            expandedTileIndex = _profile!.nextSet[0];
-          });
-        }
-      };
-      _profile!.addListener(_profileListener);
-    }
+    // if (_profile == null) {
+    //   _profile = Provider.of<Profile>(context, listen: false);
+    //   expandedTileIndex = _profile!.nextSet[0]; // Initial expansion
+    //   _profileListener = () {
+    //     if (mounted /*&& !_userHasInteracted*/) { // Only auto-expand if no interaction
+    //       setState(() {
+    //         expandedTileIndex = _profile!.nextSet[0];
+    //       });
+    //     }
+    //   };
+    //   _profile!.addListener(_profileListener);
+    // }
   }
 
   @override
@@ -72,7 +80,7 @@ class _WorkoutState extends State<Workout> {
   @override
   void dispose() {
     //_timer?.cancel();
-    _profile?.removeListener(_profileListener);
+    //_profile?.removeListener(_profileListener);
     super.dispose();
   }
 
@@ -296,16 +304,17 @@ class _WorkoutState extends State<Workout> {
           child: ExpansionTile(
             key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
-            onExpansionChanged: (isExpanded) {
-              setState(() {
-                if (isExpanded) {
-                  expandedTileIndex = index;
-                  //_userHasInteracted = true;
-                } else if (expandedTileIndex == index) {
-                  expandedTileIndex = -1;
-                }
-              });
-            },
+            controller: context.read<Profile>().workoutExpansionControllers[index],
+            // onExpansionChanged: (isExpanded) {
+            //   setState(() {
+            //     if (isExpanded) {
+            //       expandedTileIndex = index;
+            //       //_userHasInteracted = true;
+            //     } else if (expandedTileIndex == index) {
+            //       expandedTileIndex = -1;
+            //     }
+            //   });
+            // },
             iconColor: Colors.white,
             collapsedIconColor: Colors.white,
             title: Row(
@@ -427,8 +436,23 @@ class _WorkoutState extends State<Workout> {
                             
                             onChanged: (isChecked){
                               // record that the set has been completed 
-                              setState(()=>context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked);
-                              debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
+                              setState(() {
+                                context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked;
+                                if (isChecked){
+                                  context.read<Profile>().incrementSet([index, setIndex]);
+                                  
+
+                                  // if moving on to a new exercise, expand new and close old
+                                  if (context.read<Profile>().nextSet[0] != index){
+                                    context.read<Profile>().workoutExpansionControllers[
+                                      context.read<Profile>().nextSet[0]
+                                    ].expand();
+
+                                    context.read<Profile>().workoutExpansionControllers[index].collapse();
+                                  }
+                                }
+                              });
+                              //debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
                             },
                           );
                         },

@@ -93,6 +93,7 @@ class _MainPage extends State<NavigationBarApp> {
             workoutRepsTEC: [],
             workoutRpeTEC: [],
             workoutWeightTEC: [],
+            workoutExpansionControllers: []
 
           ),
         ),

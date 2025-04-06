@@ -91,7 +91,7 @@ class WorkoutControlBar extends StatelessWidget {
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
@@ -111,7 +111,7 @@ class WorkoutControlBar extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: primaryColor, width: 2),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),

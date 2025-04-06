@@ -175,6 +175,7 @@ class Profile extends ChangeNotifier {
   List<List<TextEditingController>> workoutWeightTEC;
   List<List<TextEditingController>> workoutRepsTEC;
   List<TextEditingController> workoutNotesTEC;
+  List<ExpansionTileController> workoutExpansionControllers;
 
   int splitLength;
   bool _done = false;
@@ -193,6 +194,7 @@ class Profile extends ChangeNotifier {
     this.workoutRepsTEC = const <List<TextEditingController>>[],
     this.workoutRpeTEC = const <List<TextEditingController>>[],
     this.workoutWeightTEC = const <List<TextEditingController>>[],
+    this.workoutExpansionControllers = const <ExpansionTileController>[],
     
     required this.dbHelper,
     this.splitLength = 7,
@@ -227,6 +229,7 @@ class Profile extends ChangeNotifier {
     for (int i = 0; i < sets.length; i++){
       // each day
       controllers.add(ExpansionTileController());
+      
       
       
       setsTEC.add(<List<TextEditingController>>[]);
@@ -301,14 +304,22 @@ class Profile extends ChangeNotifier {
         exercises[index].length,  
         (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
       );
+
+      workoutExpansionControllers = List.generate(
+        growable: true, 
+        exercises[index].length,  
+        (_) => ExpansionTileController()
+      );
     }else{
       activeDayIndex = null;
       activeDay = null;
       showHistory = null;
+      // TODO: I think I should dispose first
       workoutWeightTEC.clear();
       workoutNotesTEC.clear();
       workoutRepsTEC.clear();
       workoutRpeTEC.clear();
+      workoutExpansionControllers.clear();
     }
     
     notifyListeners();

@@ -108,29 +108,31 @@ class _GymSetRowState extends State<GymSetRow> {
               child: InkWell(
                 onTap: () {
                   HapticFeedback.heavyImpact();
-                  context.read<Profile>().incrementSet([widget.exerciseIndex, widget.setIndex]);
-                  debugPrint("Next set: ${context.read<Profile>().nextSet}");
+                  //context.read<Profile>().incrementSet([widget.exerciseIndex, widget.setIndex]);
+                  //debugPrint("Next set: ${context.read<Profile>().nextSet}");
                   
                   setState(() {
                     _isChecked = !_isChecked;
                     widget.onChanged(_isChecked);
                   });
+                  // TODO: if unchecked, we need to remove it from the database - it should not be logged
+                  if (_isChecked){
+                    context.read<Profile>().logSet(
+                      SetRecord.fromDateTime(
+                      sessionID: context.read<Profile>().sessionID!, 
+                      exerciseID: context.read<Profile>().exercises[
+                        context.read<Profile>().activeDayIndex!
+                      ][widget.exerciseIndex].exerciseID, 
+                      date: DateTime.now(), 
+                      numSets: 1, 
+                      // maybe allow for floats at some point
+                      reps: int.parse(repsController.text), 
 
-                  context.read<Profile>().logSet(
-                    SetRecord.fromDateTime(
-                    sessionID: context.read<Profile>().sessionID!, 
-                    exerciseID: context.read<Profile>().exercises[
-                      context.read<Profile>().activeDayIndex!
-                    ][widget.exerciseIndex].exerciseID, 
-                    date: DateTime.now(), 
-                    numSets: 1, 
-                    // maybe allow for floats at some point
-                    reps: int.parse(repsController.text), 
-
-                    weight: int.parse(weightController.text), 
-                    rpe: int.parse(rpeController.text))
-                  );
-
+                      weight: int.parse(weightController.text), 
+                      rpe: int.parse(rpeController.text))
+                    );
+                    context.read<Profile>().restStopwatch.reset();
+                  }
 
                 },
                 child: Container(
