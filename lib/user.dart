@@ -91,12 +91,15 @@ class Profile extends ChangeNotifier {
     if (!isPaused) {
       notifyListeners(); // This makes the UI update
     }
-  });
-    togglePause();
-    timer = Timer.periodic(Duration(seconds: 1), (_) {
-
-      //if (mounted) setState(() {});
     });
+    // //togglePause();
+    // timer = Timer.periodic(Duration(seconds: 1), (_) {
+
+    //   //if (mounted) setState(() {});
+    // });
+
+    restStopwatch.start();
+    workoutStopwatch.start();
     notifyListeners();
   }
 
@@ -105,6 +108,7 @@ class Profile extends ChangeNotifier {
     final now = DateTime.now();
     // Convert the current time to an ISO8601 string.
     final timestamp = now.toIso8601String(); // e.g. "2025-03-16T14:22:31.123"
+    startTimers();
     
 
     sessionID = timestamp;
@@ -257,7 +261,6 @@ class Profile extends ChangeNotifier {
         }
       }
     }
-    startTimers();
     
     //_initialized = true;
     notifyListeners();

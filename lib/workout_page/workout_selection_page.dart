@@ -307,16 +307,25 @@ class _WorkoutPageState extends State<WorkoutPage>
                                               }),
                                             ),
                                             onPressed: () {
+                                              Navigator.push<bool>(
+                                                  context,
+                                                  MaterialPageRoute(builder: (_) => const Workout()),
+                                                )
+                                                .then((finished) {
+                                                  if (finished == true) {
+                                                    // only clear activeDay once the Workout route is fully popped
+                                                    context.read<Profile>().setActiveDay(null);
+                                                  }
+                                                });
+                                              
+                                              // Navigator.push(
+                                              //     context,
+                                              //     MaterialPageRoute(
+                                              //       builder: (context) =>
+                                              //           const Workout(),
+                                              //     ));
                                               context.read<Profile>().generateWorkoutSessionId();
                                               context.read<Profile>().setActiveDay(index);
-
-                                              //context.read<Profile>().startTimers();
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const Workout(),
-                                                  ));
                                             },
                                             child: const Text(
                                               "Start This Workout",

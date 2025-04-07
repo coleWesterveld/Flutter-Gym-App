@@ -205,7 +205,7 @@ class NavigationExampleState extends State<NavigationExample> {
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
 
-      bottomSheet: WorkoutControlBar(),
+      bottomSheet: (context.watch<Profile>().activeDay != null) ? WorkoutControlBar() : null,
     );
   }
 

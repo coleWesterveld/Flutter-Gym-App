@@ -46,7 +46,8 @@ class _WorkoutState extends State<Workout> {
 
     isExerciseComplete = List.filled(
       context.read<Profile>().exercises[primaryIndex!].length,
-      false
+      false,
+      growable: true,
     );
 
     for (Exercise exercise
@@ -65,7 +66,6 @@ class _WorkoutState extends State<Workout> {
   void initState() {
     super.initState();
     _preloadHistory();
-    _startStopwatch();
   }
 
   @override
@@ -75,12 +75,6 @@ class _WorkoutState extends State<Workout> {
     super.dispose();
   }
 
-  void _startStopwatch() {
-    context.read<Profile>().workoutStopwatch.start();
-    // _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   if (mounted) setState(() {});
-    // });
-  }
 
   void _handleExerciseSelected(int id) async {
     setState(() {
@@ -168,7 +162,9 @@ class _WorkoutState extends State<Workout> {
             appBar: AppBar(
               backgroundColor: const Color(0xFF1e2025),
               title: Text(
-                "Day ${primaryIndex! + 1} • ${context.watch<Profile>().activeDay!.dayTitle}",
+                // this only happens for short period during transition from popping
+                // so nobody should see the const value, it will hopefully blend in
+                (primaryIndex != null) ? "Day ${primaryIndex + 1} • ${context.read<Profile>().activeDay!.dayTitle}" : "Workout",
                 style: TextStyle(fontWeight: FontWeight.w900),
               ),
               bottom: PreferredSize(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../user.dart';
@@ -80,6 +81,7 @@ class WorkoutControlBar extends StatelessWidget {
                   if (!positionAtTop) ...[
                     ElevatedButton(
                       onPressed: () {
+                        if (context.read<Profile>().isPaused) context.read<Profile>().togglePause();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -104,9 +106,16 @@ class WorkoutControlBar extends StatelessWidget {
                   // Finish Button
                   OutlinedButton(
                     onPressed: () {
+                      HapticFeedback.heavyImpact();
                       profile.workoutStopwatch.reset();
                       profile.restStopwatch.reset();
                       profile.timer?.cancel();
+                      
+                      if(positionAtTop) Navigator.pop(context, true);
+                      
+                    
+                      context.read<Profile>().setActiveDay(null);
+                    
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: primaryColor, width: 2),
@@ -135,6 +144,9 @@ class WorkoutControlBar extends StatelessWidget {
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     
+    // hmm cant decide if I like keeping it this way or not
+    // I think its good?
+    // it only displays hours when it needs to 
     if (duration.inHours > 0) {
       final hours = twoDigits(duration.inHours);
       return "$hours:$minutes:$seconds";
