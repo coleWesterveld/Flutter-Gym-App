@@ -8,6 +8,7 @@ import '../user.dart';
 import '../database/profile.dart';
 import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
+import '../other_utilities/day_of_week.dart';
 
 // this page whats left: 
 // TODO: make pretty - notably, when a day hovers another day, preview changes

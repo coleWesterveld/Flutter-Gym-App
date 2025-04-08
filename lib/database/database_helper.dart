@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'dart:math'; // For random variations
+import '../other_utilities/day_of_week.dart';
 
 // you may notice that I have separate methods to insert exercises, lists of exercises, and same with sets, 
 // when I could just loop inserting a single exercise.
@@ -175,7 +176,7 @@ class DatabaseHelper {
     '''
     );
 
-    db.execute(
+    await db.execute(
       '''
       CREATE TABLE goals(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -271,8 +272,19 @@ class DatabaseHelper {
       });
     }
 
-    // Insert initial row if none exists
-    batch.insert('user_settings', {'current_program_id': 1}); // Default to first program
+    // insert default settings
+    batch.insert('user_settings', {
+      'current_program_id': 1, // default to first program
+      'theme_mode': 'dark', // for now, always only dark mode
+      'program_duration_days': 7,
+      'weight_units': 'lbs',
+      'rest_timer_seconds': 90,
+      'enable_sound': 1, // no sounds in the app as of currently
+      'enable_haptics': 1,
+      'auto_rest_timer': 0,
+      'program_start_date': getDayOfCurrentWeek(1).toIso8601String(), // defaults to monday of current week
+      // rest of settings default
+    });
 
     // inserting mock data to test analytics page
     // TODO: remove for release
@@ -419,87 +431,169 @@ class DatabaseHelper {
 
     /// Inserts a complete day with exercises and sets in a single transaction
   Future<void> restoreDayWithContents({
-  required Day day,
-  required List<Exercise> exercises,
-  required List<List<PlannedSet>> setsForExercises,
-}) async {
-  final db = await database;
-  
-  await db.transaction((txn) async {
-    try {
-      // 1. Restore the day with original ID
-      await txn.insert(
-        'days',
-        day.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      // 2. Restore all exercises and their sets
-      for (int i = 0; i < exercises.length; i++) {
-        final exercise = exercises[i];
-        
-        // Insert exercise with original ID
-        final exerciseId = await txn.insert(
-          'exercise_instances',
-          exercise.toMap(),
+    required Day day,
+    required List<Exercise> exercises,
+    required List<List<PlannedSet>> setsForExercises,
+  }) async {
+    final db = await database;
+    
+    await db.transaction((txn) async {
+      try {
+        // 1. Restore the day with original ID
+        await txn.insert(
+          'days',
+          day.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-        // 3. Restore all sets for this exercise using direct index access
-        final sets = setsForExercises[i];
-        for (final set in sets) {
-          await txn.insert(
-            'plannedSets',
-            {
-              'id': set.setID, // Preserve original set ID
-              'num_sets': set.numSets,
-              'set_lower': set.setLower,
-              'set_upper': set.setUpper,
-              'exercise_instance_id': exerciseId,
-              'set_order': set.setOrder,
-              'rpe': set.rpe ?? 0,
-            },
+        // 2. Restore all exercises and their sets
+        for (int i = 0; i < exercises.length; i++) {
+          final exercise = exercises[i];
+          
+          // Insert exercise with original ID
+          final exerciseId = await txn.insert(
+            'exercise_instances',
+            exercise.toMap(),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
+
+          // 3. Restore all sets for this exercise using direct index access
+          final sets = setsForExercises[i];
+          for (final set in sets) {
+            await txn.insert(
+              'plannedSets',
+              {
+                'id': set.setID, // Preserve original set ID
+                'num_sets': set.numSets,
+                'set_lower': set.setLower,
+                'set_upper': set.setUpper,
+                'exercise_instance_id': exerciseId,
+                'set_order': set.setOrder,
+                'rpe': set.rpe ?? 0,
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
         }
+      } catch (e) {
+        debugPrint('Restore failed: $e');
+        rethrow;
       }
-    } catch (e) {
-      debugPrint('Restore failed: $e');
-      rethrow;
-    }
-  });
-}
+    });
+  }
 
-// this is for undo delete of an exercise - inserting back list of planned sets
+  // this is for undo delete of an exercise - inserting back list of planned sets
 
-Future<void> insertPlannedSetsBatch({
-  required int exerciseInstanceId,
-  required List<PlannedSet> sets,
-}) async {
-  final db = await database;
-  
-  await db.transaction((txn) async {
-    final batch = txn.batch();
+  Future<void> insertPlannedSetsBatch({
+    required int exerciseInstanceId,
+    required List<PlannedSet> sets,
+  }) async {
+    final db = await database;
     
-    for (final set in sets) {
-      batch.insert(
-        'plannedSets',
-        {
-          'id': set.setID, // Preserve original ID
-          'num_sets': set.numSets,
-          'set_lower': set.setLower,
-          'set_upper': set.setUpper,
-          'exercise_instance_id': exerciseInstanceId,
-          'set_order': set.setOrder,
-          'rpe': set.rpe ?? 0,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      
+      for (final set in sets) {
+        batch.insert(
+          'plannedSets',
+          {
+            'id': set.setID, // Preserve original ID
+            'num_sets': set.numSets,
+            'set_lower': set.setLower,
+            'set_upper': set.setUpper,
+            'exercise_instance_id': exerciseInstanceId,
+            'set_order': set.setOrder,
+            'rpe': set.rpe ?? 0,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      
+      await batch.commit(noResult: true);
+    });
+  }
+
+    ////////////////////////////////////////////////////////////
+  // USER SETTINGS TABLE CRUD
+
+  // Initialize default settings (call this when first creating the database)
+  Future<void> initializeDefaultSettings() async {
+    final existing = await fetchUserSettings();
+    if (existing == null) {
+      await insertUserSettings(UserSettings());
+    }
+  }
+
+  // Create/insert settings (there should only be one row)
+  Future<int> insertUserSettings(UserSettings settings) async {
+    final db = await database;
+    return await db.insert('user_settings', settings.toMap());
+  }
+
+  // Get the user settings (there should only be one)
+  Future<UserSettings?> fetchUserSettings() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('user_settings', limit: 1);
+    
+    // this'll never happen... surely
+    if (maps.isEmpty) {
+      return null;
     }
     
-    await batch.commit(noResult: true);
-  });
-}
+    return UserSettings.fromMap(maps.first);
+  }
+
+  // update settings
+  Future<int> updateUserSettings(UserSettings settings) async {
+    final db = await database;
+    return await db.update(
+      'user_settings',
+      settings.toMap(),
+      where: 'id = ?',
+      whereArgs: [settings.id],
+    );
+  }
+
+  // helper to update specific settings without fetching first
+  Future<int> updateSettingsPartial(Map<String, dynamic> updates) async {
+    final db = await database;
+    // get the existing ID
+    final settings = await fetchUserSettings();
+    if (settings == null) {
+      throw Exception('No settings found to update');
+    }
+    
+    return await db.update(
+      'user_settings',
+      updates,
+      where: 'id = ?',
+      whereArgs: [settings.id],
+    );
+  }
+
+  // delete settings (probably won't need this)
+  Future<int> deleteUserSettings(int id) async {
+    final db = await database;
+    return await db.delete(
+      'user_settings',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // lowkey hardcoded everything as I was figuring out how stuff should look
+  // but I should adapt to use theme
+  Future<String> getThemeMode() async {
+    final settings = await fetchUserSettings();
+    return settings?.themeMode ?? 'system';
+  }
+
+  Future<void> setThemeMode(String themeMode) async {
+    assert(['light', 'dark', 'system'].contains(themeMode));
+    await updateSettingsPartial({
+      'theme_mode': themeMode,
+    });
+  }
 
   ////////////////////////////////////////////////////////////
   // GOAL TABLE CRUD

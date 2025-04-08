@@ -12,6 +12,131 @@ import 'package:flutter/material.dart';
 // at some point, should probably make  exercises -> many setClusterHistory -> many Individual sets
 // to group by date, session, and have one note to define everything
 
+class UserSettings {
+  final int? id;
+  final int? currentProgramId;
+  final String themeMode; // 'light', 'dark', or 'system'
+  final DateTime? programStartDate;
+  final int programDurationDays;
+  final bool isMidWorkout;
+  final String weightUnits; // 'kg' or 'lbs'
+  final int? lastWorkoutId;
+  final DateTime? lastWorkoutTimestamp;
+  final int restTimerSeconds;
+  final bool enableSound;
+  final bool enableHaptics;
+  final bool autoRestTimer;
+
+  UserSettings({
+    this.id,
+    this.currentProgramId,
+    this.themeMode = 'system',
+    this.programStartDate,
+    this.programDurationDays = 28,
+    this.isMidWorkout = false,
+    this.weightUnits = 'lbs',
+    this.lastWorkoutId,
+    this.lastWorkoutTimestamp,
+    this.restTimerSeconds = 90,
+    this.enableSound = true,
+    this.enableHaptics = true,
+    this.autoRestTimer = false,
+  });
+
+  // Convert to map for database operations
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'current_program_id': currentProgramId,
+      'theme_mode': themeMode,
+      'program_start_date': programStartDate?.toIso8601String(),
+      'program_duration_days': programDurationDays,
+      'is_mid_workout': isMidWorkout ? 1 : 0,
+      'weight_units': weightUnits,
+      'last_workout_id': lastWorkoutId,
+      'last_workout_timestamp': lastWorkoutTimestamp?.toIso8601String(),
+      'rest_timer_seconds': restTimerSeconds,
+      'enable_sound': enableSound ? 1 : 0,
+      'enable_haptics': enableHaptics ? 1 : 0,
+      'auto_rest_timer': autoRestTimer ? 1 : 0,
+    };
+  }
+
+  // Create from database map
+  factory UserSettings.fromMap(Map<String, dynamic> map) {
+    return UserSettings(
+      id: map['id'] as int?,
+      currentProgramId: map['current_program_id'] as int?,
+      themeMode: map['theme_mode'] as String? ?? 'system',
+      programStartDate: map['program_start_date'] != null 
+          ? DateTime.parse(map['program_start_date'] as String) 
+          : null,
+      programDurationDays: map['program_duration_days'] as int? ?? 28,
+      isMidWorkout: (map['is_mid_workout'] as int? ?? 0) == 1,
+      weightUnits: map['weight_units'] as String? ?? 'lbs',
+      lastWorkoutId: map['last_workout_id'] as int?,
+      lastWorkoutTimestamp: map['last_workout_timestamp'] != null 
+          ? DateTime.parse(map['last_workout_timestamp'] as String) 
+          : null,
+      restTimerSeconds: map['rest_timer_seconds'] as int? ?? 90,
+      enableSound: (map['enable_sound'] as int? ?? 1) == 1,
+      enableHaptics: (map['enable_haptics'] as int? ?? 1) == 1,
+      autoRestTimer: (map['auto_rest_timer'] as int? ?? 0) == 1,
+    );
+  }
+
+  UserSettings copyWith({
+    int? id,
+    int? currentProgramId,
+    String? themeMode,
+    DateTime? programStartDate,
+    int? programDurationDays,
+    bool? isMidWorkout,
+    String? weightUnits,
+    int? lastWorkoutId,
+    DateTime? lastWorkoutTimestamp,
+    int? restTimerSeconds,
+    bool? enableSound,
+    bool? enableHaptics,
+    bool? autoRestTimer,
+  }) {
+    return UserSettings(
+      id: id ?? this.id,
+      currentProgramId: currentProgramId ?? this.currentProgramId,
+      themeMode: themeMode ?? this.themeMode,
+      programStartDate: programStartDate ?? this.programStartDate,
+      programDurationDays: programDurationDays ?? this.programDurationDays,
+      isMidWorkout: isMidWorkout ?? this.isMidWorkout,
+      weightUnits: weightUnits ?? this.weightUnits,
+      lastWorkoutId: lastWorkoutId ?? this.lastWorkoutId,
+      lastWorkoutTimestamp: lastWorkoutTimestamp ?? this.lastWorkoutTimestamp,
+      restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
+      enableSound: enableSound ?? this.enableSound,
+      enableHaptics: enableHaptics ?? this.enableHaptics,
+      autoRestTimer: autoRestTimer ?? this.autoRestTimer,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'UserSettings('
+        'id: $id, '
+        'currentProgramId: $currentProgramId, '
+        'themeMode: $themeMode, '
+        'programStartDate: $programStartDate, '
+        'programDurationDays: $programDurationDays, '
+        'isMidWorkout: $isMidWorkout, '
+        'weightUnits: $weightUnits, '
+        'lastWorkoutId: $lastWorkoutId, '
+        'lastWorkoutTimestamp: $lastWorkoutTimestamp, '
+        'restTimerSeconds: $restTimerSeconds, '
+        'enableSound: $enableSound, '
+        'enableHaptics: $enableHaptics, '
+        'autoRestTimer: $autoRestTimer'
+        ')';
+  }
+}
+
 // PROGRAM TABLE
 // (one program -> many days)
 class Program {

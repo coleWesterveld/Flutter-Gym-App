@@ -4,6 +4,7 @@ import 'database/database_helper.dart';
 import 'database/profile.dart';
   import 'dart:math';
   import 'dart:async';
+  import '../other_utilities/day_of_week.dart';
 
 //import 'dart:math';
 // split, sets, etc in provider
@@ -15,22 +16,7 @@ import 'database/profile.dart';
 
 // A lot of the database functionality here could maybe be double checked...
 
-/*
- This function will return Datetime of certain day of current week
- eg. monday of this week, or thursday of this week
- takes int 1-7, 1 is monday, 7 is sunday
-*/
-DateTime getDayOfCurrentWeek(int desiredWeekday) {
-  assert(desiredWeekday >= 1 && desiredWeekday <= 7, 
-      "desiredWeekday must be an integer between 1 (Monday) and 7 (Sunday)");
 
-  DateTime now = DateTime.now(); // Current date and time
-  int currentWeekday = now.weekday; // 1 (Monday) to 7 (Sunday)
-  
-  // Calculate the desired day's date
-  DateTime targetDate = now.add(Duration(days: desiredWeekday - currentWeekday));
-  return DateTime(targetDate.year, targetDate.month, targetDate.day); // Return at midnight
-}
 
 class Profile extends ChangeNotifier {
   static const List<Color> colors = [
@@ -151,11 +137,14 @@ class Profile extends ChangeNotifier {
   }
 
   //defaults to monday of this week
+  // hmm the more that I think about it, this should be an attribute of a program, not of a user
+  // for now its fine
+  // TODO: start day attribute of program
   DateTime _origin = getDayOfCurrentWeek(1);
-
-  // this updates listeners whenever value is changed. this should maybe be used for all variables
+  // this updates listeners  and database whenever value is changed. this should maybe be used for all variables
   // this is the only one I ve had to do this for, otherwise my schedule page wasnt updating properly
   set origin(DateTime newStartDay) {
+    dbHelper.updateSettingsPartial({'program_start_date': newStartDay.toIso8601String()});
     _origin = newStartDay;
     notifyListeners(); // Notify listeners of the change
   }
@@ -180,6 +169,7 @@ class Profile extends ChangeNotifier {
   List<List<TextEditingController>> workoutRepsTEC;
   List<TextEditingController> workoutNotesTEC;
   List<ExpansionTileController> workoutExpansionControllers;
+  UserSettings? settings = UserSettings();
 
   int splitLength;
   bool _done = false;
@@ -226,6 +216,9 @@ class Profile extends ChangeNotifier {
     split = await dbHelper.initializeSplitList(currentProgram.programID);
     exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
     sets = await dbHelper.initializeSetList(currentProgram.programID);
+    settings = await dbHelper.fetchUserSettings();
+    assert(settings != null, "settings not found...");
+     if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
     
 
     // intiializing Text editing and expansion tile controllers
