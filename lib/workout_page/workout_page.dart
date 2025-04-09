@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 // the text should remain in the fields even upon closing/expanding a tile
 // the logged sets should be indicated even upon expanding/collapsing
 // the timer could work better I think - need to ingtegrate with set logging
+// fix notes - for now, they only work if you create a note after logging the sets
 
 // I think it may be more clear to change all imports to this package version
 // then again, idk if it really matters
@@ -423,19 +424,36 @@ class _WorkoutState extends State<Workout> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: TextFormField(
-                        keyboardType: TextInputType.multiline,
-                        minLines: 2,
-                        maxLines: null,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFF1e2025),
-                          contentPadding:
-                              const EdgeInsets.only(bottom: 10, left: 8),
-                          border: const OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8))),
-                          hintText: "Notes: ",
+                      child: Focus(
+                        onFocusChange: (hasFocus) {
+                          if (!hasFocus)  {
+                            // Save when focus is lost
+                            final notes = context.read<Profile>().workoutNotesTEC[index].text;
+                            _updateSetNotesInDB(
+                              context.read<Profile>().sessionID!,
+                              context.read<Profile>().exercises[primaryIndex][index].exerciseID,
+                              notes
+                            );
+                          }
+                        },
+
+                        child: TextFormField(
+                          keyboardType: TextInputType.multiline,
+                          minLines: 2,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFF1e2025),
+                            contentPadding:
+                                const EdgeInsets.only(bottom: 10, left: 8),
+                            border: const OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8))),
+                            hintText: "Notes: ",
+                          ),
+                        
+                          controller: context.watch<Profile>().workoutNotesTEC[index],
+                        
                         ),
                       ),
                     ),
@@ -445,6 +463,7 @@ class _WorkoutState extends State<Workout> {
       ),
     );
   }
+
 
   void _showFullHistoryModal(int exerciseId, String exerciseTitle) async {
     showModalBottomSheet(
@@ -590,5 +609,12 @@ class _WorkoutState extends State<Workout> {
         );
       },
     );
+  }
+
+  void _updateSetNotesInDB(String sessionID, int exerciseID, String note) async {
+    final db = DatabaseHelper.instance;
+
+    await db.updateSetNotes(sessionId: sessionID, exerciseId: exerciseID, note: note);
+
   }
 }

@@ -656,7 +656,10 @@ class DatabaseHelper {
 
   // Calculate 1RM using Epley formula
   int _calculateOneRm(int weight, int reps) {
-    return (weight * (1 + (reps / 30)).round());
+    debugPrint("reps: $reps");
+    debugPrint("weight: $weight");
+    debugPrint("Weigh from DB: ${(weight * (1 + (reps / 30))).round()}");
+    return (weight * (1 + (reps / 30))).round();
   }
 
   // Update a goal
@@ -974,6 +977,25 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   ////////////////////////////////////////////////////////////
   // SET RECORD (history) TABLE CRUD
+
+  Future<int> updateSetNotes({
+    required String sessionId,
+    required int exerciseId,
+    required String note,
+  }) async {
+    final db = await database;
+    
+    return await db.update(
+      'set_log',
+      {
+        'history_note': note,
+        // Optionally update timestamp if needed:
+        // 'date': DateTime.now().toIso8601String(),
+      },
+      where: 'session_id = ? AND exercise_id = ?',  // Both conditions
+      whereArgs: [sessionId, exerciseId],          // Match both IDs
+    );
+  }
 
   Future<int> insertSetRecord(
         SetRecord record) async {

@@ -208,13 +208,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       Target: ${savedGoal.targetWeight}
       Progress: ${savedGoal.progressPercentage}%
     ''');
+    debugPrint("goals: $_goals");
     // 3. Update UI
     setState(() {
       _goals.add(savedGoal);
     });
+    debugPrint("goals: $_goals");
 
     // 4. Still refresh later for any other updates
     _fetchData(); // Runs in background without await
+    debugPrint("goals: $_goals");
   }
 }
 
@@ -232,8 +235,9 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
   
   // Use your preferred 1RM formula (here's Epley)
   final weight = recentSet.first['weight'] as int;
-  final reps = (recentSet.first['reps'] as int) + (10 - (recentSet.first['rpe'] as int));
+  final reps = (recentSet.first['reps'] as int);
   debugPrint("Reps: $reps");
+  print("goal: ${(weight * (1 + reps / 30)).round()}");
   return (weight * (1 + reps / 30)).round();
 }
 
@@ -313,6 +317,7 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
   // }
 
 List<Widget> _buildGoalList() {
+  debugPrint("here: $_goals");
   return _goals.map((goal) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
     child: GestureDetector(
@@ -688,6 +693,7 @@ class GoalProgress extends StatefulWidget {
 class _GoalProgressState extends State<GoalProgress> {
   @override
   Widget build(BuildContext context) {
+    debugPrint("single: ${widget.goal}");
     return SizedBox(
       //color: Colors.red,
       height: 175,
