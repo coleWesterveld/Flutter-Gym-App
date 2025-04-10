@@ -2,12 +2,13 @@
 //not updated
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
+import '../providers_and_settings/settings_page.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
@@ -72,6 +73,18 @@ class _WorkoutPageState extends State<WorkoutPage>
     int todaysWorkout = toExpand();
     return Scaffold(
       appBar: AppBar(
+        actions: [
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsPage()),
+            );
+          },
+        ),
+      ],
+
         backgroundColor: const Color(0xFF1e2025),
         centerTitle: true,
         title: const Text(

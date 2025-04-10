@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
-import 'package:firstapp/user.dart';
+import 'package:firstapp/providers_and_settings/user.dart';
 import '../database/profile.dart';
 
 class GymSetRow extends StatefulWidget {

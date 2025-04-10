@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 import 'set_logging.dart';
 import '../other_utilities/lightness.dart';
 import 'dart:async';
 import '../database/database_helper.dart';
 import '../database/profile.dart';
 import 'package:intl/intl.dart';
+import '../providers_and_settings/settings_page.dart';
 
 // list todo: 
 // TACKLING: expanded index should expand once, initially, and when a user finishes an exercise, but should not interfere further with user interaction
@@ -174,6 +175,18 @@ class _WorkoutState extends State<Workout> {
                   positionAtTop: true,
                 ),
               ),
+
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SettingsPage()),
+                    );
+                  },
+                ),
+              ]
             ),
         body: primaryIndex == null
             ? const Center(child: Text("Something Went Wrong."))

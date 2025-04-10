@@ -12,11 +12,12 @@ import 'workout_page/workout_selection_page.dart';
 import 'schedule_page/schedule_page.dart';
 import 'program_page/program_page.dart';
 import 'analytics_page/analytics_page.dart';
-import 'user.dart';
+import 'providers_and_settings/user.dart';
 import 'workout_page/workout_page.dart';
 //import 'data_saving.dart';
 import 'database/database_helper.dart';
 import 'other_utilities/workout_stopwatch.dart';
+import 'providers_and_settings/settings_provider.dart';
 //import 'database/profile.dart';
 
 /* colour choices:
@@ -73,6 +74,11 @@ class _MainPage extends State<NavigationBarApp> {
     //provider for global variable information
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (context) => SettingsModel()
+        ),
+
+
         ChangeNotifierProvider(
           create: (context) => Profile(
             dbHelper: dbHelper,

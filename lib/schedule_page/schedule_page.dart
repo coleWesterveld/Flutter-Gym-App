@@ -8,11 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 import '../database/profile.dart';
 import 'edit_schedule.dart';
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
+import '../providers_and_settings/settings_page.dart';
 
 class Event{
   final String title;
@@ -197,7 +198,19 @@ class _MyScheduleState extends State<SchedulePage> {
           style: TextStyle(
             fontWeight: FontWeight.w900,
           ),
+        ),
+
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsPage()),
+              );
+            },
           ),
+        ]
       ),
  
       body: SingleChildScrollView(

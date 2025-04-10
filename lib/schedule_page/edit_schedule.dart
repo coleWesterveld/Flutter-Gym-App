@@ -4,11 +4,12 @@
 import 'package:dotted_border/dotted_border.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 import '../database/profile.dart';
 import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
 import '../other_utilities/day_of_week.dart';
+import '../providers_and_settings/settings_page.dart';
 
 // this page whats left: 
 // TODO: make pretty - notably, when a day hovers another day, preview changes
@@ -103,6 +104,19 @@ class _EditScheduleState extends State<EditSchedule> {
             ),
       
           ),
+
+
+          actions: [
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+          ],
       
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(80.0), // Height of the persistent widget

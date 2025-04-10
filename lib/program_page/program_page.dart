@@ -18,7 +18,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'custom_exercise_form.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -30,6 +30,7 @@ import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../analytics_page/exercise_search.dart';
 import 'programs_drawer.dart';
+import '../providers_and_settings/settings_page.dart';
 
 //program page, where user defines the overall program by days,
 // then exercises for each day with sets, rep range and notes
@@ -192,6 +193,18 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsPage()),
+              );
+            },
+          ),
+        ]
       ),
       drawer: ProgramsDrawer(
         //dbHelper: dbHelper,

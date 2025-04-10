@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../user.dart';
+import '../providers_and_settings/user.dart';
 import '../workout_page/workout_page.dart';
 //import 'data_saving.dart';
 class WorkoutControlBar extends StatelessWidget {
