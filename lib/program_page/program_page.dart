@@ -30,6 +30,7 @@ import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../analytics_page/exercise_search.dart';
 import 'programs_drawer.dart';
+import '../providers_and_settings/settings_provider.dart';
 import '../providers_and_settings/settings_page.dart';
 
 //program page, where user defines the overall program by days,
@@ -246,7 +247,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
     return ReorderableListView.builder(
       //reordering days
         onReorder: (oldIndex, newIndex){
-          HapticFeedback.heavyImpact();
+          if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
           setState(() {
             // if (newIndex > oldIndex) {
             //   newIndex -= 1;
@@ -272,7 +273,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
               splashColor: Colors.deepOrange,
               borderRadius: BorderRadius.circular(16),
               onTap: () {
-                HapticFeedback.heavyImpact();
+                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                 setState(() {
                   _addItem();
                 });
@@ -313,7 +314,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                 foregroundColor: Colors.white,
                 icon: Icons.delete,
                 onPressed: (direction) {
-                  HapticFeedback.heavyImpact();
+                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                   final deletedDay = context.read<Profile>().split[index];
                   final deletedExercises = context.read<Profile>().exercises[index];
                   final deletedSets = context.read<Profile>().sets[index];
@@ -516,7 +517,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                                           actions: [
                                             IconButton(
                                             onPressed: (){
-                                              HapticFeedback.heavyImpact();
+                                              if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                                               String? dayTitle = alertTEC.text;
                                               if (dayTitle.isNotEmpty) {
                                               //rebuild widget tree reflecting new title
@@ -602,7 +603,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                                     
       //on reorder, update tree with new ordering
       onReorder: (oldIndex, newIndex){
-        HapticFeedback.heavyImpact();
+        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
         setState(() {
           context.read<Profile>().moveExercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
 
@@ -620,7 +621,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
             //height: 130,
             child: TextButton.icon(
               onPressed: () async {
-                HapticFeedback.heavyImpact();
+                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                 
                   setState(
 
@@ -700,7 +701,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                 foregroundColor: Colors.white,
                 icon: Icons.delete,
                 onPressed: (direction) {
-                  HapticFeedback.heavyImpact();
+                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                   //final deletedDay = context.read<Profile>().split[index];
                   final deletedExercise = context.read<Profile>().exercises[index][exerciseIndex];
                   final deletedSets = context.read<Profile>().sets[index][exerciseIndex];
@@ -817,7 +818,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                               ),
                             
                               onPressed: () {
-                                HapticFeedback.heavyImpact();
+                                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                                 
                                   context.read<Profile>().setsAppend(
                                     // newSets: 
@@ -855,7 +856,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                       IconButton(
                         onPressed: () async{
                           
-                        HapticFeedback.heavyImpact();
+                        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                           //print(context.read<Profile>().split[index].data);
                           alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
                           int? exerciseID = await openDialog();
@@ -912,7 +913,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
     return ReorderableListView.builder(
       //on reorder, update tree with new ordering
       onReorder: (oldIndex, newIndex){
-        HapticFeedback.heavyImpact();
+        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
         setState(() {
           context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, exerciseIndex: exerciseIndex);
         });
@@ -942,7 +943,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
               foregroundColor: Colors.white,
               icon: Icons.delete,
               onPressed: (direction) {
-                HapticFeedback.heavyImpact();
+                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                 //final deletedDay = context.read<Profile>().split[index];
                 //final deletedExercise = context.read<Profile>().exercises[index][exerciseIndex];
                 final deletedSet = context.read<Profile>().sets[index][exerciseIndex][setIndex];
@@ -1403,7 +1404,7 @@ Future<dynamic> openDialog() {
               child: TextFormField(
                   
                   onFieldSubmitted: (value){
-                    HapticFeedback.heavyImpact();
+                    if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                     Navigator.of(context).pop(alertTEC.text);
                   },
                   autofocus: true,

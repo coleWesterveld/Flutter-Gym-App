@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firstapp/database/database_helper.dart';
+import '../providers_and_settings/settings_provider.dart';
+import 'package:provider/provider.dart';
+
 
 
 class CustomExerciseForm extends StatefulWidget {
@@ -86,7 +89,7 @@ class _CustomExerciseFormState extends State<CustomExerciseForm> {
                     ),
                   ),
                   onFieldSubmitted: (value) {
-                    HapticFeedback.heavyImpact();
+                    if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                   },
                 ),
               ),

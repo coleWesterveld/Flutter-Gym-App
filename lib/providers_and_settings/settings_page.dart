@@ -44,7 +44,7 @@ class SettingsPage extends StatelessWidget {
           ListTile(
             title: const Text('Dark Theme'),
             trailing: AdaptiveSwitch(
-              value: settings.darkTheme,
+              value: settings.themeMode == 'dark',
               onChanged: (_) => settings.toggleTheme(),
             ),
           ),

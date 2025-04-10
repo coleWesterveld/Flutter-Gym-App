@@ -79,13 +79,14 @@ class DatabaseHelper {
         program_start_date TEXT, -- ISO8601 string (YYYY-MM-DD)
         program_duration_days INTEGER DEFAULT 28, -- Typical 4-week program
         is_mid_workout BOOLEAN DEFAULT 0, -- 0 = false, 1 = true
-        weight_units TEXT CHECK(weight_units IN ('kg', 'lbs')) DEFAULT 'lbs',
+        use_metric BOOLEAN DEFAULT 0,
         last_workout_id INTEGER, -- For resume functionality
         last_workout_timestamp TEXT, -- When they paused
         rest_timer_seconds INTEGER DEFAULT 90, -- Common default rest time
         enable_sound BOOLEAN DEFAULT 1,
         enable_haptics BOOLEAN DEFAULT 1,
         auto_rest_timer BOOLEAN DEFAULT 0,
+        colour_blind_mode BOOLEAN DEFAULT 0,
         
         FOREIGN KEY (current_program_id) REFERENCES programs(id),
         FOREIGN KEY (last_workout_id) REFERENCES days(id)
@@ -277,7 +278,7 @@ class DatabaseHelper {
       'current_program_id': 1, // default to first program
       'theme_mode': 'dark', // for now, always only dark mode
       'program_duration_days': 7,
-      'weight_units': 'lbs',
+      'use_metric': 0,
       'rest_timer_seconds': 90,
       'enable_sound': 1, // no sounds in the app as of currently
       'enable_haptics': 1,

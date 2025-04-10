@@ -706,7 +706,7 @@ class GoalProgress extends StatefulWidget {
 class _GoalProgressState extends State<GoalProgress> {
   @override
   Widget build(BuildContext context) {
-    debugPrint("single: ${widget.goal}");
+    // debugPrint("single: ${widget.goal}"); // this is printing a lot, I hope thats okay? 
     return SizedBox(
       //color: Colors.red,
       height: 175,

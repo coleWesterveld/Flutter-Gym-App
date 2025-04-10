@@ -19,13 +19,14 @@ class UserSettings {
   final DateTime? programStartDate;
   final int programDurationDays;
   final bool isMidWorkout;
-  final String weightUnits; // 'kg' or 'lbs'
+  final bool useMetric; // lbs default, can be Kgs
   final int? lastWorkoutId;
   final DateTime? lastWorkoutTimestamp;
   final int restTimerSeconds;
   final bool enableSound;
   final bool enableHaptics;
   final bool autoRestTimer;
+  final bool colourBlindMode;
 
   UserSettings({
     this.id,
@@ -34,32 +35,39 @@ class UserSettings {
     this.programStartDate,
     this.programDurationDays = 28,
     this.isMidWorkout = false,
-    this.weightUnits = 'lbs',
+    this.useMetric = false,
     this.lastWorkoutId,
     this.lastWorkoutTimestamp,
     this.restTimerSeconds = 90,
     this.enableSound = true,
     this.enableHaptics = true,
     this.autoRestTimer = false,
+    this.colourBlindMode = false,
   });
 
-  // Convert to map for database operations
+  // convert to map for database operations, and remove null vals
   Map<String, dynamic> toMap() {
-    return {
+    final map = {
       'id': id,
       'current_program_id': currentProgramId,
       'theme_mode': themeMode,
       'program_start_date': programStartDate?.toIso8601String(),
       'program_duration_days': programDurationDays,
       'is_mid_workout': isMidWorkout ? 1 : 0,
-      'weight_units': weightUnits,
+      'use_metric': useMetric ? 1 : 0,
       'last_workout_id': lastWorkoutId,
       'last_workout_timestamp': lastWorkoutTimestamp?.toIso8601String(),
       'rest_timer_seconds': restTimerSeconds,
       'enable_sound': enableSound ? 1 : 0,
       'enable_haptics': enableHaptics ? 1 : 0,
       'auto_rest_timer': autoRestTimer ? 1 : 0,
+      'colour_blind_mode': colourBlindMode ? 1 : 0
     };
+    
+    // Remove null values
+    map.removeWhere((key, value) => value == null);
+    
+    return map;
   }
 
   // Create from database map
@@ -73,7 +81,7 @@ class UserSettings {
           : null,
       programDurationDays: map['program_duration_days'] as int? ?? 28,
       isMidWorkout: (map['is_mid_workout'] as int? ?? 0) == 1,
-      weightUnits: map['weight_units'] as String? ?? 'lbs',
+      useMetric: (map['use_metric'] as int? ?? 0) == 1,
       lastWorkoutId: map['last_workout_id'] as int?,
       lastWorkoutTimestamp: map['last_workout_timestamp'] != null 
           ? DateTime.parse(map['last_workout_timestamp'] as String) 
@@ -82,6 +90,7 @@ class UserSettings {
       enableSound: (map['enable_sound'] as int? ?? 1) == 1,
       enableHaptics: (map['enable_haptics'] as int? ?? 1) == 1,
       autoRestTimer: (map['auto_rest_timer'] as int? ?? 0) == 1,
+      colourBlindMode: (map['colourBlindMode'] as int? ?? 0) == 1
     );
   }
 
@@ -92,13 +101,14 @@ class UserSettings {
     DateTime? programStartDate,
     int? programDurationDays,
     bool? isMidWorkout,
-    String? weightUnits,
+    bool? useMetric,
     int? lastWorkoutId,
     DateTime? lastWorkoutTimestamp,
     int? restTimerSeconds,
     bool? enableSound,
     bool? enableHaptics,
     bool? autoRestTimer,
+    bool? colourBlindMode,
   }) {
     return UserSettings(
       id: id ?? this.id,
@@ -107,13 +117,14 @@ class UserSettings {
       programStartDate: programStartDate ?? this.programStartDate,
       programDurationDays: programDurationDays ?? this.programDurationDays,
       isMidWorkout: isMidWorkout ?? this.isMidWorkout,
-      weightUnits: weightUnits ?? this.weightUnits,
+      useMetric: useMetric ?? this.useMetric,
       lastWorkoutId: lastWorkoutId ?? this.lastWorkoutId,
       lastWorkoutTimestamp: lastWorkoutTimestamp ?? this.lastWorkoutTimestamp,
       restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
       enableSound: enableSound ?? this.enableSound,
       enableHaptics: enableHaptics ?? this.enableHaptics,
       autoRestTimer: autoRestTimer ?? this.autoRestTimer,
+      colourBlindMode: colourBlindMode ?? this.colourBlindMode,
     );
   }
 
@@ -126,13 +137,14 @@ class UserSettings {
         'programStartDate: $programStartDate, '
         'programDurationDays: $programDurationDays, '
         'isMidWorkout: $isMidWorkout, '
-        'weightUnits: $weightUnits, '
+        'useMetric: $useMetric, '
         'lastWorkoutId: $lastWorkoutId, '
         'lastWorkoutTimestamp: $lastWorkoutTimestamp, '
         'restTimerSeconds: $restTimerSeconds, '
         'enableSound: $enableSound, '
         'enableHaptics: $enableHaptics, '
         'autoRestTimer: $autoRestTimer'
+        'colourBlindMode: $colourBlindMode'
         ')';
   }
 }

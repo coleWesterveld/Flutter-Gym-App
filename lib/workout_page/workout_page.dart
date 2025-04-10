@@ -329,58 +329,62 @@ class _WorkoutState extends State<Workout> {
                       child: ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
-                        itemCount: context
-                            .read<Profile>()
-                            .sets[primaryIndex][index]
-                            .length,
+                        itemCount: context.read<Profile>().sets[primaryIndex][index].length,
                         itemBuilder: (context, setIndex) {
-                          return GymSetRow(
-                            prevWeight: 12,
-                            prevReps: 5,
-                            expectedRPE: 8,
-                            expectedReps: 5,
-                            expectedWeight: 200,
-                            exerciseIndex: index,
-                            setIndex: setIndex,
-                            initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged,
-                            
-                            
-                            onChanged: (isChecked){
-                              // record that the set has been completed 
-                              setState(() {
-                                context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked;
-                                if (isChecked){
-                                  context.read<Profile>().incrementSet([index, setIndex]);
+                          return ListView.builder(
+
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: context.read<Profile>().sets[primaryIndex][index][setIndex].numSets,
+                          
+                            itemBuilder: (context, index){ 
+                              return GymSetRow(
+                                repsLower: context.read<Profile>().sets[primaryIndex][index][setIndex].setLower,
+                                repsUpper: context.read<Profile>().sets[primaryIndex][index][setIndex].setUpper ?? 0,
+                                expectedRPE: context.read<Profile>().sets[primaryIndex][index][setIndex].rpe?.toDouble() ?? 0.0,
+                                exerciseIndex: index,
+                                setIndex: setIndex,
+                                initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged,
+                                
+                                
+                                onChanged: (isChecked){
+                                  // record that the set has been completed 
+                                  setState(() {
+                                    context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked;
+                                    if (isChecked){
+                                      context.read<Profile>().incrementSet([index, setIndex]);
+                                      
+                          
+                                      // if moving on to a new exercise, expand new and close old
+                                      if (context.read<Profile>().nextSet[0] != index){
+                                        context.read<Profile>().workoutExpansionControllers[
+                                          context.read<Profile>().nextSet[0]
+                                        ].expand();
+                          
+                                        context.read<Profile>().workoutExpansionControllers[index].collapse();
+                                      }
+                                    }
                                   
-
-                                  // if moving on to a new exercise, expand new and close old
-                                  if (context.read<Profile>().nextSet[0] != index){
-                                    context.read<Profile>().workoutExpansionControllers[
-                                      context.read<Profile>().nextSet[0]
-                                    ].expand();
-
-                                    context.read<Profile>().workoutExpansionControllers[index].collapse();
+                          
+                          
+                                  bool allLogged = true;
+                                  // check if all sets in an exercise have been completed. if so, log that on the map
+                                  for (final plannedSet in context.read<Profile>().sets[primaryIndex][index]){
+                                    if (plannedSet.hasBeenLogged != true){
+                                      allLogged = false;
+                                      break;
+                                    }
                                   }
-                                }
-                              
-
-
-                              bool allLogged = true;
-                              // check if all sets in an exercise have been completed. if so, log that on the map
-                              for (final plannedSet in context.read<Profile>().sets[primaryIndex][index]){
-                                if (plannedSet.hasBeenLogged != true){
-                                  allLogged = false;
-                                  break;
-                                }
-                              }
-
-                              if (allLogged){
-                                isExerciseComplete[index] = true;
-                              }
-                            });
-
-                              //debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
-                            },
+                          
+                                  if (allLogged){
+                                    isExerciseComplete[index] = true;
+                                  }
+                                });
+                          
+                                  //debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
+                                },
+                              );
+                            }
                           );
                         },
                       ),

@@ -1,46 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import '../database/database_helper.dart';
+import '../database/profile.dart';
 
 class SettingsModel extends ChangeNotifier {
-  bool _colorBlindMode = false;
-  bool _useMetric = true;
-  bool _darkTheme = false;
-  bool _soundsEnabled = true;
-  bool _hapticsEnabled = true;
+  final DatabaseHelper dbHelper = DatabaseHelper.instance;
+  UserSettings _settings = UserSettings(
+    enableHaptics: true,
+    enableSound: true,
+    themeMode: 'system',
+    useMetric: false,
+    colourBlindMode: false,
+  );
 
-  bool get colorBlindMode => _colorBlindMode;
-  bool get useMetric => _useMetric;
-  bool get darkTheme => _darkTheme;
-  bool get soundsEnabled => _soundsEnabled;
-  bool get hapticsEnabled => _hapticsEnabled;
+  // Getters
+  UserSettings get settings => _settings;
+  bool get colorBlindMode => _settings.colourBlindMode;
+  bool get useMetric => _settings.useMetric;
+  String get themeMode => _settings.themeMode;
+  bool get soundsEnabled => _settings.enableSound;
+  bool get hapticsEnabled => _settings.enableHaptics;
 
-  void toggleColorBlindMode() {
-    _colorBlindMode = !_colorBlindMode;
+  // Initialize settings
+  Future<void> init() async {
+    final potentialSettings = await dbHelper.fetchUserSettings();
+    if (potentialSettings != null) {
+      _settings = potentialSettings;
+      notifyListeners();
+    }
+  }
+
+  // Toggle methods
+  Future<void> toggleColorBlindMode() async {
+    _settings = _settings.copyWith(
+      colourBlindMode: !_settings.colourBlindMode,
+    );
+    await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 
-  void toggleUnits() {
-    _useMetric = !_useMetric;
+  Future<void> toggleUnits() async {
+    _settings = _settings.copyWith(
+      useMetric: !_settings.useMetric,
+    );
+    await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 
-  void toggleTheme() {
-    _darkTheme = !_darkTheme;
+  Future<void> toggleTheme() async {
+    final newTheme = _settings.themeMode == 'dark' ? 'light' : 'dark';
+    _settings = _settings.copyWith(themeMode: newTheme);
+    await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 
-  void toggleSounds() {
-    _soundsEnabled = !_soundsEnabled;
+  Future<void> toggleSystemTheme() async {
+    _settings = _settings.copyWith(themeMode: 'system');
+    await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 
-  void toggleHaptics() {
-    _hapticsEnabled = !_hapticsEnabled;
+  Future<void> toggleSounds() async {
+    _settings = _settings.copyWith(
+      enableSound: !_settings.enableSound,
+    );
+    await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
+  }
+
+  Future<void> toggleHaptics() async {
+    _settings = _settings.copyWith(
+      enableHaptics: !_settings.enableHaptics,
+    );
+    await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
+  }
+
+  // For more complex updates
+  Future<void> updateSettings(UserSettings newSettings) async {
+    _settings = newSettings;
+    await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 }
 
-// Platform-adaptive switch widget
+// Updated Platform-adaptive switch widget
 class AdaptiveSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;

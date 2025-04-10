@@ -173,7 +173,6 @@ class Profile extends ChangeNotifier {
 
   int splitLength;
   bool _done = false;
-  //bool _initialized = false;
 
   Profile({
     this.split = const <Day>[],
@@ -216,11 +215,14 @@ class Profile extends ChangeNotifier {
     split = await dbHelper.initializeSplitList(currentProgram.programID);
     exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
     sets = await dbHelper.initializeSetList(currentProgram.programID);
-    settings = await dbHelper.fetchUserSettings();
-    assert(settings != null, "settings not found...");
-     if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
-    
 
+    // I am just getting settings for the _origin
+    // this is remnant of legacy (2 month old, super old clearly) code 
+    // that I havent fully switched over to settings provider fully yet
+    settings = await dbHelper.fetchUserSettings();
+    //assert(settings != null, "settings not found...");
+    if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
+    
     // intiializing Text editing and expansion tile controllers
     // there may be a better way to do this...
     for (int i = 0; i < sets.length; i++){
@@ -278,7 +280,9 @@ class Profile extends ChangeNotifier {
 
   // sets whatever day the user is currently doing
   void setActiveDay(int? index){
+
     if ((index != null && index >= 0 && index < split.length)){
+
       activeDayIndex = index;
       activeDay = split[index];
       showHistory = List.filled(exercises[index].length, false);

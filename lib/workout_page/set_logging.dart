@@ -1,39 +1,39 @@
+import 'package:firstapp/program_page/custom_exercise_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 import '../other_utilities/lightness.dart';
 import 'package:firstapp/providers_and_settings/user.dart';
 import '../database/profile.dart';
+import '../providers_and_settings/settings_provider.dart';
+import 'package:flutter/services.dart';
+
 
 class GymSetRow extends StatefulWidget {
-  final double prevWeight;
-  final int prevReps;
-  final double expectedWeight;
-  final int expectedReps;
+  final int repsLower;
+  final int repsUpper;
   final double expectedRPE;
   final int exerciseIndex, setIndex;
   final Function(bool) onChanged;
-  final  bool? initiallyChecked;
+  final bool? initiallyChecked;
 
   const GymSetRow({
     super.key,
-    required this.prevWeight,
-    required this.prevReps,
-    required this.expectedWeight,
-    required this.expectedReps,
+    required this.repsLower,
+    required this.repsUpper,
     required this.expectedRPE,
     required this.exerciseIndex,
     required this.setIndex,
     required this.onChanged,
     this.initiallyChecked,
-
   });
 
   @override
   _GymSetRowState createState() => _GymSetRowState();
 }
 
-class _GymSetRowState extends State<GymSetRow> {
+class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixin {
   final TextEditingController weightController = TextEditingController();
   final TextEditingController repsController = TextEditingController();
   final TextEditingController rpeController = TextEditingController();
@@ -43,13 +43,18 @@ class _GymSetRowState extends State<GymSetRow> {
   final FocusNode rpeFocus = FocusNode();
 
   bool _isChecked = false;
+  bool _weightError = false;
+  bool _repsError = false;
+  bool _rpeError = false;
+  bool _moveItmoveIt = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.initiallyChecked != null) _isChecked = widget.initiallyChecked!;
 
-    // Add listeners to focus nodes
+    
+
     weightFocus.addListener(_updateDoneState);
     repsFocus.addListener(_updateDoneState);
     rpeFocus.addListener(_updateDoneState);
@@ -58,6 +63,26 @@ class _GymSetRowState extends State<GymSetRow> {
   void _updateDoneState() {
     bool anyFieldFocused = weightFocus.hasFocus || repsFocus.hasFocus || rpeFocus.hasFocus;
     context.read<Profile>().done = anyFieldFocused;
+  }
+
+  void _validateInputs() {
+    setState(() {
+      _weightError = weightController.text.isEmpty || int.tryParse(weightController.text) == null;
+      _repsError = repsController.text.isEmpty || int.tryParse(repsController.text) == null;
+      _rpeError = rpeController.text.isEmpty || int.tryParse(rpeController.text) == null;
+    });
+
+    if (_weightError || _repsError || _rpeError) {
+      _moveItmoveIt = true;
+    }
+  }
+
+  void _clearErrors() {
+    setState(() {
+      _weightError = false;
+      _repsError = false;
+      _rpeError = false;
+    });
   }
 
   @override
@@ -79,111 +104,138 @@ class _GymSetRowState extends State<GymSetRow> {
 
   @override
   Widget build(BuildContext context) {
+    assert(context.read<Profile>().sessionID != null, "SessionID is null");
+    assert(context.read<Profile>().activeDayIndex != null, "No active day index");
+    assert(context.read<Profile>().activeDay != null, "No active day");
 
-    assert (context.read<Profile>().sessionID != null, "SessionID is null, this... uhh... shouldnt happen.");
-    assert(context.read<Profile>().activeDayIndex != null, "no active day index, this shouldnt happen.");
-    assert(context.read<Profile>().activeDay != null, "no active day, this shouldnt happen.");
-
-    return Container(
-      decoration: BoxDecoration(
-        color: _isChecked ? Colors.blue.withAlpha(100) : null,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                "${widget.prevWeight}kg x ${widget.prevReps} @ ${widget.expectedRPE} RPE",
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            _buildTextField(rpeController, weightFocus, "Weight", 30),
-            _buildTextField(weightController, repsFocus, "Reps", 50),
-            _buildTextField(repsController, rpeFocus, "RPE", 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: InkWell(
-                onTap: () {
-                  HapticFeedback.heavyImpact();
-                  //context.read<Profile>().incrementSet([widget.exerciseIndex, widget.setIndex]);
-                  //debugPrint("Next set: ${context.read<Profile>().nextSet}");
-                  
-                  setState(() {
-                    _isChecked = !_isChecked;
-                    widget.onChanged(_isChecked);
-                  });
-                  // TODO: if unchecked, we need to remove it from the database - it should not be logged
-                  if (_isChecked){
-                    context.read<Profile>().logSet(
-                      SetRecord.fromDateTime(
-                      sessionID: context.read<Profile>().sessionID!, 
-                      exerciseID: context.read<Profile>().exercises[
-                        context.read<Profile>().activeDayIndex!
-                      ][widget.exerciseIndex].exerciseID, 
-                      date: DateTime.now(), 
-                      numSets: 1, 
-                      // maybe allow for floats at some point
-                      reps: int.parse(repsController.text), 
-
-                      weight: int.parse(weightController.text), 
-                      rpe: int.parse(rpeController.text))
-                    );
-                    context.read<Profile>().restStopwatch.reset();
-                  }
-
-                },
-                child: Container(
-                  width: 24.0,
-                  height: 24.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _isChecked ? Colors.blue : Colors.grey,
-                      width: 2,
-                    ),
-                  ),
-                  child: _isChecked
-                    ? Center(
-                        child: Icon(
-                          Icons.check,
-                          size: 16.0,
-                          color: _isChecked ? Colors.blue : Colors.grey,
-                        ),
-                      ) 
-                    : null
+    return ShakeWidget(
+      shake: _moveItmoveIt,
+      child: Container(
+        decoration: BoxDecoration(
+          color: _isChecked ? Colors.blue.withAlpha(100) : null,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  "${widget.repsLower}-${widget.repsUpper} reps @ ${widget.expectedRPE} RPE",
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
-            ),
-          ],
+              _buildTextField(rpeController, rpeFocus, "", 30, _rpeError),
+              _buildTextField(weightController, weightFocus, "", 50, _weightError),
+              _buildTextField(repsController, repsFocus, "", 40, _repsError),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: InkWell(
+                  onTap: () {
+                    if (context.read<SettingsModel>().hapticsEnabled) {
+                      HapticFeedback.heavyImpact();
+                    }
+
+                    _validateInputs();
+                    if (_weightError || _repsError || _rpeError) return;
+
+                    setState(() {
+                      _isChecked = !_isChecked;
+                      widget.onChanged(_isChecked);
+                    });
+
+                    if (_isChecked) {
+                      context.read<Profile>().logSet(
+                        SetRecord.fromDateTime(
+                          sessionID: context.read<Profile>().sessionID!,
+                          exerciseID: context.read<Profile>()
+                            .exercises[context.read<Profile>().activeDayIndex!][widget.exerciseIndex].exerciseID,
+                          date: DateTime.now(),
+                          numSets: 1,
+                          reps: int.parse(repsController.text),
+                          weight: int.parse(weightController.text),
+                          rpe: int.parse(rpeController.text),
+                        ),
+                      );
+                      context.read<Profile>().restStopwatch.reset();
+                    }
+                  },
+                  child: Container(
+                    width: 24.0,
+                    height: 24.0,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _isChecked ? Colors.blue : Colors.grey,
+                        width: 2,
+                      ),
+                    ),
+                    child: _isChecked
+                        ? Center(
+                            child: Icon(
+                              Icons.check,
+                              size: 16.0,
+                              color: _isChecked ? Colors.blue : Colors.grey,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildTextField(
-      TextEditingController controller, FocusNode focusNode, String hint, double width) {
+    TextEditingController controller,
+    FocusNode focusNode,
+    String hint,
+    double width,
+    bool hasError,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: TextFormField(
         controller: controller,
-        focusNode: focusNode, // Attach focus node
+        focusNode: focusNode,
         keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color(0xFF1e2025),
-          contentPadding: EdgeInsets.only(bottom: 10, left: 8),
+          fillColor: hasError ? Colors.red.withAlpha(64) : const Color(0xFF1e2025),
+          contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
           constraints: BoxConstraints(
             maxWidth: width,
             maxHeight: 30,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.blue),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red, width: 2),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red, width: 2),
           ),
           hintText: hint,
+          errorStyle: const TextStyle(height: 0),
         ),
+        onChanged: (value) => _clearErrors(),
       ),
     );
   }

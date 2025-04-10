@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../providers_and_settings/user.dart';
 import '../workout_page/workout_page.dart';
+import '../providers_and_settings/settings_provider.dart';
+
 //import 'data_saving.dart';
 class WorkoutControlBar extends StatelessWidget {
   final bool positionAtTop;
@@ -106,7 +108,7 @@ class WorkoutControlBar extends StatelessWidget {
                   // Finish Button
                   OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.heavyImpact();
+                      if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                       profile.workoutStopwatch.reset();
                       profile.restStopwatch.reset();
                       profile.timer?.cancel();
