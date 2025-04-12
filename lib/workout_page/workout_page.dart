@@ -337,51 +337,57 @@ class _WorkoutState extends State<Workout> {
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: context.read<Profile>().sets[primaryIndex][index][setIndex].numSets,
                           
-                            itemBuilder: (context, index){ 
+                            itemBuilder: (context, subSetIndex){ 
                               return GymSetRow(
                                 repsLower: context.read<Profile>().sets[primaryIndex][index][setIndex].setLower,
                                 repsUpper: context.read<Profile>().sets[primaryIndex][index][setIndex].setUpper ?? 0,
                                 expectedRPE: context.read<Profile>().sets[primaryIndex][index][setIndex].rpe?.toDouble() ?? 0.0,
                                 exerciseIndex: index,
                                 setIndex: setIndex,
-                                initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged,
+                                rpeController: context.read<Profile>().workoutRpeTEC[index][setIndex][subSetIndex],
+                                repsController: context.read<Profile>().workoutRepsTEC[index][setIndex][subSetIndex],
+                                weightController: context.read<Profile>().workoutWeightTEC[index][setIndex][subSetIndex],
+                                initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged[subSetIndex],
                                 
                                 
-                                onChanged: (isChecked){
-                                  // record that the set has been completed 
+                                onChanged: (isChecked) {
                                   setState(() {
-                                    context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged = isChecked;
-                                    if (isChecked){
-                                      context.read<Profile>().incrementSet([index, setIndex]);
+                                    // Update the logged status
+                                    context.read<Profile>().sets[primaryIndex][index][setIndex]
+                                      .hasBeenLogged[subSetIndex] = isChecked;
+
+                                    if (isChecked) {
+                                      context.read<Profile>().incrementSet([index, setIndex, subSetIndex]);
                                       
-                          
-                                      // if moving on to a new exercise, expand new and close old
-                                      if (context.read<Profile>().nextSet[0] != index){
+                                      // Handle exercise expansion/collapse
+                                      if (context.read<Profile>().nextSet[0] != index) {
                                         context.read<Profile>().workoutExpansionControllers[
                                           context.read<Profile>().nextSet[0]
                                         ].expand();
-                          
                                         context.read<Profile>().workoutExpansionControllers[index].collapse();
                                       }
                                     }
-                                  
-                          
-                          
-                                  bool allLogged = true;
-                                  // check if all sets in an exercise have been completed. if so, log that on the map
-                                  for (final plannedSet in context.read<Profile>().sets[primaryIndex][index]){
-                                    if (plannedSet.hasBeenLogged != true){
-                                      allLogged = false;
-                                      break;
+
+                                    // just learned you can label loops to break out fully. The more you know.
+                                    // Improved all-logged check
+                                    
+                                    bool allLogged = true;
+                                    outerLoop: // Label for the outer loop
+                                    for (final workoutSet in context.read<Profile>().sets[primaryIndex][index]) {
+                                      debugPrint("logged: ${workoutSet.hasBeenLogged}");
+                                      for (int j = 0; j < workoutSet.hasBeenLogged.length; j++) {
+                                        debugPrint("sublog: ${workoutSet.hasBeenLogged[j]}");
+                                        if (!workoutSet.hasBeenLogged[j]) {
+                                          allLogged = false;
+                                          debugPrint("ran");
+                                          break outerLoop; // Break both loops immediately
+                                        }
+                                      }
                                     }
-                                  }
-                          
-                                  if (allLogged){
-                                    isExerciseComplete[index] = true;
-                                  }
-                                });
-                          
-                                  //debugPrint("stuff: ${context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged}");
+
+                                    // Update exercise completion status
+                                    isExerciseComplete[index] = allLogged;
+                                  });
                                 },
                               );
                             }

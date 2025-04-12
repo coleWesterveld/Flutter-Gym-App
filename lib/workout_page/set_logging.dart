@@ -17,6 +17,9 @@ class GymSetRow extends StatefulWidget {
   final int exerciseIndex, setIndex;
   final Function(bool) onChanged;
   final bool? initiallyChecked;
+  final TextEditingController weightController;
+  final TextEditingController repsController;
+  final TextEditingController rpeController;
 
   const GymSetRow({
     super.key,
@@ -26,6 +29,9 @@ class GymSetRow extends StatefulWidget {
     required this.exerciseIndex,
     required this.setIndex,
     required this.onChanged,
+    required this.repsController,
+    required this.weightController,
+    required this.rpeController,
     this.initiallyChecked,
   });
 
@@ -34,9 +40,6 @@ class GymSetRow extends StatefulWidget {
 }
 
 class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixin {
-  final TextEditingController weightController = TextEditingController();
-  final TextEditingController repsController = TextEditingController();
-  final TextEditingController rpeController = TextEditingController();
 
   final FocusNode weightFocus = FocusNode();
   final FocusNode repsFocus = FocusNode();
@@ -67,9 +70,9 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
 
   void _validateInputs() {
     setState(() {
-      _weightError = weightController.text.isEmpty || int.tryParse(weightController.text) == null;
-      _repsError = repsController.text.isEmpty || int.tryParse(repsController.text) == null;
-      _rpeError = rpeController.text.isEmpty || int.tryParse(rpeController.text) == null;
+      _weightError = widget.weightController.text.isEmpty || int.tryParse(widget.weightController.text) == null;
+      _repsError = widget.repsController.text.isEmpty || int.tryParse(widget.repsController.text) == null;
+      _rpeError = widget.rpeController.text.isEmpty || int.tryParse(widget.rpeController.text) == null;
     });
 
     if (_weightError || _repsError || _rpeError) {
@@ -87,9 +90,6 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
-    weightController.dispose();
-    repsController.dispose();
-    rpeController.dispose();
 
     weightFocus.removeListener(_updateDoneState);
     repsFocus.removeListener(_updateDoneState);
@@ -126,9 +126,9 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
                   style: TextStyle(fontSize: 16),
                 ),
               ),
-              _buildTextField(rpeController, rpeFocus, "", 30, _rpeError),
-              _buildTextField(weightController, weightFocus, "", 50, _weightError),
-              _buildTextField(repsController, repsFocus, "", 40, _repsError),
+              _buildTextField(widget.rpeController, rpeFocus, "", 30, _rpeError),
+              _buildTextField(widget.weightController, weightFocus, "", 50, _weightError),
+              _buildTextField(widget.repsController, repsFocus, "", 40, _repsError),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: InkWell(
@@ -153,9 +153,9 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
                             .exercises[context.read<Profile>().activeDayIndex!][widget.exerciseIndex].exerciseID,
                           date: DateTime.now(),
                           numSets: 1,
-                          reps: int.parse(repsController.text),
-                          weight: int.parse(weightController.text),
-                          rpe: int.parse(rpeController.text),
+                          reps: int.parse(widget.repsController.text),
+                          weight: int.parse(widget.weightController.text),
+                          rpe: int.parse(widget.rpeController.text),
                         ),
                       );
                       context.read<Profile>().restStopwatch.reset();

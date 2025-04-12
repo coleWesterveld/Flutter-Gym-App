@@ -297,11 +297,7 @@ class PlannedSet {
   final int? setUpper;
   final int? rpe;
   final int setOrder;
-
-  // is not persisted, for now at least
-  // may want to later on to save state, even if user closes app mid workout.
-  bool? hasBeenLogged;
-
+  List<bool> hasBeenLogged;
 
   PlannedSet({
     required this.setID, 
@@ -311,15 +307,15 @@ class PlannedSet {
     this.setUpper,
     required this.setOrder,
     this.rpe,
-    this.hasBeenLogged,
-  });
+    List<bool>? hasBeenLogged,
+  }) : hasBeenLogged = hasBeenLogged ?? List.filled(numSets, false);
 
   Map<String, dynamic> toMap() {
     return {
       'set_id': setID,
       'exercise_id': exerciseID,
       'num_sets': numSets,
-      'set_lower': setUpper,
+      'set_lower': setLower,
       'set_upper': setUpper,
       'set_order': setOrder,
       'rpe': rpe,
@@ -334,15 +330,26 @@ class PlannedSet {
       setUpper: map['set_upper'],
       setLower: map['set_lower'],
       setOrder: map['set_order'],
-      rpe: map['rpe']
+      rpe: map['rpe'],
+      // Will be initialized through main constructor
     );
   }
+
   @override
   String toString() {
     return 'PlannedSet{numSets: $numSets, setID: $setID, upper: $setUpper, lower: $setLower, excID: $exerciseID, setOrder: $setOrder}';
   }
 
-  PlannedSet copyWith({int? newSetID, int? newexerciseID, int? newNumSets, int? newSetUpper, int? newSetLower, int? newSetOrder, int? newRpe}) {
+  PlannedSet copyWith({
+    int? newSetID, 
+    int? newexerciseID, 
+    int? newNumSets, 
+    int? newSetUpper, 
+    int? newSetLower, 
+    int? newSetOrder, 
+    int? newRpe,
+    List<bool>? newHasBeenLogged,
+  }) {
     return PlannedSet(
       setID: newSetID ?? setID,
       exerciseID: newexerciseID ?? exerciseID,
@@ -350,7 +357,8 @@ class PlannedSet {
       setUpper: newSetUpper ?? setUpper,
       setLower: newSetLower ?? setLower,
       setOrder: newSetOrder ?? setOrder,
-      rpe: newRpe ?? rpe
+      rpe: newRpe ?? rpe,
+      hasBeenLogged: newHasBeenLogged ?? List.from(hasBeenLogged),
     );
   }
 }

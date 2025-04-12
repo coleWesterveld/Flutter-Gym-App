@@ -105,30 +105,44 @@ class Profile extends ChangeNotifier {
   // this will keep track of what the expected next set will be
   // it will start as 0 but will change to be the set planned after the most recently logged set
   // it will be a list [exercise, set]
-  List<int> nextSet = [0, 0];
+  List<int> nextSet = [0, 0, 0];
 
   // List<int> get nextSet => _nextSet;
 
   // will set nextSet to the set reccomended after justDone
-  void incrementSet(List<int> justDone){
+  void incrementSet(List<int> justDone) {
     assert(activeDayIndex != null, "Trying to set an active set while no workout is in progress");
-    // if last set of an exercise, move to next exercise
-    debugPrint("length is: ${sets[activeDayIndex!][justDone[0]].length}");
-    if (justDone[1] == sets[activeDayIndex!][justDone[0]].length - 1){
+    assert(justDone.length == 3, "justDone should be [exerciseIndex, setIndex, subsetIndex]");
 
-      // also, dont increment if this is the last exercise of the workout
-      // atp we should maybe glow the "finish workout" button or something to suggest it to the user
-      if (justDone[0] != exercises[activeDayIndex!].length - 1){
-         nextSet[0] = justDone[0] + 1;
-         nextSet[1] = 0;
-      }
-     
-    }else{
-      // otherwise, just go to next set same exercise
-      nextSet[0] = justDone[0];
-      nextSet[1] = justDone[1] + 1;
+    final currentExerciseIndex = justDone[0];
+    final currentSetIndex = justDone[1];
+    final currentSubsetIndex = justDone[2];
+    final currentSet = sets[activeDayIndex!][currentExerciseIndex][currentSetIndex];
+
+    // Check if there are more subsets in current set
+    if (currentSubsetIndex < currentSet.numSets - 1) {
+      // Move to next subset in same set
+      nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex + 1];
+    } 
+    // Check if there are more sets in current exercise
+    else if (currentSetIndex < sets[activeDayIndex!][currentExerciseIndex].length - 1) {
+      // Move to first subset of next set in same exercise
+      nextSet = [currentExerciseIndex, currentSetIndex + 1, 0];
+    } 
+    // Check if there are more exercises in workout
+    else if (currentExerciseIndex < exercises[activeDayIndex!].length - 1) {
+      // Move to first subset of first set in next exercise
+      nextSet = [currentExerciseIndex + 1, 0, 0];
+    }
+    // Else we're at the end of the workout
+    else {
+      // Optionally handle workout completion here
+      debugPrint("Workout complete!");
+      // Keep nextSet pointing to last subset
+      nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];
     }
 
+    debugPrint("Next set: $nextSet");
     notifyListeners();
   }
 
@@ -164,9 +178,9 @@ class Profile extends ChangeNotifier {
   List<List<List<TextEditingController>>> reps2TEC;
 
   // I am trying to also make TEC's for the workout page
-  List<List<TextEditingController>> workoutRpeTEC;
-  List<List<TextEditingController>> workoutWeightTEC;
-  List<List<TextEditingController>> workoutRepsTEC;
+  List<List<List<TextEditingController>>> workoutRpeTEC;
+  List<List<List<TextEditingController>>> workoutWeightTEC;
+  List<List<List<TextEditingController>>> workoutRepsTEC;
   List<TextEditingController> workoutNotesTEC;
   List<ExpansionTileController> workoutExpansionControllers;
   UserSettings? settings = UserSettings();
@@ -184,9 +198,9 @@ class Profile extends ChangeNotifier {
     this.reps2TEC = const <List<List<TextEditingController>>>[],
     this.setsTEC = const <List<List<TextEditingController>>>[],
     this.workoutNotesTEC = const <TextEditingController>[],
-    this.workoutRepsTEC = const <List<TextEditingController>>[],
-    this.workoutRpeTEC = const <List<TextEditingController>>[],
-    this.workoutWeightTEC = const <List<TextEditingController>>[],
+    this.workoutRepsTEC = const <List<List<TextEditingController>>>[],
+    this.workoutRpeTEC = const <List<List<TextEditingController>>>[],
+    this.workoutWeightTEC = const <List<List<TextEditingController>>>[],
     this.workoutExpansionControllers = const <ExpansionTileController>[],
     
     required this.dbHelper,
@@ -287,22 +301,41 @@ class Profile extends ChangeNotifier {
       activeDay = split[index];
       showHistory = List.filled(exercises[index].length, false);
       workoutNotesTEC = List.generate(growable: true, exercises[index].length,  (_) => TextEditingController());
+      
       workoutRepsTEC = List.generate(
         growable: true, 
         exercises[index].length,  
-        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+        (int idx) => List.generate(
+          sets[index][idx].length, 
+          (setIndex) => List.generate(
+            sets[index][idx][setIndex].numSets, 
+            (subSetIndex) => TextEditingController()
+          )
+        )
       );
 
       workoutRpeTEC = List.generate(
         growable: true, 
         exercises[index].length,  
-        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+        (int idx) => List.generate(
+          sets[index][idx].length,
+          (setIndex) => List.generate(
+            sets[index][idx][setIndex].numSets, 
+            (subSetIndex) => TextEditingController()
+          )
+        )
       );
 
       workoutWeightTEC = List.generate(
         growable: true, 
         exercises[index].length,  
-        (int idx) => List.generate(sets[index][idx].length, (_) => TextEditingController())
+        (int idx) => List.generate(
+          sets[index][idx].length, 
+          (setIndex) => List.generate(
+            sets[index][idx][setIndex].numSets, 
+            (subSetIndex) => TextEditingController()
+          )
+        )
       );
 
       workoutExpansionControllers = List.generate(
@@ -959,6 +992,27 @@ void exerciseInsert({
     reps1TEC[index1][index2].add(TextEditingController());
     reps2TEC[index1][index2].add(TextEditingController());
     rpeTEC[index1][index2].add(TextEditingController());
+
+    // if a workout is active, update the relevant text editing controllers
+    // NOTE: indexed [exercise][subset]
+    // If a workout is active, update workout-specific controllers
+    if (activeDayIndex != null) {
+      // The new set index is the current length before adding
+      final newSetIndex = workoutRepsTEC[index2].length;
+      
+      // Initialize lists if they don't exist
+      workoutRepsTEC[index2].add([]);
+      workoutRpeTEC[index2].add([]);
+      workoutWeightTEC[index2].add([]);
+      
+      // Add controllers for each subset (using numSets from the new PlannedSet)
+      for (int i = 0; i < sets[index1][index2].last.numSets; i++) {
+        workoutRepsTEC[index2][newSetIndex].add(TextEditingController());
+        workoutRpeTEC[index2][newSetIndex].add(TextEditingController());
+        workoutWeightTEC[index2][newSetIndex].add(TextEditingController());
+      }
+    }
+
     notifyListeners();
   }
 }
