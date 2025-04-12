@@ -7,7 +7,11 @@ import '../database/profile.dart';
 import '../other_utilities/lightness.dart';
 
 class PageViewWithIndicator extends StatefulWidget {
-  const PageViewWithIndicator({Key? key}) : super(key: key);
+  final Function(Exercise) onSelected;
+  const PageViewWithIndicator({
+    Key? key,
+    required this.onSelected,
+  }) : super(key: key);
 
   @override
   _PageViewWithIndicatorState createState() => _PageViewWithIndicatorState();
@@ -34,6 +38,7 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
                 index: index,
                 day: days[index],
                 exercises: exercisesPerDay[index],
+                onSelected: widget.onSelected,
               );
             },
           ),
@@ -61,12 +66,14 @@ class DayProgress extends StatefulWidget {
   final int index;
   final Day day;
   final List<Exercise> exercises;
+  final Function(Exercise) onSelected;
 
   const DayProgress({
     Key? key,
     required this.index,
     required this.day,
     required this.exercises,
+    required this.onSelected
   }) : super(key: key);
 
   @override
@@ -119,7 +126,10 @@ class _DayProgressState extends State<DayProgress> {
                   itemCount: widget.exercises.length,
                   itemBuilder: (context, exerciseIndex) {
                     final exercise = widget.exercises[exerciseIndex];
-                    return ExerciseProgressRow(exercise: exercise);
+                    return ExerciseProgressRow(
+                      exercise: exercise,
+                      onSelected: widget.onSelected,
+                    );
                   },
                 ),
               ),
@@ -134,7 +144,12 @@ class _DayProgressState extends State<DayProgress> {
 /// The widget that shows progress for a single exercise by reading data from the database.
 class ExerciseProgressRow extends StatefulWidget {
   final Exercise exercise;
-  const ExerciseProgressRow({Key? key, required this.exercise})
+  final Function(Exercise) onSelected;
+  const ExerciseProgressRow({
+    Key? key, 
+    required this.exercise,
+    required this.onSelected
+  })
       : super(key: key);
 
   @override
@@ -142,6 +157,7 @@ class ExerciseProgressRow extends StatefulWidget {
 }
 class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
   late Future<Map<String, dynamic>?> _progressFuture;
+
 
   @override
   void initState() {
@@ -207,94 +223,99 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: _progressFuture,
-      builder: (context, snapshot) {
-        Widget progressIndicator;
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          progressIndicator = const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 1),
-          );
-        } else if (!snapshot.hasData || snapshot.data == null) {
-          // If no record in the last 7 days, show "- same"
-          progressIndicator = const Text(
-            "- same",
-            style: TextStyle(fontSize: 14),
-          );
-        } else {
-          final recent = snapshot.data!['recent'];
-          final previous = snapshot.data!['previous'];
-
-          int recentWeight = recent['weight'];
-          int recentReps = recent['reps'];
-
-          int diffWeight = 0;
-          int diffReps = 0;
-          if (previous != null) {
-            int previousWeight = previous['weight'];
-            int previousReps = previous['reps'];
-            diffWeight = recentWeight - previousWeight;
-            diffReps = recentReps - previousReps;
-          }
-
-          List<Widget> changes = [];
-          if (diffWeight != 0) {
-            changes.add(buildTick(diffWeight, "lbs"));
-          }
-          if (diffReps != 0) {
-            changes.add(buildTick(diffReps, "rep"));
-          }
-
-          if (changes.isEmpty) {
+    return GestureDetector(
+      onTap: (){
+        widget.onSelected(widget.exercise);
+      },
+      child: FutureBuilder<Map<String, dynamic>?>(
+        future: _progressFuture,
+        builder: (context, snapshot) {
+          Widget progressIndicator;
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            progressIndicator = const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 1),
+            );
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            // If no record in the last 7 days, show "- same"
             progressIndicator = const Text(
               "- same",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 14),
             );
           } else {
-            progressIndicator = Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...changes.map((w) => Padding(
-                      padding: const EdgeInsets.only(right: 4.0),
-                      child: w,
-                    )),
-              ],
-            );
+            final recent = snapshot.data!['recent'];
+            final previous = snapshot.data!['previous'];
+      
+            int recentWeight = recent['weight'];
+            int recentReps = recent['reps'];
+      
+            int diffWeight = 0;
+            int diffReps = 0;
+            if (previous != null) {
+              int previousWeight = previous['weight'];
+              int previousReps = previous['reps'];
+              diffWeight = recentWeight - previousWeight;
+              diffReps = recentReps - previousReps;
+            }
+      
+            List<Widget> changes = [];
+            if (diffWeight != 0) {
+              changes.add(buildTick(diffWeight, "lbs"));
+            }
+            if (diffReps != 0) {
+              changes.add(buildTick(diffReps, "rep"));
+            }
+      
+            if (changes.isEmpty) {
+              progressIndicator = const Text(
+                "- same",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              );
+            } else {
+              progressIndicator = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...changes.map((w) => Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: w,
+                      )),
+                ],
+              );
+            }
           }
-        }
-        return Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: lighten(const Color(0xFF1e2025), 30),
-                width: 0.5,
+          return Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: lighten(const Color(0xFF1e2025), 30),
+                  width: 0.5,
+                ),
               ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Exercise title on the left
-                Expanded(
-                  child: Text(
-                    widget.exercise.exerciseTitle,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: true,
-                    maxLines: 2,
-                    style: const TextStyle(fontSize: 14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Exercise title on the left
+                  Expanded(
+                    child: Text(
+                      widget.exercise.exerciseTitle,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                      maxLines: 2,
+                      style: const TextStyle(fontSize: 14),
+                    ),
                   ),
-                ),
-                // Progress indicator (tick icons and text)
-                progressIndicator,
-              ],
+                  // Progress indicator (tick icons and text)
+                  progressIndicator,
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

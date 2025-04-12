@@ -258,7 +258,7 @@ class Exercise {
       'id': id,
       'exercise_id': exerciseID,
       'day_id': dayID,
-      //'exercise_title': exerciseTitle,
+      'exercise_title': exerciseTitle,
       'exercise_order': exerciseOrder,
     };
   }

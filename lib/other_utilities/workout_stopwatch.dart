@@ -1,3 +1,4 @@
+import 'package:firstapp/program_page/custom_exercise_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers_and_settings/user.dart';
 import '../workout_page/workout_page.dart';
 import '../providers_and_settings/settings_provider.dart';
+
 
 //import 'data_saving.dart';
 class WorkoutControlBar extends StatelessWidget {
@@ -106,30 +108,33 @@ class WorkoutControlBar extends StatelessWidget {
                   ],
                   
                   // Finish Button
-                  OutlinedButton(
-                    onPressed: () {
-                      if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                      profile.workoutStopwatch.reset();
-                      profile.restStopwatch.reset();
-                      profile.timer?.cancel();
+                  ShakeWidget(
+                    shake: context.watch<Profile>().shakeFinish,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
+                        profile.workoutStopwatch.reset();
+                        profile.restStopwatch.reset();
+                        profile.timer?.cancel();
+                        
+                        if(positionAtTop) Navigator.pop(context, true);
+                        
                       
-                      if(positionAtTop) Navigator.pop(context, true);
+                        context.read<Profile>().setActiveDay(null);
                       
-                    
-                      context.read<Profile>().setActiveDay(null);
-                    
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: primaryColor, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: primaryColor, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    ),
-                    child: Text(
-                      "Finish",
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.w800),
+                      child: Text(
+                        "Finish",
+                        style: TextStyle(color: primaryColor, fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ),
                 ],

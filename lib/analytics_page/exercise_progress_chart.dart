@@ -26,7 +26,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
 
   Future<void> _fetchData() async {
     final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.fetchSetRecords(exerciseId: widget.exercise['id']);
+    final records = await dbHelper.fetchSetRecords(exerciseId: widget.exercise['exercise_id']);
 
     List<FlSpot> points = [];
     List<String> dates = [];

@@ -112,27 +112,27 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
                     ),
                     Expanded(
                       child: TextField(
-  autofocus: true,
-  showCursor: true,
-  cursorColor: Colors.white,
-  controller: _searchController,
-  focusNode: _searchFocus,
-  onChanged: (query) {
-    setState(() {
-      _searchQuery = query;
-    });
-  },
-  decoration: InputDecoration(
-    hintText: "Search exercise",
-    filled: true,
-    fillColor: Colors.grey[900],
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide.none,
-    ),
-  ),
-  style: const TextStyle(color: Colors.white),
-)
+                        autofocus: true,
+                        showCursor: true,
+                        cursorColor: Colors.white,
+                        controller: _searchController,
+                        focusNode: _searchFocus,
+                        onChanged: (query) {
+                          setState(() {
+                            _searchQuery = query;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search exercise",
+                          filled: true,
+                          fillColor: Colors.grey[900],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      )
 
                     ),
                   ],
@@ -151,7 +151,14 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
                       ),
                       onTap: () {
                         _searchController.text = exercise['exercise_title'];
-                        widget.onExerciseSelected?.call(exercise);
+                        final modifiedExercise = Map<String, dynamic>.from(exercise);
+  
+                        // Rename 'id' to 'exercise_id'
+                        // this is remnant of old bad naming convention that should prolly be solved at the root at some point
+                        modifiedExercise['exercise_id'] = modifiedExercise.remove('id');
+                        
+                        // Call the callback with the modified exercise
+                        widget.onExerciseSelected?.call(modifiedExercise);
                         _clearSearch();
                       },
                     );

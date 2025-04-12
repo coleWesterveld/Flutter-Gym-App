@@ -50,6 +50,7 @@ class Profile extends ChangeNotifier {
   final Stopwatch restStopwatch = Stopwatch();
   Timer? timer;
   bool isPaused = false;
+  bool shakeFinish = false;
 
   // during a workout, logged sets will go here before being added to the database
   // UPDATE: I am abandonning this, instant logging is more practical as of now
@@ -138,6 +139,7 @@ class Profile extends ChangeNotifier {
     else {
       // Optionally handle workout completion here
       debugPrint("Workout complete!");
+      shakeFinish = true;
       // Keep nextSet pointing to last subset
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];
     }

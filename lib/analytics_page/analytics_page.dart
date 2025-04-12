@@ -148,8 +148,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Callback when an exercise is selected.
   void _handleExerciseSelected(Map<String, dynamic> exercise) async {
+    debugPrint("selected: ${exercise}");
     final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.fetchSetRecords(exerciseId: exercise['id']);
+    final records = await dbHelper.fetchSetRecords(exerciseId: exercise['exercise_id']);
     setState(() {
       _exercise = exercise;
       _displayChart = true;
@@ -493,7 +494,7 @@ Future<void> _deleteGoal(Goal goal) async {
       
               
               //height: 200,
-              child:  const Align( // this will not stay const 
+              child:  Align( // this will not stay const 
                 alignment: Alignment.topCenter,
                 child: Column(
                   children: [
@@ -511,7 +512,12 @@ Future<void> _deleteGoal(Goal goal) async {
                         ),
                       ),
                     ),
-                     Expanded(child: PageViewWithIndicator()),
+                     Expanded(child: PageViewWithIndicator(
+                      onSelected: (exercise){
+                        debugPrint("exercise: ${exercise.toMap()}");
+                        _handleExerciseSelected(exercise.toMap());
+                      }
+                     )),
       
                   ],
                 )
