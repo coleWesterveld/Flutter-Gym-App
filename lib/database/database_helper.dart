@@ -160,6 +160,10 @@ class DatabaseHelper {
     // basically, this may become a many-to-many table and we may have to have a large table of all exercises saved 
     // but for now this works
     // will be assigned session_id based off of timestamp of session to group same exercise sets done on same day
+    // okay Ive decided that every set will be logged individually and will be consolidated in the DB query
+    // this comes after I learnt that SQL "GROUP BY" exists lol
+    // because of using groupby and this is gonna likely be the biggest table especially over time, I have added indices to hopefully speed it up
+    // though in my limited testing, the queries are pretty fast either way.
     await db.execute(
     '''
       CREATE TABLE set_log (
@@ -174,6 +178,9 @@ class DatabaseHelper {
         exercise_id INTEGER NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
+
+      CREATE INDEX idx_set_log_grouping ON set_log(exercise_id, reps, weight, rpe);
+      CREATE INDEX idx_set_log_dates ON set_log(date DESC); 
     '''
     );
 
@@ -1017,6 +1024,135 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       orderBy: 'datetime(date) DESC', // Order by date in descending order
       limit: lim, // number of records returned
     );
+  }
+
+  Future<List<SetRecord>> getExerciseHistory(int exerciseId) async {
+    final db = await DatabaseHelper.instance.database;
+    // okay this is a crazy query, at least for me. lemme explain: 
+    /*
+    every set is logged individually, so if I do three sets of 200lbs on bench for 6 reps, RPE 9,
+    ^ this gets stored as three rows. for viewing, though, I want to consolidate this and just say 3x {200lbs blah blah}
+    thats what this query does with the COUNT. 
+    the rest is managing the date and history note of the returned record,
+    which is the info from the most recent set.
+    so if you have 3 sets in the same session, it will show the history note only from the most recent one
+    which is what I think people want anyways, the note should be for all three.
+    */
+    final results = await db.rawQuery('''
+      SELECT 
+        reps,
+        weight,
+        rpe,
+        COUNT(*) as num_sets,
+        exercise_id,
+        session_id,
+        MAX(datetime(date)) as date,
+        (
+          SELECT history_note 
+          FROM set_log AS s2 
+          WHERE s2.reps = set_log.reps 
+            AND s2.weight = set_log.weight 
+            AND s2.rpe = set_log.rpe 
+            AND s2.exercise_id = set_log.exercise_id
+          ORDER BY datetime(date) DESC 
+          LIMIT 1
+        ) as history_note,
+        (
+          SELECT id
+          FROM set_log AS s3
+          WHERE s3.reps = set_log.reps
+            AND s3.weight = set_log.weight
+            AND s3.rpe = set_log.rpe
+            AND s3.exercise_id = set_log.exercise_id
+          ORDER BY datetime(date) DESC
+          LIMIT 1
+        ) as record_id
+      FROM set_log
+      WHERE exercise_id = ?
+      GROUP BY reps, weight, rpe
+      ORDER BY datetime(date) DESC
+    ''', [exerciseId]);
+
+    return results.map((r) => SetRecord(
+      reps: r['reps'] as int,
+      weight: r['weight'] as int,
+      rpe: r['rpe'] as int,
+      numSets: r['num_sets'] as int,
+      sessionID: r['session_id'] as String,
+      exerciseID: r['exercise_id'] as int,
+      date: r['date'] as String, // Still returns ISO string
+      historyNote: r['history_note'] as String? ?? '',
+      recordID: r['record_id'] as int,
+    )).toList();
+  }
+
+  // this is the same as above, but is used for only one session past history for during workout quick check.
+  Future<List<SetRecord>> getPreviousSessionSets(int exerciseId, String currentSessionID) async {
+    final db = await DatabaseHelper.instance.database;
+
+    final results = await db.rawQuery('''
+      WITH recent_sessions AS (
+        SELECT session_id
+        FROM set_log
+        WHERE session_id != ?
+        GROUP BY session_id
+        ORDER BY MAX(date) DESC
+        LIMIT 1
+      )
+      SELECT 
+        reps,
+        weight,
+        rpe,
+        COUNT(*) as num_sets,
+        MAX(date) as date,
+        (
+          SELECT history_note 
+          FROM set_log AS s2 
+          WHERE s2.reps = set_log.reps 
+            AND s2.weight = set_log.weight 
+            AND s2.rpe = set_log.rpe 
+            AND s2.session_id IN (SELECT session_id FROM recent_sessions)
+          ORDER BY date DESC 
+          LIMIT 1
+        ) as history_note,
+        (
+          SELECT session_id
+          FROM set_log AS s3
+          WHERE s3.reps = set_log.reps
+            AND s3.weight = set_log.weight
+            AND s3.rpe = set_log.rpe
+            AND s3.session_id IN (SELECT session_id FROM recent_sessions)
+          LIMIT 1
+        ) as session_id,
+        ? as exercise_id,
+        (
+          SELECT id
+          FROM set_log AS s4
+          WHERE s4.reps = set_log.reps
+            AND s4.weight = set_log.weight
+            AND s4.rpe = set_log.rpe
+            AND s4.session_id IN (SELECT session_id FROM recent_sessions)
+          ORDER BY date DESC
+          LIMIT 1
+        ) as record_id
+      FROM set_log
+      WHERE exercise_id = ?
+        AND session_id IN (SELECT session_id FROM recent_sessions)
+      GROUP BY reps, weight, rpe
+      ORDER BY date DESC
+    ''', [currentSessionID, exerciseId, exerciseId]);
+
+    return results.map((r) => SetRecord(
+      reps: r['reps'] as int,
+      weight: r['weight'] as int,
+      rpe: r['rpe'] as int,
+      numSets: r['num_sets'] as int,
+      sessionID: r['session_id'] as String,
+      exerciseID: r['exercise_id'] as int,
+      date: r['date'] as String,
+      historyNote: r['history_note'] as String? ?? '',
+      recordID: r['record_id'] as int,
+    )).toList();
   }
 
   Future<int> updateSetRecord(

@@ -1,3 +1,4 @@
+import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/user.dart';
@@ -35,7 +36,7 @@ class _WorkoutState extends State<Workout> {
 
 
 
-  Map<int, SetRecord> _exerciseHistory = {};
+  Map<int, List<SetRecord>> _exerciseHistory = {};
   List<SetRecord> _fullHistory = [];
 
   // will be false until all sets in an exercise are logged.
@@ -54,13 +55,17 @@ class _WorkoutState extends State<Workout> {
 
     for (Exercise exercise
         in context.read<Profile>().exercises[primaryIndex!]) {
-      final record = await dbHelper.fetchSetRecords(
-          exerciseId: exercise.exerciseID, lim: 1);
+      final record = await dbHelper.getPreviousSessionSets(
+        exercise.exerciseID, 
+        context.read<Profile>().sessionID!,
+      );
       if (record.isNotEmpty) {
-        _exerciseHistory[index] = (SetRecord.fromMap(record[0]));
+        _exerciseHistory[index] = record;
       }
       index++;
     }
+
+    debugPrint("history: ${_exerciseHistory}");
   }
 
 
@@ -277,20 +282,59 @@ class _WorkoutState extends State<Workout> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("History From Last Session: "),
-                                ListTile(
-                                  title: Text(
-                                      "${_exerciseHistory[index]!.numSets} sets x ${_exerciseHistory[index]!.reps} reps @ ${_exerciseHistory[index]!.weight} lbs (RPE: ${_exerciseHistory[index]!.rpe})"),
-                                  subtitle: _exerciseHistory[index]!
-                                                  .historyNote !=
-                                              null &&
-                                          _exerciseHistory[index]!
-                                              .historyNote!
-                                              .isNotEmpty
-                                      ? Text(
-                                          "Notes: ${_exerciseHistory[index]!.historyNote}")
-                                      : null,
+                                const Text("Most Recent History:"),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    
+                                    decoration: BoxDecoration(
+                                      color: lighten(Color(0xFF1e2025), 20),
+                                      borderRadius: BorderRadius.circular(12)
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              "${formatDate(_exerciseHistory[index]![0].dateAsDateTime)}: ",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              )
+                                            )
+                                          ),
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: NeverScrollableScrollPhysics(),
+                                            itemCount:2 ,
+                                            itemBuilder: (context, historyIndex) {
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(
+                                                  vertical: 4.0,
+                                                  horizontal: 32,
+                                                ),
+                                                child: Text(
+                                                  "${_exerciseHistory[index]![historyIndex].numSets} sets x ${_exerciseHistory[index]![historyIndex].reps} reps @ ${_exerciseHistory[index]![historyIndex].weight} lbs (RPE: ${_exerciseHistory[index]![historyIndex].rpe})",
+                                                  style: TextStyle(
+                                                    fontSize: 16, 
+                                                    fontWeight: FontWeight.w700
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
+                                if (_exerciseHistory[index]?[0].historyNote != null && _exerciseHistory[index]![0].historyNote!.isNotEmpty) Text(
+                                  "Notes: ${_exerciseHistory[index]![0].historyNote}"
+                                ),
+                                        
                                 TextButton(
                                     onPressed: () {
                                       _showFullHistoryModal(
@@ -541,6 +585,54 @@ class _WorkoutState extends State<Workout> {
       );
     }
 
+  // TODO: set consolidating and grouping by sessionID, displayed nicely here:
+  /*
+  heres a nice widget tree thing that I have used before that works:
+  Container(
+    decoration: BoxDecoration(
+      color: lighten(Color(0xFF1e2025), 20),
+      borderRadius: BorderRadius.circular(12)
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "${formatDate(_exerciseHistory[index]![0].dateAsDateTime)}: ",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              )
+            )
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount:2 ,
+            itemBuilder: (context, historyIndex) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4.0,
+                  horizontal: 32,
+                ),
+                child: Text(
+                  "${_exerciseHistory[index]![historyIndex].numSets} sets x ${_exerciseHistory[index]![historyIndex].reps} reps @ ${_exerciseHistory[index]![historyIndex].weight} lbs (RPE: ${_exerciseHistory[index]![historyIndex].rpe})",
+                  style: TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.w700
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  ),
+  */
     final groupedHistory = <String, List<SetRecord>>{};
     for (var record in history) {
       if (record.dateAsDateTime == null) continue;

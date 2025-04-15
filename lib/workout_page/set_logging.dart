@@ -156,6 +156,7 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
                           reps: int.parse(widget.repsController.text),
                           weight: int.parse(widget.weightController.text),
                           rpe: int.parse(widget.rpeController.text),
+                          historyNote: context.read<Profile>().workoutNotesTEC[widget.exerciseIndex].text,
                         ),
                       );
                       context.read<Profile>().restStopwatch.reset();
