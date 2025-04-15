@@ -25,10 +25,31 @@
 // maybe good to have a smart feature which puts graphs that are important at the top automatically
 //  important could be "progressing exceptionally well/poorly"
 
-// TODO: add goals to DB for persistence
-// if performance becomes a problem, I think its safe to pre-query exercises and load to memory
-// cuz rn, whenever I load up a search, the exercises need to be retrieved from files, and then are lost. 
-// these could maybe be saved after only one load or precached, since its reasonably likely the user will want to query when on this page
+/* I want to allow the user to pin some calculated stats to the top, here are some ideas from deepseek/me:
+
+DOTS Score (Relative Strength)
+(Weight Lifted) * 500 / (-16.260 + 1.0552*x - 0.0022405*x² + 0.0000010076*x³) (x = body weight in kg)
+Shows strength relative to body weight (great for tracking progress across weight classes)
+Wilks Score (Alternative to DOTS for powerlifting)
+SBD Total (Squat + Bench + Deadlift 1RMs)
+
+Meet Predictor
+Projects competition total based on training maxes
+Attempt Selection Advisor
+Suggests opener/2nd/3rd attempt weights based on training history
+
+PR Heatmap
+Calendar view highlighting personal record days
+
+Plateau Detection
+Flags lifts with no progress in X weeks
+
+Add a "Random Stat of the Day" widget that shows:
+"You've spent 42 hours under the squat bar this year"
+"Your total volume = 17 Toyota Corollas"
+*/
+
+
 
 // TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
@@ -46,6 +67,7 @@ import 'exercise_progress_chart.dart';
 import '../database/profile.dart';
 import '../other_utilities/info_popup.dart';
 import '../providers_and_settings/settings_page.dart';
+import 'package:firstapp/other_utilities/format_weekday.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -63,7 +85,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Map<String, dynamic>? _exercise;
   bool _isSearching = false;
   bool _displayChart = false;
-  List<SetRecord> _exerciseHistory = [];
+  List<List<SetRecord>> _exerciseHistory = [];
   List<Goal> _goals = [];
   bool _isAddingGoal = false;
   String? tempGoalTitle;
@@ -150,11 +172,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   void _handleExerciseSelected(Map<String, dynamic> exercise) async {
     debugPrint("selected: ${exercise}");
     final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.fetchSetRecords(exerciseId: exercise['exercise_id']);
+    final records = await dbHelper.getExerciseHistoryGroupedBySession(exercise['exercise_id']);
     setState(() {
       _exercise = exercise;
       _displayChart = true;
-      _exerciseHistory = records.map((record) => SetRecord.fromMap(record)).toList();
+      _exerciseHistory = records;
     });
   }
 
@@ -202,18 +224,26 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     ); // (keep your existing dialog code)
 
   if (weight != null) {
+    debugPrint("test 1 $exercise");
+    
     // 1. First calculate current 1RM for this exercise
-    final currentOneRm = await _calculateCurrentOneRm(exercise['id']);
+    final currentOneRm = await _calculateCurrentOneRm(exercise['exercise_id']);
+    debugPrint("test 2");
 
     // 2. Create and save the goal with accurate progress
     final newGoal = Goal(
-      exerciseId: exercise['id'],
+      exerciseId: exercise['exercise_id'] as int ,
       exerciseTitle: exerciseName,
       targetWeight: weight,
       currentOneRm: currentOneRm, // Now has real value immediately
     );
 
+    
+       
+
+
     final insertedId = await dbHelper.insertGoal(newGoal);
+     debugPrint("test 3");
     final savedGoal = newGoal.copyWith(id: insertedId);
 
     debugPrint('''
@@ -236,6 +266,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 }
 
 Future<int> _calculateCurrentOneRm(int exerciseId) async {
+
+  debugPrint("exercise id: $exerciseId");
   final db = await DatabaseHelper.instance.database;
   final recentSet = await db.query(
     'set_log',
@@ -244,6 +276,8 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
     orderBy: 'date DESC',
     limit: 1,
   );
+
+  debugPrint("this should run/....");
 
   if (recentSet.isEmpty) return 0;
   
@@ -258,15 +292,15 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
 
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
-    // Group history by date
-    final Map<String, List<SetRecord>> groupedHistory = {};
-    for (var record in _exerciseHistory) {
-      final date = record.dateAsDateTime.toLocal().toString().split(' ')[0];
-      if (!groupedHistory.containsKey(date)) {
-        groupedHistory[date] = [];
-      }
-      groupedHistory[date]!.add(record);
-    }
+    // // Group history by date
+    // final Map<String, List<SetRecord>> groupedHistory = {};
+    // for (var record in _exerciseHistory) {
+    //   final date = record.dateAsDateTime.toLocal().toString().split(' ')[0];
+    //   if (!groupedHistory.containsKey(date)) {
+    //     groupedHistory[date] = [];
+    //   }
+    //   groupedHistory[date]!.add(record);
+    // }
 
     //debugPrint("History: ${groupedHistory}");
 
@@ -274,38 +308,101 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
       child: Column(
         children: [
           ExerciseProgressChart(exercise: _exercise!),
-          ...groupedHistory.entries.map((entry) {
-            final date = entry.key;
-            final records = entry.value;
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      date,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+                    itemCount: _exerciseHistory.length + 1,
+                    itemBuilder:(context, index) {
+                      if (index == _exerciseHistory.length){
+                        return const Text(
+                          "End of History"
+                        );
+                      }
+            
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: lighten(Color(0xFF1e2025), 20),
+                            borderRadius: BorderRadius.circular(12)
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "${formatDate(_exerciseHistory[index][0].dateAsDateTime)}: ",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    )
+                                  )
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: _exerciseHistory[index].length,
+                                  itemBuilder: (context, historyIndex) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4.0,
+                                        horizontal: 32,
+                                      ),
+                                      child: Text(
+                                        "${_exerciseHistory[index][historyIndex].numSets} sets x ${_exerciseHistory[index][historyIndex].reps} reps @ ${_exerciseHistory[index][historyIndex].weight} lbs (RPE: ${_exerciseHistory[index][historyIndex].rpe})",
+                                        style: TextStyle(
+                                          fontSize: 16, 
+                                          fontWeight: FontWeight.w700
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }, 
                   ),
-                  ...records.map((record) {
-                    return ListTile(
-                      title: Text(
-                        "${record.numSets} sets x ${record.reps} reps @ ${record.weight} lbs (RPE: ${record.rpe})",
-                      ),
-                      subtitle: record.historyNote != null && record.historyNote!.isNotEmpty
-                          ? Text("Notes: ${record.historyNote}")
-                          : null,
-                    );
-                  }).toList(),
-                ],
-              ),
-            );
-          }).toList(),
+          ),
+          // ...groupedHistory.entries.map((entry) {
+          //   final date = entry.key;
+          //   final records = entry.value;
+          //   return Padding(
+          //     padding: const EdgeInsets.all(8.0),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Padding(
+          //           padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //           child: Text(
+          //             date,
+          //             style: const TextStyle(
+          //               fontWeight: FontWeight.bold,
+          //               fontSize: 18,
+          //             ),
+          //           ),
+          //         ),
+          //         ...records.map((record) {
+          //           return ListTile(
+          //             title: Text(
+          //               "${record.numSets} sets x ${record.reps} reps @ ${record.weight} lbs (RPE: ${record.rpe})",
+          //             ),
+          //             subtitle: record.historyNote != null && record.historyNote!.isNotEmpty
+          //                 ? Text("Notes: ${record.historyNote}")
+          //                 : null,
+          //           );
+          //         }).toList(),
+          //       ],
+          //     ),
+          //   );
+          // }).toList(),
         ],
       ),
     );

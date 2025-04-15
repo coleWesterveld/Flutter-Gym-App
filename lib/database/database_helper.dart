@@ -314,9 +314,9 @@ class DatabaseHelper {
 
         batch.insert('set_log', {
           'id': i,
-          'session_id': 1234,
+          'session_id': startDate.add(Duration(days: i)).toIso8601String(),
           'date': startDate.add(Duration(days: i)).toIso8601String(), // Dates increase over time
-          'num_sets': 2,
+          'num_sets': 1,
           'reps': reps,
           'weight': weight.round(), // Round to nearest whole number
           'rpe': rpe,
@@ -609,6 +609,7 @@ class DatabaseHelper {
   // Create a goal
   Future<int> insertGoal(Goal goal) async {
     final db = await database;
+     debugPrint("test 6");
     return await db.insert('goals', goal.toMap());
   }
 
@@ -1026,64 +1027,147 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  Future<List<SetRecord>> getExerciseHistory(int exerciseId) async {
+  // // this is probably not needed, better to use grouped history anyways.
+  // Future<List<SetRecord>> getExerciseHistory(int exerciseId) async {
+  //   final db = await DatabaseHelper.instance.database;
+  //   // okay this is a crazy query, at least for me. lemme explain: 
+  //   /*
+  //   every set is logged individually, so if I do three sets of 200lbs on bench for 6 reps, RPE 9,
+  //   ^ this gets stored as three rows. for viewing, though, I want to consolidate this and just say 3x {200lbs blah blah}
+  //   thats what this query does with the COUNT. 
+  //   the rest is managing the date and history note of the returned record,
+  //   which is the info from the most recent set.
+  //   so if you have 3 sets in the same session, it will show the history note only from the most recent one
+  //   which is what I think people want anyways, the note should be for all three.
+  //   */
+  //   final results = await db.rawQuery('''
+  //     SELECT 
+  //       reps,
+  //       weight,
+  //       rpe,
+  //       COUNT(*) as num_sets,
+  //       exercise_id,
+  //       session_id,
+  //       MAX(datetime(date)) as date,
+  //       (
+  //         SELECT history_note 
+  //         FROM set_log AS s2 
+  //         WHERE s2.reps = set_log.reps 
+  //           AND s2.weight = set_log.weight 
+  //           AND s2.rpe = set_log.rpe 
+  //           AND s2.exercise_id = set_log.exercise_id
+  //         ORDER BY datetime(date) DESC 
+  //         LIMIT 1
+  //       ) as history_note,
+  //       (
+  //         SELECT id
+  //         FROM set_log AS s3
+  //         WHERE s3.reps = set_log.reps
+  //           AND s3.weight = set_log.weight
+  //           AND s3.rpe = set_log.rpe
+  //           AND s3.exercise_id = set_log.exercise_id
+  //         ORDER BY datetime(date) DESC
+  //         LIMIT 1
+  //       ) as record_id
+  //     FROM set_log
+  //     WHERE exercise_id = ?
+  //     GROUP BY reps, weight, rpe
+  //     ORDER BY datetime(date) DESC
+  //   ''', [exerciseId]);
+
+  //   return results.map((r) => SetRecord(
+  //     reps: r['reps'] as int,
+  //     weight: r['weight'] as int,
+  //     rpe: r['rpe'] as int,
+  //     numSets: r['num_sets'] as int,
+  //     sessionID: r['session_id'] as String,
+  //     exerciseID: r['exercise_id'] as int,
+  //     date: r['date'] as String, // Still returns ISO string
+  //     historyNote: r['history_note'] as String? ?? '',
+  //     recordID: r['record_id'] as int,
+  //   )).toList();
+  // }
+
+  Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId) async {
     final db = await DatabaseHelper.instance.database;
-    // okay this is a crazy query, at least for me. lemme explain: 
-    /*
-    every set is logged individually, so if I do three sets of 200lbs on bench for 6 reps, RPE 9,
-    ^ this gets stored as three rows. for viewing, though, I want to consolidate this and just say 3x {200lbs blah blah}
-    thats what this query does with the COUNT. 
-    the rest is managing the date and history note of the returned record,
-    which is the info from the most recent set.
-    so if you have 3 sets in the same session, it will show the history note only from the most recent one
-    which is what I think people want anyways, the note should be for all three.
-    */
-    final results = await db.rawQuery('''
-      SELECT 
-        reps,
-        weight,
-        rpe,
-        COUNT(*) as num_sets,
-        exercise_id,
-        session_id,
-        MAX(datetime(date)) as date,
-        (
-          SELECT history_note 
-          FROM set_log AS s2 
-          WHERE s2.reps = set_log.reps 
-            AND s2.weight = set_log.weight 
-            AND s2.rpe = set_log.rpe 
-            AND s2.exercise_id = set_log.exercise_id
-          ORDER BY datetime(date) DESC 
-          LIMIT 1
-        ) as history_note,
-        (
-          SELECT id
-          FROM set_log AS s3
-          WHERE s3.reps = set_log.reps
-            AND s3.weight = set_log.weight
-            AND s3.rpe = set_log.rpe
-            AND s3.exercise_id = set_log.exercise_id
-          ORDER BY datetime(date) DESC
-          LIMIT 1
-        ) as record_id
+    
+    // First get all sessions for this exercise ordered by date
+    final sessions = await db.rawQuery('''
+      SELECT DISTINCT session_id, MAX(datetime(date)) as session_date
       FROM set_log
       WHERE exercise_id = ?
-      GROUP BY reps, weight, rpe
-      ORDER BY datetime(date) DESC
+      GROUP BY session_id
+      ORDER BY session_date DESC
     ''', [exerciseId]);
 
-    return results.map((r) => SetRecord(
-      reps: r['reps'] as int,
-      weight: r['weight'] as int,
-      rpe: r['rpe'] as int,
-      numSets: r['num_sets'] as int,
-      sessionID: r['session_id'] as String,
-      exerciseID: r['exercise_id'] as int,
-      date: r['date'] as String, // Still returns ISO string
-      historyNote: r['history_note'] as String? ?? '',
-      recordID: r['record_id'] as int,
-    )).toList();
+    // Then process each session to get consolidated sets
+    final List<List<SetRecord>> result = [];
+    
+    for (final session in sessions) {
+      final sessionId = session['session_id'] as String;
+      //this is grouped by session
+
+      // okay this is a crazy query, at least for me. lemme explain: 
+      /*
+      every set is logged individually, so if I do three sets of 200lbs on bench for 6 reps, RPE 9,
+      ^ this gets stored as three rows. for viewing, though, I want to consolidate this and just say 3x {200lbs blah blah}
+      thats what this query does with the COUNT. 
+      the rest is managing the date and history note of the returned record,
+      which is the info from the most recent set.
+      so if you have 3 sets in the same session, it will show the history note only from the most recent one
+      which is what I think people want anyways, the note should be for all three.
+      */
+      final sets = await db.rawQuery('''
+        SELECT 
+          reps,
+          weight,
+          rpe,
+          COUNT(*) as num_sets,
+          exercise_id,
+          session_id,
+          MAX(datetime(date)) as date,
+          (
+            SELECT history_note 
+            FROM set_log AS s2 
+            WHERE s2.reps = set_log.reps 
+              AND s2.weight = set_log.weight 
+              AND s2.rpe = set_log.rpe 
+              AND s2.exercise_id = set_log.exercise_id
+              AND s2.session_id = ?
+            ORDER BY datetime(date) DESC 
+            LIMIT 1
+          ) as history_note,
+          (
+            SELECT id
+            FROM set_log AS s3
+            WHERE s3.reps = set_log.reps
+              AND s3.weight = set_log.weight
+              AND s3.rpe = set_log.rpe
+              AND s3.exercise_id = set_log.exercise_id
+              AND s3.session_id = ?
+            ORDER BY datetime(date) DESC
+            LIMIT 1
+          ) as record_id
+        FROM set_log
+        WHERE exercise_id = ? AND session_id = ?
+        GROUP BY reps, weight, rpe
+        ORDER BY datetime(date) DESC
+      ''', [sessionId, sessionId, exerciseId, sessionId]);
+
+      result.add(sets.map((r) => SetRecord(
+        reps: r['reps'] as int,
+        weight: r['weight'] as int,
+        rpe: r['rpe'] as int,
+        numSets: r['num_sets'] as int,
+        sessionID: r['session_id'] as String,
+        exerciseID: r['exercise_id'] as int,
+        date: r['date'] as String,
+        historyNote: r['history_note'] as String? ?? '',
+        recordID: r['record_id'] as int,
+      )).toList());
+    }
+
+    return result;
   }
 
   // this is the same as above, but is used for only one session past history for during workout quick check.

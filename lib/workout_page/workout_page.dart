@@ -309,7 +309,7 @@ class _WorkoutState extends State<Workout> {
                                           ListView.builder(
                                             shrinkWrap: true,
                                             physics: NeverScrollableScrollPhysics(),
-                                            itemCount:2 ,
+                                            itemCount: _exerciseHistory[index]!.length,
                                             itemBuilder: (context, historyIndex) {
                                               return Padding(
                                                 padding: const EdgeInsets.symmetric(
@@ -541,7 +541,7 @@ class _WorkoutState extends State<Workout> {
 
     final dbHelper = DatabaseHelper.instance;
     try {
-      final records = await dbHelper.fetchSetRecords(exerciseId: exerciseId);
+      final records = await dbHelper.getExerciseHistoryGroupedBySession(exerciseId);
 
       if (!mounted) return;
 
@@ -567,10 +567,10 @@ class _WorkoutState extends State<Workout> {
   }
 
   Widget _buildHistoryBottomSheet(
-      List<Map<String, dynamic>> records, String title) {
-    final history = records.map((record) => SetRecord.fromMap(record)).toList();
+      List<List<SetRecord>> records, String title) {
+    //final history = records.map((record) => SetRecord.fromMap(record)).toList();
 
-    if (history.isEmpty) {
+    if (records.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -584,61 +584,7 @@ class _WorkoutState extends State<Workout> {
         ),
       );
     }
-
-  // TODO: set consolidating and grouping by sessionID, displayed nicely here:
-  /*
-  heres a nice widget tree thing that I have used before that works:
-  Container(
-    decoration: BoxDecoration(
-      color: lighten(Color(0xFF1e2025), 20),
-      borderRadius: BorderRadius.circular(12)
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "${formatDate(_exerciseHistory[index]![0].dateAsDateTime)}: ",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              )
-            )
-          ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount:2 ,
-            itemBuilder: (context, historyIndex) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4.0,
-                  horizontal: 32,
-                ),
-                child: Text(
-                  "${_exerciseHistory[index]![historyIndex].numSets} sets x ${_exerciseHistory[index]![historyIndex].reps} reps @ ${_exerciseHistory[index]![historyIndex].weight} lbs (RPE: ${_exerciseHistory[index]![historyIndex].rpe})",
-                  style: TextStyle(
-                    fontSize: 16, 
-                    fontWeight: FontWeight.w700
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    ),
-  ),
-  */
-    final groupedHistory = <String, List<SetRecord>>{};
-    for (var record in history) {
-      if (record.dateAsDateTime == null) continue;
-      final date = DateFormat('yyyy-MM-dd').format(record.dateAsDateTime);
-      groupedHistory.putIfAbsent(date, () => []).add(record);
-    }
+    //debugPrint("records here: $records");
 
     return DraggableScrollableSheet(
       expand: false,
@@ -665,58 +611,64 @@ class _WorkoutState extends State<Workout> {
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               Expanded(
-                child: ListView(
+                child: ListView.builder(
                   controller: scrollController,
-                  children: [
-                    ...groupedHistory.entries.map((entry) {
-                      final date = entry.key;
-                      final records = entry.value;
+                  itemCount: records.length + 1,
+                  itemBuilder:(context, index) {
+                    if (index == records.length){
+                      return const Text(
+                        "End of History"
+                      );
+                    }
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(date,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 8),
-                          ...records
-                              .map((record) => Card(
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              "${record.numSets} sets × ${record.reps} reps @ ${record.weight} lbs",
-                                              style: const TextStyle(
-                                                  fontSize: 16)),
-                                          if (record.rpe != null)
-                                            Text("RPE: ${record.rpe}"),
-                                          if (record.historyNote?.isNotEmpty ??
-                                              false)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              child: Text(
-                                                "Notes: ${record.historyNote}",
-                                                style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontStyle:
-                                                        FontStyle.italic),
-                                              ),
-                                            ),
-                                        ],
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: lighten(Color(0xFF1e2025), 20),
+                          borderRadius: BorderRadius.circular(12)
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "${formatDate(records[index][0].dateAsDateTime)}: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  )
+                                )
+                              ),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: records[index].length,
+                                itemBuilder: (context, historyIndex) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0,
+                                      horizontal: 32,
+                                    ),
+                                    child: Text(
+                                      "${records[index][historyIndex].numSets} sets x ${records[index][historyIndex].reps} reps @ ${records[index][historyIndex].weight} lbs (RPE: ${records[index][historyIndex].rpe})",
+                                      style: TextStyle(
+                                        fontSize: 16, 
+                                        fontWeight: FontWeight.w700
                                       ),
                                     ),
-                                  ))
-                              .toList(),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    }).toList(),
-                  ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }, 
                 ),
               ),
             ],
