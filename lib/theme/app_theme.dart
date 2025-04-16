@@ -25,7 +25,7 @@ class AppTheme {
     final Color widgetBackgroundLight = lighten(widgetBackground, 10);
     final Color widgetBackgroundDark = darken(widgetBackground, 20); // Or 40?
     final Color outlineColor = lighten(widgetBackground, 20); // Borders around widgets
-    final Color subtleGreyColor = subtleGrey; // From app_colors.dart
+    const Color subtleGreyColor = subtleGrey; // From app_colors.dart
 
 
     return ThemeData(
@@ -139,6 +139,12 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8.0), // Optional: Customize the shape
         ),
         // You can also customize other properties like text style, elevation, etc.
+      ),
+
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: accentOrange, // Your desired orange color
+        contentTextStyle: TextStyle(color: textWhite), // White text
+        actionTextColor: textWhite, // White color for action button text
       ),
 
       // ... (other themes like ElevatedButton, OutlinedButton, etc. likely don't need changes here) ...

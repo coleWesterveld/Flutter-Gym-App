@@ -20,15 +20,13 @@ my goal is to make tappable things blue
 editable things orange 
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
-// implement copywith methods to make it easy to change just one value
-// to work with database data retrieval
-// i think i should extract some of my widgets for performance and change methods to widgets where possible
 
 
 // thing to be aware: exercise class has id and Exercise id, do not confuse them! (this causes most of my bugs)
 // this should maybe be fixed and is a bit unclear since a db restructure
 // since exercise class itself references an exercise instance, which has an ID to which specific exercise it is an instance of
 // id identifies the instance uniquely, exerciseID references the exercise in the big table of all the exercises.
+// try with different phone sizes - its mostly reactive I think but I havent done enough testing
 
 // ENTRYPOINT OF APP HERE
 void main() async {
@@ -45,16 +43,6 @@ class GymApp extends StatefulWidget {
 class _MainPage extends State<GymApp> {
 
   final dbHelper = DatabaseHelper.instance;
-
-  @override
-  void initState() {
-
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-       Provider.of<SettingsModel>(context, listen: false).init();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

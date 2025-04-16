@@ -41,7 +41,7 @@ import "package:firstapp/program_page/exercise_search.dart";             // Exer
 import 'package:firstapp/analytics_page/exercise_search.dart';           // New Exercise Search
 import 'package:firstapp/program_page/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
-import 'package:firstapp/program_page/display_set.dart';
+import 'package:firstapp/program_page/list_exercises.dart';
 
 // When editing a day, the user can edit either title or colour asociated
 enum Viewer {title, color}
@@ -128,8 +128,9 @@ class ProgramPageState extends State<ProgramPage> {
 
   // Add exercise to a day
   void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
+    debugPrint("Adding $exercise to $index ");
     setState(() {
-      _exerciseID = exercise['id'];
+      _exerciseID = exercise['exercise_id'];
     });
 
     if (_exerciseID == null) return;
@@ -560,451 +561,48 @@ class ProgramPageState extends State<ProgramPage> {
                           ),
                         
                         
-                        child: listExercises(context, index),
+                        child: ListExercises(
+                          editIndex: editIndex, 
+                          widget: widget, 
+                          context: context, 
+                          index: index,
+                          theme: widget.theme,
+
+                          onExerciseAdded: () async {
+                            setState(() {
+                                _activeIndex = index;
+                                _isEditing = true;
+                              }
+                            );
+                          },
+
+                          onSetAdded: (exerciseIndex) {
+                            setState(() {
+                              editIndex = [
+                                index,
+                                exerciseIndex, 
+                                context.read<Profile>().sets[index][exerciseIndex].length
+                              ];
+                            });
+                          },
+
+                          onSetTapped: (exerciseIndex, setIndex) {
+                            setState(() {
+                              // Toggle between edit and display view
+                              editIndex = [index, exerciseIndex, setIndex]; 
+                            });
+                          },
+
+                          onSetSaved: () {
+                            setState(() => editIndex = [-1, -1, -1]);
+                          }
+                        ),
                       ),
                     ]
                   ),
                 ),
               ),
             );
-  }
-
-  /////////////////////////////////////////////////////////////////////
-  // LIST OF EXERCISES FOR EACH DAY
-  /////////////////////////////////////////////////////////////////////
-  
-  ReorderableListView listExercises(BuildContext context, int index) {
-    return ReorderableListView.builder(
-                                    
-      //on reorder, update tree with new ordering
-      onReorder: (oldIndex, newIndex){
-        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-        setState(() {
-          context.read<Profile>().moveExercise(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index);
-
-        });
-      },
-      
-      //"add exercise" button at bottom of exercise list
-      footer: Padding(
-        key: ValueKey('exerciseAdder'),
-        padding: const EdgeInsets.all(8),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: ButtonTheme(
-            minWidth: 100,
-            //height: 130,
-            child: TextButton.icon(
-              onPressed: () async {
-                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                
-                  setState(
-
-                    () {
-                      _activeIndex = index;
-                      _isEditing = true;
-                    }
-                  );
-                  //int? exerciseID = await openDialog();
-
-                  
-                  
-                  
-                //setState(() {});  
-              },
-            
-              style: ButtonStyle(
-                //when clicked, it splashes a lighter purple to show that button was clicked
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(
-        
-                  borderRadius: BorderRadius.circular(12))),
-                backgroundColor: WidgetStateProperty.all(Color(0XFF1A78EB),), 
-                overlayColor: WidgetStateProperty. resolveWith<Color?>((states) {
-                  if (states.contains(WidgetState.pressed)) return Color(0XFF1A78EB);
-                  return null;
-                }),
-              ),
-              
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                  Text(
-    
-                    "Exercise  ",
-                    style: TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255),
-                        //fontSize: 18,
-                        //fontWeight: FontWeight.w800,
-                      ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-          
-      //being able to scroll within the already scrollable day view 
-      // is annoying so i disabled it
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: context.read<Profile>().exercises[index].length,
-      shrinkWrap: true,
-      
-          
-      //displaying list of exercises for that day
-      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-      itemBuilder: (context, exerciseIndex) {
-        return Slidable(
-            closeOnScroll: true,
-            direction: Axis.horizontal,
-
-            key: ValueKey(context.watch<Profile>().exercises[index][exerciseIndex]),
-            // background: Container(
-            //   color: Colors.red,
-            //   child: Icon(Icons.delete)
-            // ),
-            endActionPane: ActionPane(
-              extentRatio: 0.3,
-              motion: const ScrollMotion(), 
-              children: [SlidableAction(
-                
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                icon: Icons.delete,
-                onPressed: (direction) {
-                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                  //final deletedDay = context.read<Profile>().split[index];
-                  final deletedExercise = context.read<Profile>().exercises[index][exerciseIndex];
-                  final deletedSets = context.read<Profile>().sets[index][exerciseIndex];
-                  setState(() {
-                    context.read<Profile>().exercisePop(index1: index, index2: exerciseIndex);
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        style: TextStyle(
-                          color: Colors.white
-                        ),
-                        'Exercise Deleted'
-                        ),
-                        action: SnackBarAction(
-                        label: 'Undo',
-                        textColor: Colors.white,
-                        onPressed: () {
-                          try{
-                          debugPrint("re-add: ${deletedExercise.toString()}");
-
-                          setState(() {
-
-                            
-                            context.read<Profile>().exerciseInsert(
-                              index1: index, 
-                              index2: exerciseIndex,
-                              data: deletedExercise, 
-                              newSets: deletedSets,
-                            );
-                          });
-                          } catch(e){
-                            debugPrint('Undo failed: $e');
-                            // Show error message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Failed to undo deletion :(')),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                },
-            ),
-          ],
-        ),
-
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(1)),
-            border: Border(bottom: BorderSide(color: lighten(Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
-          ),
-          child: Material(
-            color: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
-                                                                  
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-          
-                      //add set button 
-                      Align(
-                        key: ValueKey('setAdder'),
-                        alignment: Alignment.centerLeft,
-          
-                          child: Container(
-                            width: 70,
-                            height: 30,
-              
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.5),
-                                  offset: const Offset(0.0, 0.0),
-                                  blurRadius: 12.0,
-                                ),
-                              ],
-                            ),
-                            
-                            child: OutlinedButton.icon(
-                                        
-                                        
-                              
-                              style: OutlinedButton.styleFrom(
-                                
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                padding: EdgeInsets.only(top: 0, bottom: 0, right: 0, left: 8),
-                                //alignment: Alignment.centerLeft,
-                                backgroundColor: const Color(0xFF1e2025),//_listColorFlop(index: exerciseIndex + 1),
-                                shape:
-                                  RoundedRectangleBorder(
-                                      side: BorderSide(
-                                      width: 2,
-                                      color: Color(0XFF1A78EB),
-                                      ),
-                                      borderRadius: BorderRadius.all(Radius.circular(8))
-                                  ),
-                                
-                              ),
-                            
-                              onPressed: () {
-                                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                                
-                                  context.read<Profile>().setsAppend(
-                                    // newSets: 
-                                    // SplitDayData(data: "New Set", dayColor: Colors.black), 
-                                    index1: index,
-                                    index2: exerciseIndex,);
-                                  
-                                  editIndex = [
-                                    index, 
-                                    exerciseIndex, 
-                                    context.read<Profile>().sets[index][exerciseIndex].length
-                                  ];
-
-                                setState(() {});
-                              },
-                              label: Row(
-                                children:  [
-                                  Icon(
-                                    Icons.add,
-                                    color: lighten(Color(0xFF141414), 70),
-                                  ),
-                                  Text(
-                                    "Set",
-                                    style: TextStyle(
-                                      color: lighten(Color(0xFF141414), 70),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      
-                      ),
-                    
-                  
-                      //confirm update button
-                      IconButton(
-                        onPressed: () async{
-                          
-                        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                          //print(context.read<Profile>().split[index].data);
-                          alertTEC = TextEditingController(text: context.read<Profile>().exercises[index][exerciseIndex].exerciseTitle);
-                          int? exerciseID = await openDialog();
-                          if (exerciseID == null) return;
-                              
-                          setState( () {
-                            Provider.of<Profile>(context, listen: false).exerciseAssign(
-                              index1: index, 
-                              index2: exerciseIndex,
-                              data: Provider.of<Profile>(context, listen: false).exercises[index][exerciseIndex].copyWith(newexerciseID: exerciseID)
-                              // data: SplitDayData(
-                              //   data: exerciseTitle, dayColor: context.read<Profile>().split[index].dayColor
-                              // ),
-                              
-                              // newSets: context.read<Profile>().sets[index][exerciseIndex],
-                      
-                              // newSetsTEC: context.read<Profile>().setsTEC[index][exerciseIndex],
-        
-        
-                              // newRpeTEC: context.read<Profile>().rpeTEC[index][exerciseIndex],
-        
-                        
-                              // newReps1TEC: context.read<Profile>().reps1TEC[index][exerciseIndex],
-        
-        
-                              // newReps2TEC: context.read<Profile>().reps2TEC[index][exerciseIndex],
-                            );
-                          });
-                        }, 
-                        
-                        icon: Icon(Icons.edit),
-                            color: lighten(Color(0xFF141414), 70),
-                      ),
-                    ],
-                  ),
-            
-                  //Displaying Sets for each exercise
-                  listSets(context, index, exerciseIndex),
-                ],
-              ),
-            ),
-          )
-        )
-        );
-      },
-    );
-  }
-
-  /////////////////////////////////////////////////////////////////////
-  // LIST OF SETS FOR EACH EXERCISE
-  /////////////////////////////////////////////////////////////////////
-
-  ReorderableListView listSets(BuildContext context, int index, int exerciseIndex) {
-    return ReorderableListView.builder(
-      //on reorder, update tree with new ordering
-      onReorder: (oldIndex, newIndex){
-        if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-        setState(() {
-          context.read<Profile>().moveSet(oldIndex: oldIndex, newIndex: newIndex, dayIndex: index, exerciseIndex: exerciseIndex);
-        });
-      },
-
-      //being able to scroll within the already scrollable day view 
-      // is annoying so i disabled it
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: context.read<Profile>().sets[index][exerciseIndex].length,
-      shrinkWrap: true,
-
-      //displaying list of sets for that exercise
-      //TODO: add sets here too, centre text boxes, add notes option on dropdown
-      // TODO: fix bug when user navigates away from program page and presses undo
-      itemBuilder: (context, setIndex) {
-        return Slidable(
-          closeOnScroll: true,
-          direction: Axis.horizontal,
-
-          key: ValueKey(context.watch<Profile>().sets[index][exerciseIndex][setIndex]),
-          endActionPane: ActionPane(
-            extentRatio: 0.3,
-            motion: const ScrollMotion(), 
-            children: [SlidableAction(
-              
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              icon: Icons.delete,
-              onPressed: (direction) {
-                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                //final deletedDay = context.read<Profile>().split[index];
-                //final deletedExercise = context.read<Profile>().exercises[index][exerciseIndex];
-                final deletedSet = context.read<Profile>().sets[index][exerciseIndex][setIndex];
-                setState(() {
-                  context.read<Profile>().setsPop(index1: index, index2: exerciseIndex, index3: setIndex);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      style: TextStyle(
-                        color: Colors.white
-                      ),
-                      'Set Deleted'
-                      ),
-                      action: SnackBarAction(
-                      label: 'Undo',
-                      textColor: Colors.white,
-                      onPressed: () {
-                        try{
-                        debugPrint("re-add: ${deletedSet.toString()}");
-
-                        setState(() {
-
-                          
-                          context.read<Profile>().setsInsert(
-                            index1: index, 
-                            index2: exerciseIndex,
-                            index3: setIndex,
-                            data: deletedSet, 
-                          );
-                        });
-                        } catch(e){
-                          debugPrint('Undo failed: $e');
-                          // Show error message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to undo deletion :(')),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                );
-              },
-          ),
-        ],
-      ),
-          
-          //actual information about the sets
-          child: DisplaySet(
-            editIndex: editIndex, 
-            context: context, 
-            index: index, 
-            exerciseIndex: exerciseIndex, 
-            setIndex: setIndex,
-            theme: widget.theme,
-
-            onSetTapped: (){
-              setState(() {
-                editIndex = [index, exerciseIndex, setIndex]; // Toggle between edit and nice view
-              });
-            },
-
-            onSetSaved: (){
-              setState(() {editIndex = [-1, -1, -1];});
-
-              context.read<Profile>().setsAssign(
-                index1: index, 
-                index2: exerciseIndex, 
-                index3: setIndex, 
-                // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
-                // if empty, will save 0. else, will disregard the 0.
-                // THIS IS PROBLEMATIC IF -1 is put - have "0-1"
-                data: context.read<Profile>().sets[index][exerciseIndex][setIndex].copyWith(
-                  newNumSets: int.parse("0${context.read<Profile>().setsTEC[index][exerciseIndex][setIndex].text}"),
-                  newRpe: int.parse("0${context.read<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}"),
-                  newSetLower: int.parse("0${context.read<Profile>().reps1TEC[index][exerciseIndex][setIndex].text}"),
-                  newSetUpper: int.parse("0${context.read<Profile>().reps2TEC[index][exerciseIndex][setIndex].text}"),
-                )
-              );
-            },
-          ),
-        );
-      },
-    );
   }
 
 
@@ -1295,4 +893,3 @@ Future<dynamic> openDialog() {
           }
   }
 }
-
