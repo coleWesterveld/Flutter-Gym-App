@@ -4,7 +4,7 @@
 import 'package:dotted_border/dotted_border.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';

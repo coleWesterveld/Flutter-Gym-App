@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import '../other_utilities/lightness.dart';
-import 'package:firstapp/providers_and_settings/user.dart';
+import 'package:firstapp/providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import '../providers_and_settings/settings_provider.dart';
 import 'package:flutter/services.dart';

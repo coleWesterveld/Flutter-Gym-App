@@ -1,25 +1,20 @@
-// ignore_for_file: prefer_const_constructors
-//import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-//import 'package:/sqflite.dart';
-//import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+// Pages
+import 'package:firstapp/workout_page/workout_selection_page.dart';       // Workout Selector
+import 'package:firstapp/schedule_page/schedule_page.dart';               // Schedule Page
+import 'package:firstapp/program_page/program_page.dart';                 // Program Creator
+import 'package:firstapp/analytics_page/analytics_page.dart';             // Analytics Page
+
+// Utilities
+import 'package:firstapp/database/database_helper.dart';                  // Database Methods
+import 'package:firstapp/other_utilities/workout_stopwatch.dart';         // Active Workout Clock
+import 'package:firstapp/providers_and_settings/program_provider.dart';   // Program Management
+import 'package:firstapp/providers_and_settings/settings_provider.dart';  // Settings
+import 'package:firstapp/theme/app_theme.dart';                           // Theme
+
 // TODO: add disposes for all focusnodes and TECs and other
-
-
-//import 'package:shared_preferences/shared_preferences.dart';
-import 'workout_page/workout_selection_page.dart';
-import 'schedule_page/schedule_page.dart';
-import 'program_page/program_page.dart';
-import 'analytics_page/analytics_page.dart';
-import 'providers_and_settings/user.dart';
-import 'workout_page/workout_page.dart';
-//import 'data_saving.dart';
-import 'database/database_helper.dart';
-import 'other_utilities/workout_stopwatch.dart';
-import 'providers_and_settings/settings_provider.dart';
-//import 'database/profile.dart';
-
 /* colour choices:
 my goal is to make tappable things blue
 editable things orange 
@@ -34,29 +29,20 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 // this should maybe be fixed and is a bit unclear since a db restructure
 // since exercise class itself references an exercise instance, which has an ID to which specific exercise it is an instance of
 // id identifies the instance uniquely, exerciseID references the exercise in the big table of all the exercises.
+
+// ENTRYPOINT OF APP HERE
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
-  // sqfliteFfiInit();
-  // databaseFactory = databaseFactoryFfi;
-  runApp(NavigationBarApp());
+  runApp(const GymApp());
 }
 
-Color darken(Color c, [int percent = 10]) {
-  assert(1 <= percent && percent <= 100);
-  var f = 1 - percent / 100;
-  return Color.fromARGB(c.alpha, (c.red * f).round(), (c.green * f).round(),
-      (c.blue * f).round());
-}
-
-class NavigationBarApp extends StatefulWidget {
-  const NavigationBarApp({super.key});
+class GymApp extends StatefulWidget {
+  const GymApp({super.key});
   @override
-  State<NavigationBarApp> createState() => _MainPage();
-  //_MainPage createState() => _MainPage();
+  State<GymApp> createState() => _MainPage();
 }
 
-class _MainPage extends State<NavigationBarApp> {
+class _MainPage extends State<GymApp> {
 
   final dbHelper = DatabaseHelper.instance;
 
@@ -64,14 +50,15 @@ class _MainPage extends State<NavigationBarApp> {
   void initState() {
 
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       Provider.of<SettingsModel>(context, listen: false).init();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    
-    //sets =sets ;//sets;
 
-    //provider for global variable information
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -80,17 +67,10 @@ class _MainPage extends State<NavigationBarApp> {
 
 
         ChangeNotifierProvider(
+          // this got a bit big and should probably be split into maybe 2 or more providers
           create: (context) => Profile(
             dbHelper: dbHelper,
-            //split: split,
-            controllers: [],//setControllers()
-            // this is temporairy while i figure out persistence for the split,
-            // so that i dont run into index out of range on the exercises
-            //with sets this is atrocious lol
-            //exercises: exercises,
-
-            //sets: sets,
-
+            controllers: [],
             reps1TEC: [],
             reps2TEC: [],
             rpeTEC: [],
@@ -100,67 +80,50 @@ class _MainPage extends State<NavigationBarApp> {
             workoutRpeTEC: [],
             workoutWeightTEC: [],
             workoutExpansionControllers: []
-
           ),
         ),
       ],
       child: MaterialApp(
         title: 'TempTitle',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-            
-            snackBarTheme: SnackBarThemeData(
-              backgroundColor: Color(0xFFF28500),
-            ),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Color(
-                  0XFF1C1C1C), //darken(Color.fromARGB(255, 12, 74, 151),60),
-              brightness: Brightness.dark,
-            )),
-        //theme: ThemeData(useMaterial3: false),s
-        home: NavigationExample(
+        theme: AppTheme.darkTheme, // Apply the dark theme by default
+        // themeMode: settings.themeMode, // If you implement theme switching via SettingsModel
+        // darkTheme: AppTheme.darkTheme,
+        // lightTheme: AppTheme.lightTheme, // Define lightTheme similarly if needed
+        home: MainScaffold(
           dbHelper: dbHelper,
-          //updater: writePrefs,
         ),
       ),
     );
   }
 }
 
-class NavigationExample extends StatefulWidget {
+class MainScaffold extends StatefulWidget {
   //Function updater;
   final DatabaseHelper dbHelper;
-  const  NavigationExample({super.key, required this.dbHelper,/*required this.updater*/});
+  const  MainScaffold({super.key, required this.dbHelper,});
 
   @override
-  NavigationExampleState createState() => NavigationExampleState();
+  MainScaffoldState createState() => MainScaffoldState();
 }
 
-class NavigationExampleState extends State<NavigationExample> {
+class MainScaffoldState extends State<MainScaffold> {
   int currentPageIndex = 0;
 
-  void changeColor(Color newColor, int index) =>
-      setState(() => context.watch<Profile>().splitAssign(
-        newDay: context.watch<Profile>().split[index].copyWith(newDayColor: newColor.value), 
-        index: index,
-        ));
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    //var list = ['Legs', 'Push', 'Pull'];
-    //var exercises = ['Squats 3x2','Deadlifts 4x2', 'Calf Raises 5x3'];
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
-
-
       bottomNavigationBar: NavigationBar(
-        //backgroundColor: Color(0xFF643f00),
         onDestinationSelected: (int index) {
           setState(() {
             currentPageIndex = index;
           });
         },
-        indicatorColor: Color(0XFF1A78EB),
+
+        indicatorColor: theme.colorScheme.primary,
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(12),
@@ -195,33 +158,20 @@ class NavigationExampleState extends State<NavigationExample> {
 
       //what opens for each page
       body: <Widget>[
-        /// Workout page
-        WorkoutPage(),
 
-        /// Schedule page
-        SchedulePage(),
+        WorkoutSelectionPage(theme: theme),
 
-        /// Program page
+        SchedulePage(theme: theme),
+
         ProgramPage(
           dbHelper: widget.dbHelper,
-          // writePrefs: widget.updater,
+          theme: theme
         ),
 
-        ///Analyitcs page
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
 
-      bottomSheet: (context.watch<Profile>().activeDay != null) ? WorkoutControlBar() : null,
+      bottomSheet: (context.watch<Profile>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
     );
   }
-
-
-  // String _formatDuration(Duration duration) {
-  //   String twoDigits(int n) => n.toString().padLeft(2, "0");
-  //   final hours = twoDigits(duration.inHours);
-  //   final minutes = twoDigits(duration.inMinutes.remainder(60));
-  //   final seconds = twoDigits(duration.inSeconds.remainder(60));
-  //   return "$hours:$minutes:$seconds";
-  // }
 }
-

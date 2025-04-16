@@ -1,7 +1,7 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import 'set_logging.dart';
 import '../other_utilities/lightness.dart';
 import 'dart:async';
@@ -22,7 +22,11 @@ import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/workout_stopwatch.dart';
 
 class Workout extends StatefulWidget {
-  const Workout({super.key});
+  final  ThemeData theme;
+  const Workout({
+    super.key,
+    required this.theme,
+  });
 
   @override
   State<Workout> createState() => _WorkoutState();
@@ -159,15 +163,14 @@ class _WorkoutState extends State<Workout> {
                         context.read<Profile>().done = false;
                         setState(() {});
                       },
-                      child: const Text('Done',
-                          style: TextStyle(color: Colors.white)),
+                      child: Text('Done',
+                          style: TextStyle(color: widget.theme.colorScheme.onPrimary)),
                     ),
                   ],
                 ),
               )
             : null,
             appBar: AppBar(
-              backgroundColor: const Color(0xFF1e2025),
               title: Text(
                 // this only happens for short period during transition from popping
                 // so nobody should see the const value, it will hopefully blend in
@@ -178,6 +181,7 @@ class _WorkoutState extends State<Workout> {
                 preferredSize: const Size.fromHeight(80), // Increased height to accommodate the control bar
                 child: WorkoutControlBar(
                   positionAtTop: true,
+                  theme: widget.theme
                 ),
               ),
 

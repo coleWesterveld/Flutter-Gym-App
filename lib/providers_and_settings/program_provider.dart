@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 //import 'data_saving.dart';
 import '../database/database_helper.dart';
 import '../database/profile.dart';
-  import 'dart:math';
+  // import 'dart:math';
   import 'dart:async';
   import '../../other_utilities/day_of_week.dart';
 
@@ -16,7 +16,8 @@ import '../database/profile.dart';
 
 // A lot of the database functionality here could maybe be double checked...
 
-
+// okay, im gonna try breaking this up into a few different Providers
+//
 
 class Profile extends ChangeNotifier {
   static const List<Color> colors = [

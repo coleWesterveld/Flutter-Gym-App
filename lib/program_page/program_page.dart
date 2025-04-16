@@ -18,7 +18,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'custom_exercise_form.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -38,9 +38,14 @@ import '../providers_and_settings/settings_page.dart';
 class ProgramPage extends StatefulWidget {
   //Function writePrefs;
   final DatabaseHelper dbHelper;
+  final ThemeData theme;
 
   
-  const ProgramPage({Key? programkey, required this.dbHelper,}) : super(key: programkey);
+  const ProgramPage({
+    Key? programkey, 
+    required this.dbHelper,
+    required this.theme
+    }) : super(key: programkey);
   @override
   ProgramPageState createState() => ProgramPageState();
 }
@@ -111,50 +116,20 @@ class ProgramPageState extends State<ProgramPage> {
     );
   }
 
-  // adds day to split
-  _addItem() {
-      context.read<Profile>().splitAppend(
-        // newDay: "New Day", 
-        // newexercises: [], 
-        // newSets: [],
-        // newReps1TEC: [],
-        // newReps2TEC: [],
-        // newRpeTEC: [],
-        // newSetsTEC: [],
-        );
+  void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
+    setState(() {
+      _exerciseID = exercise['id'];
+    });
+
+    if (_exerciseID == null) return;
+
+    context.read<Profile>().exerciseAppend(
+      index: index,
+      exerciseId: _exerciseID!,
+    );
+
+    debugPrint("ExerciseID: $_exerciseID");
   }
-
-    // Callback when an exercise is selected.
-  // void _handleExerciseSelected(BuildContext context, int index, int exerciseId) {
-  //   setState(() {
-  //     _exerciseID = exerciseId;
-  //     // Additional logic for when an exercise is selected can go here.
-  //   });
-  //   if (_exerciseID == null) return;
-
-  //   context.read<Profile>().exerciseAppend(
-  //     index: index,
-  //     exerciseId: _exerciseID!,
-      
-  //   );
-  //   debugPrint("ExerciseID: $_exerciseID");
-  // }
-
-void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
-  setState(() {
-    _exerciseID = exercise['id'];
-  });
-
-  if (_exerciseID == null) return;
-
-  context.read<Profile>().exerciseAppend(
-    index: index,
-    exerciseId: _exerciseID!,
-  );
-
-  debugPrint("ExerciseID: $_exerciseID");
-}
-
 
   // Callback to update the search mode state.
   void _updateSearchMode(bool isEditing) {
@@ -180,7 +155,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
         key: scaffoldMessengerKey, 
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-        backgroundColor: Color(0xFF1e2025),
+        backgroundColor: widget.theme.colorScheme.surface,//Color(0xFF1e2025),
         centerTitle: true,
         title: Text(
           context.watch<Profile>().currentProgram.programTitle, // Show current program title
@@ -196,6 +171,29 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
         ),
 
         actions: [
+
+          PopupMenuButton<String>(
+
+            color: Color(0xFF141414),
+            
+              icon: Icon(Icons.more_horiz, size: 28),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'phaseAdder',
+                  child: ListTile(
+                    leading: Icon(Icons.add),
+                    title: Text('Make Multi-Phase'),
+                  ),
+                ),
+              ],
+              onSelected: (value) {
+                if (value == 'phaseAdder'){
+                  // set program to multiphase
+                  // for now, this can just be a memory thing
+                }
+              },
+            ),
+
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
@@ -205,7 +203,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
               );
             },
           ),
-        ]
+        ],
       ),
       drawer: ProgramsDrawer(
         //dbHelper: dbHelper,
@@ -275,7 +273,7 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
               onTap: () {
                 if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                 setState(() {
-                  _addItem();
+                  context.read<Profile>().splitAppend();
                 });
                 
                 //insertDay(context, 1, 'Day 1 - Upper Body');
@@ -361,25 +359,6 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
             ),
               ],
             ),
-            // dismiss when user swipes right to left on any day, remove that day from the list
-            // onDismissed: (direction) {
-            //   HapticFeedback.heavyImpact();
-            //   // Remove the item from the data source.
-            //   setState(() {
-            //     context.read<Profile>().splitPop(index: index);    
-            //   });
-            //   //widget.writePrefs();
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     SnackBar(
-            //       content: Text(
-            //         style: TextStyle(
-            //           color: Colors.white
-            //         ),
-            //         'Day Deleted'
-            //         ),
-            //     ),
-            //   );
-            // },
             
             //outline for each day tile in the list
             child: Padding(
@@ -524,23 +503,8 @@ void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise
                                               setState( () {
                                                 Provider.of<Profile>(context, listen: false).splitAssign(
                                                   index: index, 
-                                                  //id: context.read<Profile>().split[index].dayID,
                                                   newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
-  
-                                                  // newexercises: context.read<Profile>().exercises[index],
-                                                  // newSets: context.read<Profile>().sets[index],
-        
-                                                  // newSetsTEC: context.read<Profile>().setsTEC[index],
-        
-                                                  // newReps1TEC: context.read<Profile>().reps1TEC[index],
-        
-                                                  // newReps2TEC: context.read<Profile>().reps2TEC[index],
-        
-                                                  // newRpeTEC: context.read<Profile>().rpeTEC[index],
-        
-                                                  // newDay: SplitDayData(
-                                                  //   data: dayTitle, dayColor: context.read<Profile>().split[index].dayColor
-                                                  // )
+
                                                 );
                                               });} //
                                               Navigator.of(context, rootNavigator: true).pop('dialog');

@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
-import 'package:firstapp/providers_and_settings/user.dart';
+import 'package:firstapp/providers_and_settings/program_provider.dart';
 import 'profile.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;

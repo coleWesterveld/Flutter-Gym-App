@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../database/database_helper.dart'; // Adjust this import as needed
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import '../other_utilities/lightness.dart';
 

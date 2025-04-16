@@ -2,7 +2,7 @@
 //not updated
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 //import 'package:flutter/cupertino.dart';
 import '../schedule_page/schedule_page.dart';
 import 'workout_page.dart';
@@ -10,17 +10,19 @@ import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../providers_and_settings/settings_page.dart';
 
-class WorkoutPage extends StatefulWidget {
-  const WorkoutPage({
+class WorkoutSelectionPage extends StatefulWidget {
+  final ThemeData theme;
+  const WorkoutSelectionPage({
+    required this.theme,
     super.key,
   });
 
   @override
-  State<WorkoutPage> createState() => _WorkoutPageState();
+  State<WorkoutSelectionPage> createState() => _WorkoutSelectionPageState();
 }
 
-class _WorkoutPageState extends State<WorkoutPage>
-    with SingleTickerProviderStateMixin {
+class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
+  with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   @override
   void didChangeDependencies() {
@@ -322,7 +324,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                             onPressed: () {
                                               Navigator.push<bool>(
                                                   context,
-                                                  MaterialPageRoute(builder: (_) => const Workout()),
+                                                  MaterialPageRoute(builder: (_) => Workout(theme: widget.theme)),
                                                 )
                                                 .then((finished) {
                                                   if (finished == true) {
@@ -379,7 +381,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                                                 context,
                                                 MaterialPageRoute(
                                                   builder: (context) =>
-                                                      const Workout(),
+                                                    Workout(theme: widget.theme),
                                                 ));
                                           },
                                           child: const Text(

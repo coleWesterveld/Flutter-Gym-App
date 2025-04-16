@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import 'edit_schedule.dart';
 import '../other_utilities/days_between.dart';
@@ -22,9 +22,12 @@ class Event{
 }
 
 class SchedulePage extends StatefulWidget {
-  
+  final ThemeData theme;
 
-  const SchedulePage({Key? mykey}) : super(key: mykey);
+  const SchedulePage({
+    Key? mykey,
+    required this.theme,
+  }) : super(key: mykey);
   @override
   _MyScheduleState createState() => _MyScheduleState();
 }

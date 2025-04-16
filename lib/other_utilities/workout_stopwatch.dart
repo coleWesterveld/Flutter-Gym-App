@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../providers_and_settings/user.dart';
+import '../providers_and_settings/program_provider.dart';
 import '../workout_page/workout_page.dart';
 import '../providers_and_settings/settings_provider.dart';
 
-
-//import 'data_saving.dart';
 class WorkoutControlBar extends StatelessWidget {
   final bool positionAtTop;
-  final Color backgroundColor;
-  final Color primaryColor;
+  // final Color backgroundColor;
+  // final Color primaryColor;
+
+  final ThemeData theme;
 
   const WorkoutControlBar({
     super.key,
     this.positionAtTop = false,
-    this.backgroundColor = const Color(0xFF1e2025),
-    this.primaryColor = const Color(0XFF1A78EB),
+    // this.backgroundColor = const Color(0xFF1e2025),
+    //this.primaryColor = const Color(0XFF1A78EB),
+    required this.theme,
   });
 
   @override
@@ -28,7 +29,7 @@ class WorkoutControlBar extends StatelessWidget {
         return Container(
           height: 80,
           decoration: BoxDecoration(
-            color: backgroundColor,
+            color: theme.colorScheme.surface,
             border: Border(
               top: positionAtTop 
                   ? BorderSide.none 
@@ -74,7 +75,7 @@ class WorkoutControlBar extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       profile.isPaused ? Icons.play_arrow : Icons.pause,
-                      color: primaryColor,
+                      color: theme.colorScheme.primary,
                       size: 28,
                     ),
                     onPressed: profile.togglePause,
@@ -89,12 +90,12 @@ class WorkoutControlBar extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const Workout(),
+                            builder: (context) => Workout(theme: theme),
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
+                        backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -124,7 +125,7 @@ class WorkoutControlBar extends StatelessWidget {
                       
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: primaryColor, width: 2),
+                        side: BorderSide(color: theme.colorScheme.primary, width: 2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -133,7 +134,7 @@ class WorkoutControlBar extends StatelessWidget {
                       ),
                       child: Text(
                         "Finish",
-                        style: TextStyle(color: primaryColor, fontWeight: FontWeight.w800),
+                        style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w800),
                       ),
                     ),
                   ),
