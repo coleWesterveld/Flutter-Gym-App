@@ -133,6 +133,14 @@ class AppTheme {
           hintStyle: TextStyle(color: onWidgetBackground.withOpacity(0.5)),
        ),
 
+       popupMenuTheme: PopupMenuThemeData(
+        color: mainScaffoldBackground, // Set the background color to match the scaffold
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0), // Optional: Customize the shape
+        ),
+        // You can also customize other properties like text style, elevation, etc.
+      ),
+
       // ... (other themes like ElevatedButton, OutlinedButton, etc. likely don't need changes here) ...
 
       // --- Custom Theme Extensions ---

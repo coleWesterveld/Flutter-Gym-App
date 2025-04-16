@@ -1,45 +1,55 @@
-// program page
-// ignore_for_file: prefer_const_constructors
+// Program Page
+// Here, user will define a workout program that they can follow
+// Defines days, exercises, rep ranges, intensity, etc.
 
 /*
 Still Todo on this page:
+- since only one set can be editing at a time, we dont need a list of Text editing controllers - we just need one for each field
 - ability to add notes per exercise
 - fix double digit days - they dont show up well
 - LATER: add sidebar, user can have multiple different programs to swap between
 - make a max of all user input fields - make them as long as possible but stop them from being absurd
 - after search, it should put the user back at the opened expansiontile (it should not revert to being closed)
+- convert exercise form to new form
+- move some widgets like exercise search into a widgets folder maybe
+- added exercises should show up right away and at top
+- test undo even on different pages
+- modifiable start date
+- muilti phase programs
+//TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
+
 */
 
-//import 'package:firstapp/main.dart';
-import 'package:firstapp/database/database_helper.dart';
-import 'package:firstapp/database/profile.dart';
-//import 'package:firstapp/database/profile.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
-import '../providers_and_settings/program_provider.dart';
+import 'package:flutter/cupertino.dart';                                 // For Slider
+import 'package:flutter/services.dart';                                  // Haptics
+
+// Utilities
+import 'package:flutter_slidable/flutter_slidable.dart';                 // Swipe To Delete
+import 'package:firstapp/database/database_helper.dart';                 // Database Helper
+import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
+import 'package:firstapp/other_utilities/days_between.dart';
+import 'package:firstapp/other_utilities/lightness.dart';                // Lightening Colours
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
+
+// Widgets
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'custom_exercise_form.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-//import 'package:flutter/cupertino.dart';
+import 'package:table_calendar/table_calendar.dart';                     // For Bottomsheet Calendar
+import 'package:firstapp/program_page/custom_exercise_form.dart';        // Add An Exercise
+import "package:firstapp/program_page/exercise_search.dart";             // Exercise Form - Migrating Away From
+import 'package:firstapp/analytics_page/exercise_search.dart';           // New Exercise Search
+import 'package:firstapp/program_page/programs_drawer.dart';
+import 'package:firstapp/providers_and_settings/settings_page.dart';
+import 'package:firstapp/program_page/display_set.dart';
 
-import 'package:flutter/services.dart';
-import "exercise_search.dart";
-import '../other_utilities/days_between.dart';
-import '../other_utilities/lightness.dart';
-import '../analytics_page/exercise_search.dart';
-import 'programs_drawer.dart';
-import '../providers_and_settings/settings_provider.dart';
-import '../providers_and_settings/settings_page.dart';
+// When editing a day, the user can edit either title or colour asociated
+enum Viewer {title, color}
 
-//program page, where user defines the overall program by days,
-// then exercises for each day with sets, rep range and notes
 class ProgramPage extends StatefulWidget {
-  //Function writePrefs;
+
   final DatabaseHelper dbHelper;
   final ThemeData theme;
-
   
   const ProgramPage({
     Key? programkey, 
@@ -50,28 +60,27 @@ class ProgramPage extends StatefulWidget {
   ProgramPageState createState() => ProgramPageState();
 }
 
-
-enum Viewer {title, color}
-// this class contains the list view of expandable card tiles 
-// title is day title (eg. 'legs') and when expanded, leg exercises for that day show up
 class ProgramPageState extends State<ProgramPage> {
+  // This is required for snackbar undo delete to work even when user navigates away
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey();
+
   DateTime today = DateTime.now();
 
   bool _isEditing = false;
-  final List<DateTime> toHighlight = [DateTime(2024, 8, 20)];
+
   int? _exerciseID;
   int? _activeIndex;
-
+  int? _sliding = 0;
 
   DateTime startDay = DateTime(2024, 8, 10);
-  int? _sliding = 0;
 
   TextEditingController customExerciseTEC = TextEditingController();
   TextEditingController alertTEC = TextEditingController();
-  List<int> editIndex = [-1, -1, -1];
-  //double alertInsetValue = 0;
 
+  // Will saved index of a set that is currently being edited
+  List<int> editIndex = [-1, -1, -1];
+
+  // Single colour in colour picker to choose new colour for a day
   Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
     
     return Container(
@@ -79,8 +88,9 @@ class ProgramPageState extends State<ProgramPage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
         color: color,
-        boxShadow: [BoxShadow(color: color.withOpacity(0.8), offset: const Offset(1, 2), blurRadius: 0.0)],
+        boxShadow: [BoxShadow(color: color.withAlpha((255 * 0.8).round()), offset: const Offset(1, 2), blurRadius: 0.0)],
       ),
+
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -92,7 +102,7 @@ class ProgramPageState extends State<ProgramPage> {
             child: Icon(
               Icons.done,
               size: 36,
-              color: useWhiteForeground(color) ? Colors.white : Colors.black,
+              color: widget.theme.colorScheme.onSurface,
             ),
           ),
         ),
@@ -100,7 +110,7 @@ class ProgramPageState extends State<ProgramPage> {
     );
   }
 
-
+  // Layout of pop-up colour picker
   Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
     Orientation orientation = MediaQuery.of(context).orientation;
 
@@ -116,6 +126,7 @@ class ProgramPageState extends State<ProgramPage> {
     );
   }
 
+  // Add exercise to a day
   void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
     setState(() {
       _exerciseID = exercise['id'];
@@ -131,69 +142,67 @@ class ProgramPageState extends State<ProgramPage> {
     debugPrint("ExerciseID: $_exerciseID");
   }
 
-  // Callback to update the search mode state.
+  // Search mode callback - is choosing exercise or not
   void _updateSearchMode(bool isEditing) {
     setState(() {
       _isEditing = isEditing;
     });
   }
 
-
-  //TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
   @override
   Widget build(BuildContext context) {
     
-    //alertInsetValue =  MediaQuery.sizeOf(context).height - 300;
-    //print(_sliding);
+    // Allow user to tap outside of any box to unfocus
     return GestureDetector(
       onTap: (){
-            WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-            Provider.of<Profile>(context, listen: false).changeDone(false);
-        },
+        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+        Provider.of<Profile>(context, listen: false).changeDone(false);
+      },
+
       child: Scaffold(
         // required for snackbars to work after navigating away
         key: scaffoldMessengerKey, 
+
         resizeToAvoidBottomInset: true,
+
         appBar: AppBar(
-        backgroundColor: widget.theme.colorScheme.surface,//Color(0xFF1e2025),
-        centerTitle: true,
-        title: Text(
-          context.watch<Profile>().currentProgram.programTitle, // Show current program title
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
+          centerTitle: true,
+          title: Text(
+            context.watch<Profile>().currentProgram.programTitle,
           ),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+
+          // Open Drawer to see/select/edit programs
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
         ),
 
         actions: [
-
-          PopupMenuButton<String>(
-
-            color: Color(0xFF141414),
-            
-              icon: Icon(Icons.more_horiz, size: 28),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'phaseAdder',
-                  child: ListTile(
-                    leading: Icon(Icons.add),
-                    title: Text('Make Multi-Phase'),
-                  ),
+          // More Actions - currently implementing multi-phase programs
+          PopupMenuButton<String>(            
+            icon: const Icon(Icons.more_horiz, size: 28),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'phaseAdder',
+                child: ListTile(
+                  leading: Icon(Icons.add),
+                  title: Text('Make Multi-Phase'),
                 ),
-              ],
-              onSelected: (value) {
-                if (value == 'phaseAdder'){
-                  // set program to multiphase
-                  // for now, this can just be a memory thing
-                }
-              },
-            ),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'phaseAdder'){
+                debugPrint(value);
+                // set program to multiphase
+                // we will have to change the DB schema for this
+                // whole lotta changes... 
+              }
+            },
+          ),
 
+          // Takes to settings page
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
@@ -205,8 +214,9 @@ class ProgramPageState extends State<ProgramPage> {
           ),
         ],
       ),
+
+      // Program edit/select side drawer
       drawer: ProgramsDrawer(
-        //dbHelper: dbHelper,
         currentProgramId: context.read<Profile>().currentProgram.programID,
         onProgramSelected: (selectedProgram) {
           debugPrint("New: $selectedProgram");
@@ -214,10 +224,11 @@ class ProgramPageState extends State<ProgramPage> {
         },
       ),
       
-        bottomSheet: buildBottomSheet(),
+      // Bottom Calendar Sheet
+      bottomSheet: buildBottomSheet(),
       
         //list of day cards
-        body: _isEditing ? Stack(
+      body: _isEditing ? Stack(
           children: [ExerciseSearchWidget(
             onExerciseSelected: (exercise) {
               _handleExerciseSelected(context, exercise, _activeIndex!);
@@ -790,10 +801,12 @@ class ProgramPageState extends State<ProgramPage> {
                                     index1: index,
                                     index2: exerciseIndex,);
                                   
-                                  editIndex = [index, 
-                                                    exerciseIndex, 
-                                                    context.read<Profile>().sets[index][exerciseIndex].length
-                                              ];
+                                  editIndex = [
+                                    index, 
+                                    exerciseIndex, 
+                                    context.read<Profile>().sets[index][exerciseIndex].length
+                                  ];
+
                                 setState(() {});
                               },
                               label: Row(
@@ -956,173 +969,43 @@ class ProgramPageState extends State<ProgramPage> {
       ),
           
           //actual information about the sets
-          child: DisplaySet(context, index, exerciseIndex, setIndex),
+          child: DisplaySet(
+            editIndex: editIndex, 
+            context: context, 
+            index: index, 
+            exerciseIndex: exerciseIndex, 
+            setIndex: setIndex,
+            theme: widget.theme,
+
+            onSetTapped: (){
+              setState(() {
+                editIndex = [index, exerciseIndex, setIndex]; // Toggle between edit and nice view
+              });
+            },
+
+            onSetSaved: (){
+              setState(() {editIndex = [-1, -1, -1];});
+
+              context.read<Profile>().setsAssign(
+                index1: index, 
+                index2: exerciseIndex, 
+                index3: setIndex, 
+                // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
+                // if empty, will save 0. else, will disregard the 0.
+                // THIS IS PROBLEMATIC IF -1 is put - have "0-1"
+                data: context.read<Profile>().sets[index][exerciseIndex][setIndex].copyWith(
+                  newNumSets: int.parse("0${context.read<Profile>().setsTEC[index][exerciseIndex][setIndex].text}"),
+                  newRpe: int.parse("0${context.read<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}"),
+                  newSetLower: int.parse("0${context.read<Profile>().reps1TEC[index][exerciseIndex][setIndex].text}"),
+                  newSetUpper: int.parse("0${context.read<Profile>().reps2TEC[index][exerciseIndex][setIndex].text}"),
+                )
+              );
+            },
+          ),
         );
       },
     );
   }
-
-  Widget DisplaySet(BuildContext context, int index, int exerciseIndex, int setIndex) {
-  // State variable to control the view (either AxBxC or input fields)
-  
-
-  return Row(
-  
-    children: [
-      // Gesture detector to toggle between AxBxC and the editable fields
-      (editIndex[0] == index && editIndex[1] == exerciseIndex && editIndex[2] == setIndex) 
-            ? Container(
-              color: lighten(Color(0xFF1e2025), 20),
-                      
-              width: MediaQuery.sizeOf(context).width - 48,
-            
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  
-                  children: [
-                    // Show text fields when editing
-                    _buildTextField(
-                      context,
-                      controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex],
-                      hint: 'Sets',
-                      maxWidth: 50,
-                    ),
-                    _buildTextField(
-                      context,
-                      controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
-                      hint: 'RPE',
-                      maxWidth: 80,
-                    ),
-                    Icon(Icons.clear),
-                    _buildTextField(
-                      context,
-                      controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex],
-                      hint: 'Reps',
-                      maxWidth: 80,
-                    ),
-                    Spacer(flex: 1),
-                    IconButton(
-                      padding: EdgeInsets.all(0.0),
-                      style: ButtonStyle(
-                        shape: WidgetStateProperty.all<OutlinedBorder>(
-                          CircleBorder(), 
-                        ),
-
-                        minimumSize: WidgetStateProperty.all<Size>(
-                          Size(32, 32), 
-                        ),
-
-                        side: WidgetStateProperty.all<BorderSide>(
-                          BorderSide(
-
-                            color: Colors.orange,
-                            width: 2.0,
-                          ),
-                        ),
-                      ),
-                      
-
-                      onPressed: () {
-                        // still something strange - need to debug
-                        // seems like the TEC text is not saving after renders
-                        setState(() {editIndex = [-1, -1, -1];});
-                        context.read<Profile>().setsAssign(
-                          index1: index, 
-                          index2: exerciseIndex, 
-                          index3: setIndex, 
-                          // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
-                          // if empty, will save 0. else, will disregard the 0.
-                          // THIS IS PROBLEMATIC IF -1 is put - have "0-1"
-                          data: context.read<Profile>().sets[index][exerciseIndex][setIndex].copyWith(
-                            newNumSets: int.parse("0${context.read<Profile>().setsTEC[index][exerciseIndex][setIndex].text}"),
-                            newRpe: int.parse("0${context.read<Profile>().rpeTEC[index][exerciseIndex][setIndex].text}"),
-                            newSetLower: int.parse("0${context.read<Profile>().reps1TEC[index][exerciseIndex][setIndex].text}"),
-                            newSetUpper: int.parse("0${context.read<Profile>().reps2TEC[index][exerciseIndex][setIndex].text}"),
-                          )
-                        );
-                        
-                      },
-                      
-                      icon: Icon(Icons.check, color: Colors.orange,)
-                    )
-                  ],
-                ),
-              ),
-            )
-          : GestureDetector(
-            onTap: () {
-              setState(() {
-                  editIndex = [index, exerciseIndex, setIndex]; // Toggle between edit and nice view
-            
-                //debugPrint("Swapped! $editIndex");
-              });
-            },
-            child: AbsorbPointer(
-              child: Container(
-              
-                width: MediaQuery.sizeOf(context).width - 48,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        // Display AxBxC format when not editing
-                        
-                        Text(
-                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].numSets} x '
-                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].setLower} x '
-                          '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].rpe}',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(width: 8),
-                        //Icon(Icons.edit, size: 20),
-                      ],
-                    ),
-                ),
-              ),
-            ),
-          ),
-    ],
-  );
-}
-
-Widget _buildTextField(BuildContext context, {
-  required TextEditingController controller,
-  required String hint,
-  required double maxWidth,
-}) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Focus(
-      onFocusChange: (hasFocus) {
-        if(hasFocus){
-          context.read<Profile>().changeDone(true);
-        }else{
-          context.read<Profile>().changeDone(false);
-        }
-      },
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: darken(Color(0xFF1e2025), 25),
-          contentPadding: EdgeInsets.only(bottom: 10, left: 8),
-          constraints: BoxConstraints(
-            maxWidth: maxWidth,
-            maxHeight: 30,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          hintText: hint,
-        ),
-      ),
-    ),
-  );
-}
 
 
   //TODO: move to another file
@@ -1412,3 +1295,4 @@ Future<dynamic> openDialog() {
           }
   }
 }
+
