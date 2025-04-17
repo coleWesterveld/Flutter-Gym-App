@@ -30,12 +30,12 @@ import 'package:firstapp/database/database_helper.dart';                 // Data
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 
 // Widgets
-import 'package:firstapp/analytics_page/exercise_search.dart';           // New Exercise Search
-import 'package:firstapp/program_page/programs_drawer.dart';
+import 'package:firstapp/widgets/exercise_search.dart';           // New Exercise Search
+import 'package:firstapp/widgets/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
-import 'package:firstapp/program_page/list_days.dart';
-import 'package:firstapp/program_page/done_button.dart';
-import 'package:firstapp/program_page/calendar_bottom_sheet.dart';
+import 'package:firstapp/widgets/list_days.dart';
+import 'package:firstapp/widgets/done_button.dart';
+import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
 
 class ProgramPage extends StatefulWidget {
 

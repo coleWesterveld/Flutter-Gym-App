@@ -8,7 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';                 // Swip
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
-import 'package:firstapp/program_page/list_sets.dart';
+import 'package:firstapp/widgets/list_sets.dart';
 
 //TODO: add sets here too, centre text boxes, add notes option on dropdown
 // TODO: exercise edit doesnt work - i disabled it. I need to migrate to the new exercise selector

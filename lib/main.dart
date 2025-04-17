@@ -9,7 +9,7 @@ import 'package:firstapp/analytics_page/analytics_page.dart';             // Ana
 
 // Utilities
 import 'package:firstapp/database/database_helper.dart';                  // Database Methods
-import 'package:firstapp/other_utilities/workout_stopwatch.dart';         // Active Workout Clock
+import 'package:firstapp/widgets/workout_stopwatch.dart';         // Active Workout Clock
 import 'package:firstapp/providers_and_settings/program_provider.dart';   // Program Management
 import 'package:firstapp/providers_and_settings/settings_provider.dart';  // Settings
 import 'package:firstapp/theme/app_theme.dart';                           // Theme

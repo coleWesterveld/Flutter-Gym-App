@@ -8,7 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';                 // Swip
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 import 'package:firstapp/providers_and_settings/settings_provider.dart'; // Access to Settings
 
-import 'package:firstapp/program_page/display_set.dart';
+import 'package:firstapp/widgets/display_set.dart';
 
 // TODO: add sets here too, centre text boxes, add notes option on dropdown
 // TODO: fix bug when user navigates away from program page and presses undo

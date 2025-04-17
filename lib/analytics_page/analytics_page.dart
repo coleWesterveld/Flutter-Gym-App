@@ -53,7 +53,7 @@ Add a "Random Stat of the Day" widget that shows:
 
 // TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
-import 'package:firstapp/analytics_page/weekly_progress.dart';
+import 'package:firstapp/widgets/weekly_progress.dart';
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -62,10 +62,10 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../other_utilities/lightness.dart';
-import 'exercise_search.dart';
-import 'exercise_progress_chart.dart';
+import '../widgets/exercise_search.dart';
+import '../widgets/exercise_progress_chart.dart';
 import '../database/profile.dart';
-import '../other_utilities/info_popup.dart';
+import '../widgets/info_popup.dart';
 import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
 

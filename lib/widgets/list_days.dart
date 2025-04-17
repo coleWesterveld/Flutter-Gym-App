@@ -8,7 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';                 // Swip
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
-import 'package:firstapp/program_page/day_tile.dart';
+import 'package:firstapp/widgets/day_tile.dart';
 
 class ListDays extends StatefulWidget {
   const ListDays({

@@ -2,7 +2,7 @@ import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
-import 'set_logging.dart';
+import '../widgets/set_logging.dart';
 import '../other_utilities/lightness.dart';
 import 'dart:async';
 import '../database/database_helper.dart';
@@ -19,7 +19,7 @@ import '../providers_and_settings/settings_page.dart';
 
 // I think it may be more clear to change all imports to this package version
 // then again, idk if it really matters
-import 'package:firstapp/other_utilities/workout_stopwatch.dart';
+import 'package:firstapp/widgets/workout_stopwatch.dart';
 
 class Workout extends StatefulWidget {
   final  ThemeData theme;

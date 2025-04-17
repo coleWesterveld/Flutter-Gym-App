@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
-import '../program_page/custom_exercise_form.dart';
+import 'custom_exercise_form.dart';
 
 class ExerciseSearchWidget extends StatefulWidget {
   const ExerciseSearchWidget({

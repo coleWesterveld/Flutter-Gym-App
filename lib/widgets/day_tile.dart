@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 
-import 'package:firstapp/program_page/list_exercises.dart';
-import 'package:firstapp/program_page/popup_day_editor.dart';
+import 'package:firstapp/widgets/list_exercises.dart';
+import 'package:firstapp/widgets/popup_day_editor.dart';
 
 class DayTile extends StatefulWidget {
   const DayTile({
