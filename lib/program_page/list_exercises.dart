@@ -1,3 +1,5 @@
+// Displays a list of exercises, each with a list of sets for a day
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';                                  // Haptics
@@ -7,7 +9,6 @@ import 'package:firstapp/providers_and_settings/program_provider.dart';  // Acce
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 import 'package:firstapp/program_page/list_sets.dart';
-import 'package:firstapp/program_page/program_page.dart';
 
 //TODO: add sets here too, centre text boxes, add notes option on dropdown
 // TODO: exercise edit doesnt work - i disabled it. I need to migrate to the new exercise selector

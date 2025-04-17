@@ -1,3 +1,4 @@
+// Displays a list of days, each with a list of exercises containing their sets, for a program/phase of a program
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -78,7 +79,7 @@ class _ListDaysState extends State<ListDays> {
       // Building the list of day tiles
       itemCount: context.watch<Profile>().split.length,
       itemBuilder: (context, index) {
-        // swipe right-to-left to show delete option
+        // Swipe right-to-left to show delete option
         return Slidable(
           closeOnScroll: true,
           direction: Axis.horizontal,

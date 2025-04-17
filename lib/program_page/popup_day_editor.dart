@@ -1,3 +1,5 @@
+// Popup to edit day title, colour
+// comes up on pressing edit button of a day
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,11 +7,8 @@ import 'package:flutter/cupertino.dart';                                 // For 
 import 'package:flutter/services.dart';                                  // Haptics
 
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
-import 'package:firstapp/other_utilities/lightness.dart';                // Lightening Colours
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
-import 'package:firstapp/program_page/list_exercises.dart';
-import 'package:firstapp/program_page/program_page.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class PopUpDayEditor extends StatefulWidget {
@@ -164,7 +163,7 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
               size: 36,
               color: widget.theme.colorScheme.onSurface,
             ),
-            
+
           ),
         ),
       ),
