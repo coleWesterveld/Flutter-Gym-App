@@ -163,6 +163,151 @@ class AppTheme {
        ],
     );
   }
+
+  static ThemeData get lightTheme {
+    // --- Define Base Colors ---
+    const Color mainScaffoldBackground = Color(0xFFF5F5F5); // Light grey background
+    const Color widgetBackground = Color(0xFFFFFFFF);      // Pure white for widgets
+
+    const Color primary = primaryBlue;
+    const Color onPrimary = textWhite;
+    const Color secondary = accentOrange;
+    const Color onSecondary = textWhite;
+    const Color error = Colors.redAccent;
+    const Color onError = textWhite;
+    const Color onWidgetBackground = Color(0xFF333333); // Dark text on light widgets
+
+    // --- Calculate Variants ---
+    final Color primaryLight = lighten(primary, 20);
+    final Color primaryDark = darken(primary, 20);
+    final Color widgetBackgroundLight = darken(widgetBackground, 5); // Slightly darker for shadows
+    final Color widgetBackgroundDark = darken(widgetBackground, 10); // For pressed states
+    final Color outlineColor = darken(widgetBackground, 15); // Borders around widgets
+    const Color subtleGreyColor = Color(0xFFE0E0E0); // Lighter subtle grey for light mode
+
+    return ThemeData(
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: mainScaffoldBackground,
+
+      // --- Color Scheme ---
+      colorScheme: ColorScheme.light(
+        primary: primary,
+        onPrimary: onPrimary,
+        secondary: secondary,
+        onSecondary: onSecondary,
+        error: error,
+        onError: onError,
+        surface: widgetBackground,
+        onSurface: onWidgetBackground,
+        surfaceContainerHighest: widgetBackgroundLight,
+        onSurfaceVariant: onWidgetBackground.withOpacity(0.8),
+        outline: outlineColor,
+      ),
+
+      // --- Component Theming ---
+      appBarTheme: const  AppBarTheme(
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: widgetBackground,
+        foregroundColor: onWidgetBackground,
+        elevation: 1,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontWeight: FontWeight.w900,
+          color: onWidgetBackground,
+          fontSize: 20,
+        ),
+      ),
+
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: widgetBackground,
+        indicatorColor: primary,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+          (Set<WidgetState> states) {
+            return TextStyle(
+              color: states.contains(WidgetState.selected) 
+                  ? primary 
+                  : onWidgetBackground,
+              fontWeight: FontWeight.w500,
+            );
+          }),
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+          (Set<WidgetState> states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? onPrimary
+                : onWidgetBackground,
+          ),
+      ),
+      ),
+
+      listTileTheme: const ListTileThemeData(
+        iconColor: onWidgetBackground,
+        textColor: onWidgetBackground,
+        contentPadding: EdgeInsets.only(left: 4, right: 16),
+      ),
+
+      cardTheme: CardTheme(
+        color: widgetBackground,
+        elevation: 1,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: outlineColor, width: 1),
+        ),
+      ),
+
+      dialogTheme: DialogTheme(
+        backgroundColor: widgetBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10)),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: widgetBackground,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 10.0, horizontal: 12.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: outlineColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: outlineColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: primary, width: 2.0),
+        ),
+        hintStyle: TextStyle(
+          color: onWidgetBackground.withOpacity(0.5)),
+      ),
+      
+
+      popupMenuTheme: PopupMenuThemeData(
+        color: widgetBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0)),
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: secondary,
+        contentTextStyle: TextStyle(color: onSecondary),
+        actionTextColor: onSecondary,
+      ),
+
+      // --- Custom Theme Extensions ---
+      extensions: <ThemeExtension<dynamic>>[
+        AppColorExtensions(
+          primaryLight: primaryLight,
+          primaryDark: primaryDark,
+          backgroundLight: widgetBackgroundLight,
+          backgroundDark: widgetBackgroundDark,
+          subtleGrey: subtleGreyColor,
+          dayColors: Profile.colors,
+        ),
+      ],
+    );
+  }
 }
 
 // --- Define Custom Theme Extensions (AppColorExtensions definition remains the same) ---

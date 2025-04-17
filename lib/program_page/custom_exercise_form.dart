@@ -4,23 +4,21 @@ import 'package:firstapp/database/database_helper.dart';
 import '../providers_and_settings/settings_provider.dart';
 import 'package:provider/provider.dart';
 
-
-
 class CustomExerciseForm extends StatefulWidget {
   final double height;
   const CustomExerciseForm({
-    Key? key, 
+    super.key, 
     required this.height,
     required this.exit,
-    }) : super(key: key);
+    });
 
   final void Function() exit;
 
   @override
-  _CustomExerciseFormState createState() => _CustomExerciseFormState();
+  CustomExerciseFormState createState() => CustomExerciseFormState();
 }
 
-class _CustomExerciseFormState extends State<CustomExerciseForm> {
+class CustomExerciseFormState extends State<CustomExerciseForm> {
   final TextEditingController _exerciseTEC = TextEditingController();
   final TextEditingController _musclesTEC = TextEditingController();
   final _formKey = GlobalKey<FormState>();

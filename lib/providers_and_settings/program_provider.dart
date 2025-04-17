@@ -692,7 +692,6 @@ Future<void> updateDaysOrderInDatabase() async {
     dbHelper.updateDay(split[index].dayID, newDay.toMap());
     split[index] = newDay;
 
-
     //dbHelper.updateExercises();
     // should update other data here I think
 

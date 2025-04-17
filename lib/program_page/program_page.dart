@@ -16,6 +16,8 @@ Still Todo on this page:
 - test undo even on different pages
 - modifiable start date
 - muilti phase programs
+- idk if I need to crazy callbacks for like onSet___ -> I think editIndex could just be local
+    - then again, it is needed I think if we want only one at a time open
 //TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
 
 */
@@ -34,14 +36,13 @@ import 'package:firstapp/other_utilities/lightness.dart';                // Ligh
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 // Widgets
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:table_calendar/table_calendar.dart';                     // For Bottomsheet Calendar
 import 'package:firstapp/program_page/custom_exercise_form.dart';        // Add An Exercise
 import "package:firstapp/program_page/exercise_search.dart";             // Exercise Form - Migrating Away From
 import 'package:firstapp/analytics_page/exercise_search.dart';           // New Exercise Search
 import 'package:firstapp/program_page/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
-import 'package:firstapp/program_page/list_exercises.dart';
+import 'package:firstapp/program_page/day_tile.dart';
 
 // When editing a day, the user can edit either title or colour asociated
 enum Viewer {title, color}
@@ -81,51 +82,7 @@ class ProgramPageState extends State<ProgramPage> {
   List<int> editIndex = [-1, -1, -1];
 
   // Single colour in colour picker to choose new colour for a day
-  Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
-    
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0),
-        color: color,
-        boxShadow: [BoxShadow(color: color.withAlpha((255 * 0.8).round()), offset: const Offset(1, 2), blurRadius: 0.0)],
-      ),
-
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: changeColor,
-          borderRadius: BorderRadius.circular(8.0),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 250),
-            opacity: isCurrentColor ? 1 : 0,
-            child: Icon(
-              Icons.done,
-              size: 36,
-              color: widget.theme.colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Layout of pop-up colour picker
-  Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
-    Orientation orientation = MediaQuery.of(context).orientation;
-
-    return SizedBox(
-      width: 300,
-      height: orientation == Orientation.portrait ? 360 : 240,
-      child: GridView.count(
-        crossAxisCount: orientation == Orientation.portrait ?  5: 4,
-        crossAxisSpacing: 5,
-        mainAxisSpacing: 5,
-        children: [for (Color color in colors) child(color)],
-      ),
-    );
-  }
-
+  
   // Add exercise to a day
   void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
     debugPrint("Adding $exercise to $index ");
@@ -205,7 +162,7 @@ class ProgramPageState extends State<ProgramPage> {
 
           // Takes to settings page
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
@@ -228,7 +185,7 @@ class ProgramPageState extends State<ProgramPage> {
       // Bottom Calendar Sheet
       bottomSheet: buildBottomSheet(),
       
-        //list of day cards
+      // List of day cards
       body: _isEditing ? Stack(
           children: [ExerciseSearchWidget(
             onExerciseSelected: (exercise) {
@@ -377,233 +334,45 @@ class ProgramPageState extends State<ProgramPage> {
               key: ValueKey(context.watch<Profile>().split[index]),
               padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
                         
-              child: dayTile(context, index)
+              child: DayTile(
+                editIndex: editIndex, 
+                context: context, 
+                index: index,
+                theme: widget.theme,
+
+                onSetSaved: () => setState(() => editIndex = [-1, -1, -1]),
+
+                onSetTapped: (exerciseIndex, setIndex) {
+                  setState(() {
+                    // Toggle between edit and display view
+                    editIndex = [index, exerciseIndex, setIndex]; 
+                  });
+                },
+
+                onSetAdded: (exerciseIndex) {
+                  setState(() {
+                    editIndex = [
+                      index,
+                      exerciseIndex, 
+                      context.read<Profile>().sets[index][exerciseIndex].length
+                    ];
+                  });
+                },
+
+                onExerciseAdded: () {
+                  setState(() {
+                    _activeIndex = index;
+                    _isEditing = true;
+                  });
+                }
+              )
             ),  
           );
         },
     );
   }
 
-  Container dayTile(BuildContext context, int index) {
-    return Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: lighten(Color(0xFF141414), 20)),
-     
-                color: Color(0xFF1e2025),
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-          
-              //defining the inside of the actual box, display information
-              child:  Center(
-                child: Theme(
-                    data: Theme.of(context).copyWith(
-                      dividerColor: Colors.transparent,
-                      listTileTheme: ListTileThemeData(
-                        contentPadding: EdgeInsets.only(left: 4, right: 16), // Removes extra padding
-                      ),
-                    ),
-                  
-                  //expandable to see exercises and sets for that day
-                  child: ExpansionTile(
-                  iconColor: Color(0XFF1A78EB),
-                  collapsedIconColor: Color(0XFF1A78EB),
-                  onExpansionChanged: (val){
-                    if (!val){
-                      WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                      Provider.of<Profile>(context, listen: false).changeDone(false);
-                    }
-                  },
-          
-                  //top row always displays day title, and edit button
-                  //sized boxes and padding is just a bunch of formatting stuff
-                  //tbh it could probably be made more concise
-                  //TODO: simplify this
-                  title: 
-                    SizedBox(
-                      height: 40,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 30,
-                              width: 100,
-                              child: 
-                                Row(
-                                  children: [
-                                      
-                                    //number
-                                    SizedBox(
-                                      width: 30,
-                                      child: Text(
-                                        
-                                        "${index + 1}",
-                                            
-                                        style: TextStyle(
-                                            height: 0.6,
-                                  
-                                  color: Color(context.watch<Profile>().split[index].dayColor),
-                                  fontSize: 50,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                            
-                                      //day title
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left : 16.0),
-                                      child: SizedBox(
-                                        width: MediaQuery.sizeOf(context).width - 186,
-                                        child: Text(
-                                          overflow: TextOverflow.ellipsis,
-
-                                          context.watch<Profile>().split[index].dayTitle,
-                                          style: TextStyle(
-                                            color: Color.fromARGB(255, 255, 255, 255),
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    
-                                  ], 
-                                ),
-                              ),
-                          ),
-                            
-                          //update title button
-                          
-                          IconButton(onPressed: () {
-                              
-                              //TODO: make a button to go between two screens, 
-                              // default to changing title but when toggled to color can also change day color.
-                              //TODO: color prefereces persistence
-                              
-                              showDialog(
-                                anchorPoint: Offset(100, 100),
-                                
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return StatefulBuilder(
-                                    builder: (context, StateSetter setState) {
-                                        return AlertDialog(
-                                          //Padding: EdgeInsets.only(bottom: alertInsetValue),
-                                          title: CupertinoSlidingSegmentedControl(
-                                            padding: EdgeInsets.all(4.0),
-                                            children: const <int, Text>{
-                                              0: Text("Title"),
-                                              1: Text("Color"),
-                                            }, 
-                                    
-                                            onValueChanged: (int? newValue){
-                                              _sliding = newValue;
-                                    
-                                              setState((){});
-                                          
-                                            },
-                                            thumbColor: Colors.orange,
-                                            groupValue: _sliding,
-                                          ),
-                                          content: editBuilder(index),
-                                          actions: [
-                                            IconButton(
-                                            onPressed: (){
-                                              if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                                              String? dayTitle = alertTEC.text;
-                                              if (dayTitle.isNotEmpty) {
-                                              //rebuild widget tree reflecting new title
-                                              setState( () {
-                                                Provider.of<Profile>(context, listen: false).splitAssign(
-                                                  index: index, 
-                                                  newDay: context.read<Profile>().split[index].copyWith(newDayTitle: dayTitle),
-
-                                                );
-                                              });} //
-                                              Navigator.of(context, rootNavigator: true).pop('dialog');
-                                              _sliding = 0;
-          
-                                              
-                                            },
-                                            icon: Icon(Icons.check))
-  ]
-                                    
-                                    );},
-                                  );
-                                },
-                              );
-                            
-                              //widget.writePrefs();
-                            },
-          
-                            icon: Icon(Icons.edit_outlined),
-                            color: Colors.orange,
-                          ),
-                        ],
-                      ),
-                    ),
-                          
-                    //children of expansion tile - what gets shown when user expands that day
-                    // shows exercises for that day
-                    //this part is viewed after tile is expanded
-                    //TODO: show sets per exercise, notes, maybe most recent weight/reps
-                    //exercises are reorderable
-        
-                    //TODO: get rid of little bit of color that somehow gets through at bottom
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color:Color(0xFF1e2025),
-                          borderRadius: BorderRadius.only(
-                            
-                            bottomRight: Radius.circular(12.0),
-                            
-                            bottomLeft: Radius.circular(12.0)),
-                          ),
-                        
-                        
-                        child: ListExercises(
-                          editIndex: editIndex, 
-                          widget: widget, 
-                          context: context, 
-                          index: index,
-                          theme: widget.theme,
-
-                          onExerciseAdded: () async {
-                            setState(() {
-                                _activeIndex = index;
-                                _isEditing = true;
-                              }
-                            );
-                          },
-
-                          onSetAdded: (exerciseIndex) {
-                            setState(() {
-                              editIndex = [
-                                index,
-                                exerciseIndex, 
-                                context.read<Profile>().sets[index][exerciseIndex].length
-                              ];
-                            });
-                          },
-
-                          onSetTapped: (exerciseIndex, setIndex) {
-                            setState(() {
-                              // Toggle between edit and display view
-                              editIndex = [index, exerciseIndex, setIndex]; 
-                            });
-                          },
-
-                          onSetSaved: () {
-                            setState(() => editIndex = [-1, -1, -1]);
-                          }
-                        ),
-                      ),
-                    ]
-                  ),
-                ),
-              ),
-            );
-  }
+// currently working on extracting this
 
 
   //TODO: move to another file
@@ -831,65 +600,5 @@ Future<dynamic> openDialog() {
 
   // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
   // its jarring when it bounces around
-  Widget editBuilder(index){ 
-          alertTEC = TextEditingController(text: context.watch<Profile>().split[index].dayTitle);
-          
-
-          // Ensure text is selected when the widget is built
-          alertTEC.selection = TextSelection(
-            baseOffset: 0,
-            extentOffset: alertTEC.text.length,
-          );
-
-          if(_sliding == 0){
-            //Value = MediaQuery.sizeOf(context).height - 450;
-            return SizedBox(
-              height: 100,
-              width: 300,
-              child: TextFormField(
-                  
-                  onFieldSubmitted: (value){
-                    if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                    Navigator.of(context).pop(alertTEC.text);
-                  },
-                  autofocus: true,
-                  controller: alertTEC,
-                  decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                      onPressed: alertTEC.clear,
-                      icon: Icon(Icons.highlight_remove),
-                    ),
-                    
-                    hintText: "Enter Text",
-                  )
-                ),
-            );
-
-          }else{
-                return SizedBox(
-                  height: 250,
-                  width: 300,
-                  child: SingleChildScrollView(
-                    
-                    child: BlockPicker(
-                      pickerColor: Color(context.watch<Profile>().split[index].dayColor),
-                      onColorChanged: (Color color) {
-                        context.read<Profile>().splitAssign(
-                          
-                          index: index,
-                          newDay: context.read<Profile>().split[index].copyWith(newDayColor: color.value),
-
-                        );
-                        setState(() {});
-                      },
-                        
-                      
-                      availableColors: Profile.colors,
-                      layoutBuilder: pickerLayoutBuilder,
-                      itemBuilder: pickerItemBuilder,
-                    ),
-                  ),
-                );
-          }
-  }
+  
 }

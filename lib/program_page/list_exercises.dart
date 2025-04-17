@@ -16,7 +16,6 @@ class ListExercises extends StatefulWidget {
   const ListExercises({
     super.key,
     required this.editIndex,
-    required this.widget,
     required this.context,
     required this.index,
     required this.onExerciseAdded,
@@ -27,7 +26,6 @@ class ListExercises extends StatefulWidget {
   });
 
   final List<int> editIndex;
-  final ProgramPage widget;
   final BuildContext context;
   final int index;
   final Function onExerciseAdded;
@@ -87,17 +85,20 @@ class _ListExercisesState extends State<ListExercises> {
                 ),
               ),
               
+              // The text and button here is always the light colour (white)
+              // because its on the primary colour (typically blue)
+              // and I think the dark black doesnt contrast well on the blue
               label: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.add,
-                    color: Colors.white,
+                    color: widget.theme.primaryColorLight,
                   ),
                   Text(
                     "Exercise  ",
                     style: TextStyle(
-                      color: widget.theme.colorScheme.onSurface,
+                      color: widget.theme.primaryColorLight,
                     ),
                   ),
                 ],
@@ -182,7 +183,7 @@ class _ListExercisesState extends State<ListExercises> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: widget.theme.colorScheme.outline,//widgetlighten(Color(0xFF1e2025), 20),
+                  color: widget.theme.colorScheme.outline,
                   width: 0.5
                 ),
               ),
@@ -302,11 +303,11 @@ class _ListExercisesState extends State<ListExercises> {
                     // Displaying list of sets for each exercise
                     ListSets(
                       editIndex: widget.editIndex, 
-                      widget: widget.widget, 
+                      //widget: widget.widget, 
                       context: context, 
                       index: widget.index, 
                       exerciseIndex: exerciseIndex,
-                      theme: widget.widget.theme,
+                      theme: widget.theme,
                     
                       onSetTapped: (setIndex){
                         widget.onSetTapped(exerciseIndex, setIndex);

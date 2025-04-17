@@ -18,7 +18,6 @@ class ListSets extends StatefulWidget {
   const ListSets({
     super.key,
     required this.editIndex,
-    required this.widget,
     required this.context,
     required this.index,
     required this.exerciseIndex,
@@ -28,7 +27,6 @@ class ListSets extends StatefulWidget {
   });
 
   final List<int> editIndex;
-  final ProgramPage widget;
   final BuildContext context;
   final int index;
   final int exerciseIndex;
@@ -130,7 +128,7 @@ class _ListSetsState extends State<ListSets> {
             index: widget.index, 
             exerciseIndex: widget.exerciseIndex, 
             setIndex: setIndex,
-            theme: widget.widget.theme,
+            theme: widget.theme,
 
             onSetTapped: () => widget.onSetTapped(setIndex),
             onSetSaved: (){
