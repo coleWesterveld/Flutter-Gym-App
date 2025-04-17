@@ -19,16 +19,13 @@ Still Todo on this page:
 - idk if I need to crazy callbacks for like onSet___ -> I think editIndex could just be local
     - then again, it is needed I think if we want only one at a time open
 //TODO: fix error where clicking on one textfield then directly to another getrs rid of done button, unexpectedly
-
+// TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
 */
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/cupertino.dart';                                 // For Slider
-import 'package:flutter/services.dart';                                  // Haptics
 
 // Utilities
-import 'package:flutter_slidable/flutter_slidable.dart';                 // Swipe To Delete
 import 'package:firstapp/database/database_helper.dart';                 // Database Helper
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 import 'package:firstapp/other_utilities/days_between.dart';
@@ -42,10 +39,7 @@ import "package:firstapp/program_page/exercise_search.dart";             // Exer
 import 'package:firstapp/analytics_page/exercise_search.dart';           // New Exercise Search
 import 'package:firstapp/program_page/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
-import 'package:firstapp/program_page/day_tile.dart';
-
-// When editing a day, the user can edit either title or colour asociated
-enum Viewer {title, color}
+import 'package:firstapp/program_page/list_days.dart';
 
 class ProgramPage extends StatefulWidget {
 
@@ -71,7 +65,6 @@ class ProgramPageState extends State<ProgramPage> {
 
   int? _exerciseID;
   int? _activeIndex;
-  int? _sliding = 0;
 
   DateTime startDay = DateTime(2024, 8, 10);
 
@@ -109,7 +102,6 @@ class ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
-    
     // Allow user to tap outside of any box to unfocus
     return GestureDetector(
       onTap: (){
@@ -166,7 +158,7 @@ class ProgramPageState extends State<ProgramPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
           ),
@@ -196,160 +188,19 @@ class ProgramPageState extends State<ProgramPage> {
         ): Column(
           children: [
             Expanded(
-              child: listDays(context),
-            ),
-            SizedBox(height: 82),
-          ],
-        ),
-        
-      ),
-    );
-  }
-
-  /////////////////////////////////////////////////////////////////////
-  // LIST OF DAYS IN A SPLIT
-  /////////////////////////////////////////////////////////////////////
-
-  ReorderableListView listDays(BuildContext context) {
-    return ReorderableListView.builder(
-      //reordering days
-        onReorder: (oldIndex, newIndex){
-          if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-          setState(() {
-            // if (newIndex > oldIndex) {
-            //   newIndex -= 1;
-            // }
-            context.read<Profile>().moveDay(
-              oldIndex: oldIndex, 
-              newIndex: newIndex, 
-              programID: context.read<Profile>().currentProgram.programID);
-    
-    
-          });
-        },
-      
-        //button at bottom to add a new day to split
-        footer: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Card(
-            key: ValueKey('dayAdder'),
-          
-            color: Color(0XFF1A78EB),
-            child: InkWell(
-            
-              splashColor: Colors.deepOrange,
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                setState(() {
-                  context.read<Profile>().splitAppend();
-                });
-                
-                //insertDay(context, 1, 'Day 1 - Upper Body');
-                
-              },
-              child: SizedBox(
-                width: double.infinity,
-                height: 50.0,
-                child: Icon(Icons.add),
-              ),
-            ),
-          ),
-        ),
-            
-        // building the rest of the tiles, one for each day from split list stored in user
-        //dismissable and reorderable: each child for dismissable needs to have a unique key
-        itemCount: context.watch<Profile>().split.length,
-        itemBuilder: (context, index) {
-          // todo: currently, some are slideable and some are dismissable. make all slideable
-          // Undos currently caches then restores item, may want to switch to a soft delete first in DB as undo method? just an idea, for now im happy, it works.
-          return Slidable(
-            closeOnScroll: true,
-            direction: Axis.horizontal,
-
-            key: ValueKey(context.watch<Profile>().split[index]),
-            // background: Container(
-            //   color: Colors.red,
-            //   child: Icon(Icons.delete)
-            // ),
-            endActionPane: ActionPane(
-              extentRatio: 0.3,
-              motion: const ScrollMotion(), 
-              children: [SlidableAction(
-                
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                icon: Icons.delete,
-                onPressed: (direction) {
-                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                  final deletedDay = context.read<Profile>().split[index];
-                  final deletedExercises = context.read<Profile>().exercises[index];
-                  final deletedSets = context.read<Profile>().sets[index];
-                  setState(() {
-                    context.read<Profile>().splitPop(index: index);    
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        style: TextStyle(
-                          color: Colors.white
-                        ),
-                        'Day Deleted'
-                        ),
-                        action: SnackBarAction(
-                        label: 'Undo',
-                        textColor: Colors.white,
-                        onPressed: () {
-                          try{
-                          debugPrint("re-add: ${deletedDay.toString()}");
-
-                          //setState(() {
-
-                            
-                            context.read<Profile>().splitInsert(
-                              index: index, 
-                              day: deletedDay, 
-                              exerciseList: deletedExercises, 
-                              newSets: deletedSets,
-                            );
-                          //});
-                          } catch(e){
-                            debugPrint('Undo failed: $e');
-                            // Show error message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Failed to undo deletion :(')),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                },
-            ),
-              ],
-            ),
-            
-            //outline for each day tile in the list
-            child: Padding(
-              key: ValueKey(context.watch<Profile>().split[index]),
-              padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
-                        
-              child: DayTile(
+              child: ListDays(
                 editIndex: editIndex, 
-                context: context, 
-                index: index,
-                theme: widget.theme,
+                theme: widget.theme, 
+                context: context,
 
-                onSetSaved: () => setState(() => editIndex = [-1, -1, -1]),
-
-                onSetTapped: (exerciseIndex, setIndex) {
+                onExerciseAdded: (index) {
                   setState(() {
-                    // Toggle between edit and display view
-                    editIndex = [index, exerciseIndex, setIndex]; 
+                    _activeIndex = index;
+                    _isEditing = true;
                   });
                 },
 
-                onSetAdded: (exerciseIndex) {
+                onSetAdded: (index, exerciseIndex) {
                   setState(() {
                     editIndex = [
                       index,
@@ -359,148 +210,114 @@ class ProgramPageState extends State<ProgramPage> {
                   });
                 },
 
-                onExerciseAdded: () {
+                onSetTapped:(index, exerciseIndex, setIndex) {
                   setState(() {
-                    _activeIndex = index;
-                    _isEditing = true;
+                    // Toggle between edit and display view
+                    editIndex = [index, exerciseIndex, setIndex]; 
                   });
-                }
-              )
-            ),  
-          );
-        },
+                },
+
+                onSetSaved: () => setState(() => editIndex = [-1, -1, -1]),
+
+              ),
+            ),
+            const SizedBox(height: 82),
+          ],
+        ),
+        
+      ),
     );
   }
 
-// currently working on extracting this
-
-
-  //TODO: move to another file
-  //this is to show text box to enter text for day titles and exercises
-Future<dynamic> openDialog() {
-
-  bool showCustomMaker = false;
-  return showModalBottomSheet(
-    context: context,
-    isScrollControlled: true, // Allows the bottom sheet to adjust to content height
-    showDragHandle: true,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(16),
-      ),
-    ),
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (BuildContext context, StateSetter setModalState) {
-          final mediaQuery = MediaQuery.of(context);
-          final screenHeight = mediaQuery.size.height;
-          final keyboardHeight = mediaQuery.viewInsets.bottom;
-          final availableHeight = screenHeight - keyboardHeight;
-          final maxHeight = availableHeight * 0.7; // Ensures some padding remains above
-
-          //debugPrint(showCustomMaker.toString());
-
-          if (showCustomMaker) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: keyboardHeight),
-
-              // here I could maybe add a toggle that will capitalize by default but can be turned off.
-              // TODO: toggle ^ and potentially do checks if custom exercise is already in DB, then pop up "did you mean X?" for some similar exercise or something.
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
- // Print to the debug console
-                      setModalState(() {
-                        showCustomMaker = false; // Updates state inside modal
-                      });
-                      debugPrint(showCustomMaker.toString());
-                    },
-                    label: Icon(
-                      Icons.arrow_back_ios_outlined,
-                      color: Colors.blue,
-                    )
-                  ),
-                  CustomExerciseForm(height: maxHeight - 48, exit: ()=> setState(() {
-                    _isEditing=false;
-                  })),
-                ],
-              ),
-            );
-          } else {
-            return Padding(
-              padding: EdgeInsets.only(bottom: keyboardHeight),
-              child: SizedBox(
-                height: maxHeight, // Prevents it from taking full height
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: ExerciseDropdown(),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: lighten(Color(0xFF141414), 20)),
-                        ),
-                        color: Color(0xFF1e2025),
-                      ),
-                      height: 60,
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ButtonTheme(
-                            minWidth: double.infinity,
-                            child: ElevatedButton(
-                              style: ButtonStyle(
-                                shape: WidgetStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                backgroundColor: WidgetStateProperty.all(Color(0xFF007aff)),
-                              ),
-                              onPressed: () {
-                                setModalState(() {
-                                  showCustomMaker = true; // Updates state inside modal
-                                });
-                                debugPrint(showCustomMaker.toString());
-                              },
-                              child: Text(
-                                'Add New Exercise',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            );
-          }
-        },
-      );
-    },
-  );
-}
-
-// TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
-// also, it goes away when clicking directly from one textbox to another
   Widget? buildBottomSheet(){
     // if we should be displaying done button for numeric keyboard, then create.
     // else display calendar
-  if (_isEditing) return null;
-  if (context.read<Profile>().done){ 
-    //return done bottom sheet
+    if (_isEditing) return null;
+
+    if (context.read<Profile>().done){ 
+      //return done bottom sheet
+      return DoneButtonBottom(context: context);
+    }else{
+      return CalendarBottomSheet(today: today);
+    }
+  }  
+}
+
+
+class CalendarBottomSheet extends StatelessWidget {
+  const CalendarBottomSheet({
+    super.key,
+    required this.today,
+  });
+
+  final DateTime today;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Color(0xFF1e2025),
+      padding: const EdgeInsets.all(8.0),
+      height: 82,
+      child: TableCalendar(
+        headerVisible: false,
+        calendarFormat: CalendarFormat.week,
+        calendarBuilders: CalendarBuilders(
+          defaultBuilder: (context, day, focusedDay) {
+            DateTime origin = DateTime(2024, 1, 7);
+    
+            for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
+              int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
+              if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
+                return Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(context.watch<Profile>().split[splitDay].dayColor),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(8.0),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${day.day}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                );
+              }
+            }
+            
+            return null;
+          },
+        ),
+    
+        rowHeight: 50,
+        focusedDay: today, 
+        firstDay: DateTime.utc(2010, 10, 16), 
+        lastDay: DateTime.utc(2030, 3, 14),
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
+            weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
+      ),
+    ),
+                );
+  }
+}
+
+class DoneButtonBottom extends StatelessWidget {
+  const DoneButtonBottom({
+    super.key,
+    required this.context,
+  });
+
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-
+    
         border: Border(
           top: BorderSide(
             color:  lighten(Color(0xFF141414), 20),
@@ -510,7 +327,7 @@ Future<dynamic> openDialog() {
         color: Color(0xFF1e2025),
           //borderRadius: BorderRadius.circular(12.0),
         ),
-
+    
         height: 50,
         width: double.infinity,
         padding: const EdgeInsets.all(8.0),
@@ -531,9 +348,9 @@ Future<dynamic> openDialog() {
               onPressed: () {
                 WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
                 context.read<Profile>().done = false;
-                setState((){});
+                //setState((){});
               },
-
+    
               child: Text(
                 'Done',
                 style: TextStyle(color: Colors.white),
@@ -542,63 +359,5 @@ Future<dynamic> openDialog() {
           ],
         ),
       );
-
-      }else{
-        // return calendary bottom sheet
-
-
-              return Container(
-                color: Color(0xFF1e2025),
-                padding: const EdgeInsets.all(8.0),
-                height: 82,
-                child: TableCalendar(
-                  headerVisible: false,
-                  calendarFormat: CalendarFormat.week,
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, day, focusedDay) {
-                      DateTime origin = DateTime(2024, 1, 7);
-
-                      for (int splitDay = 0; splitDay < context.watch<Profile>().split.length; splitDay ++){
-                        int diff = daysBetween(origin , day) % context.watch<Profile>().splitLength;
-                        if (diff == (context.watch<Profile>().splitLength ~/ context.watch<Profile>().split.length) * splitDay) {
-                          return Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Color(context.watch<Profile>().split[splitDay].dayColor),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8.0),
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${day.day}',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                      
-                      return null;
-                    },
-                  ),
-
-                  rowHeight: 50,
-                  focusedDay: today, 
-                  firstDay: DateTime.utc(2010, 10, 16), 
-                  lastDay: DateTime.utc(2030, 3, 14),
-                  daysOfWeekStyle: DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(color: Colors.white), // Color for weekdays (Mon-Fri)
-                      weekendStyle: TextStyle(color: Colors.white),   // Color for weekends (Sat-Sun)
-                ),
-              ),
-            );
-      }
   }
-
-  // TODO: keep this at the top of the screen, but not go off screen when keyboard comes up
-  // its jarring when it bounces around
-  
 }

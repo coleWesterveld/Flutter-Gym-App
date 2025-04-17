@@ -85,20 +85,17 @@ class _ListExercisesState extends State<ListExercises> {
                 ),
               ),
               
-              // The text and button here is always the light colour (white)
-              // because its on the primary colour (typically blue)
-              // and I think the dark black doesnt contrast well on the blue
               label: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.add,
-                    color: widget.theme.primaryColorLight,
+                    color: widget.theme.colorScheme.onPrimary,
                   ),
                   Text(
                     "Exercise  ",
                     style: TextStyle(
-                      color: widget.theme.primaryColorLight,
+                      color: widget.theme.colorScheme.onPrimary,
                     ),
                   ),
                 ],
