@@ -48,7 +48,7 @@ class CalendarBottomSheet extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Color(context.watch<Profile>().split[splitDay].dayColor),
-                      borderRadius: BorderRadius.all(
+                      borderRadius: const BorderRadius.all(
                         Radius.circular(8.0),
                       ),
                     ),
@@ -74,8 +74,8 @@ class CalendarBottomSheet extends StatelessWidget {
 
         // Text Styling for Sun, Mon, Tues, etc.
         daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: TextStyle(color: theme.colorScheme.onSurface), // Color for weekdays (Mon-Fri)
-            weekendStyle: TextStyle(color: theme.colorScheme.onSurface),   // Color for weekends (Sat-Sun)
+          weekdayStyle: TextStyle(color: theme.colorScheme.onSurface),
+          weekendStyle: TextStyle(color: theme.colorScheme.onSurface),
         ),
       ),
     );

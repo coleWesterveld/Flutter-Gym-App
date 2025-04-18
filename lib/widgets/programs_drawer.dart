@@ -1,19 +1,21 @@
+// Side drawer to edit, select and add programs
+
 import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/database/profile.dart';
-//import 'package:firstapp/database/profile.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProgramsDrawer extends StatelessWidget {
   final int currentProgramId;
   final Function(Program) onProgramSelected;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
+  final ThemeData theme;
 
   ProgramsDrawer({
     required this.currentProgramId,
     required this.onProgramSelected,
-    Key? key,
-  }) : super(key: key);
+    required this.theme,
+    super.key,
+  });
 
   Future<List<Program>> _fetchPrograms() async {
     final programMaps = await dbHelper.fetchPrograms();
@@ -23,61 +25,74 @@ class ProgramsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Color(0xFF1e2025),
+      backgroundColor: theme.colorScheme.surface,
       child: FutureBuilder<List<Program>>(
         future: _fetchPrograms(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading programs'));
+            return const Center(child: Text('Error loading programs'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No programs found'));
+            return const Center(child: Text('No programs found'));
           }
 
           final programs = snapshot.data!;
           
           return Column(
             children: [
-              DrawerHeader(
+               DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Color(0xFF1e2025),
+                  color: theme.colorScheme.surface,
                 ),
+
                 child: Center(
                   child: Text(
                     'Your Programs',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: theme.colorScheme.onSurface,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
+
               Expanded(
                 child: ListView.builder(
                   itemCount: programs.length,
                   itemBuilder: (context, index) {
                     final program = programs[index];
                     return ListTile(
-                      leading: Icon(Icons.fitness_center, color: Colors.white),
+                      leading: Icon(
+                        Icons.fitness_center, 
+                        color: theme.colorScheme.onSurface,
+                      ),
+
                       title: Row(
                         children: [
                           Expanded(
                             child: Text(
                               program.programTitle,
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface
+                              ),
                             ),
                           ),
                           if (program.programID == currentProgramId) 
                             IconButton(
-                              icon: Icon(Icons.edit, color: Colors.white, size: 20),
+                              icon: Icon(
+                                Icons.edit, 
+                                color: theme.colorScheme.onSurface, 
+                                size: 20
+                              ),
+
                               onPressed: () => _showEditProgramDialog(context, program),
                             ),
                         ],
                       ),
                       selected: program.programID == currentProgramId,
-                      selectedTileColor: Colors.blueGrey[800],
+                      selectedTileColor: theme.colorScheme.outline,
                       onTap: () {
                         onProgramSelected(program);
                         Navigator.pop(context);
@@ -86,13 +101,20 @@ class ProgramsDrawer extends StatelessWidget {
                   },
                 ),
               ),
-              Divider(color: Colors.grey),
+
+              Divider(color: theme.colorScheme.outline),
+
               ListTile(
-                leading: Icon(Icons.add, color: Colors.white),
+                leading: Icon(
+                  Icons.add, 
+                  color: theme.colorScheme.onSurface
+                ),
+
                 title: Text(
                   'Create New Program',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
+
                 onTap: () {
                   _showCreateProgramDialog(context);
                 },
@@ -110,16 +132,17 @@ class ProgramsDrawer extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Program'),
+        title: const Text('Edit Program'),
         content: TextField(
           controller: programNameController,
-          decoration: InputDecoration(hintText: 'Enter new program name'),
+          decoration: const InputDecoration(hintText: 'Enter new program name'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
+
           TextButton(
             onPressed: () async {
               if (programNameController.text.isNotEmpty) {
@@ -135,11 +158,13 @@ class ProgramsDrawer extends StatelessWidget {
                   onProgramSelected(updatedProgram);
                 }
                 
-                Navigator.pop(context);
-                // No need to close drawer here since we're just editing
+                if (context.mounted){
+                  Navigator.pop(context);
+                }
+                
               }
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -152,16 +177,19 @@ class ProgramsDrawer extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('New Program'),
+        title: const Text('New Program'),
+
         content: TextField(
           controller: programNameController,
-          decoration: InputDecoration(hintText: 'Enter program name'),
+          decoration: const InputDecoration(hintText: 'Enter program name'),
         ),
+
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
+
           TextButton(
             onPressed: () async {
               if (programNameController.text.isNotEmpty) {
@@ -175,11 +203,13 @@ class ProgramsDrawer extends StatelessWidget {
                 );
                 
                 onProgramSelected(newProgram);
-                Navigator.pop(context);
-                Navigator.pop(context);
+
+                if (context.mounted){
+                  Navigator.pop(context);
+                }
               }
             },
-            child: Text('Create'),
+            child: const Text('Create'),
           ),
         ],
       ),

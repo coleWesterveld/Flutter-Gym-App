@@ -1,18 +1,5 @@
-// analyitcs page
+// View analytics, this weeks progress, goals, and history
 
-//big page overhaul with search - links to DB to search for index
-// next step is to take that index, query history, and plot it
-// and clean up the UI
-
-// overall goal of this page:
-// metrics for motivation/acccountability
-// insights into effective exercises or routines 
-// (effectiveness measured by increased strength, or other metric)
-// fun for workout and data geeks :)
-
-// To continue I should add mock history to plot and test
-
-// allow users to see graphs by search, or pin graphs or goals
 // maybe cool idea: allow easy export as CSV
 // goal is to have analytics on a few things, namely: 
 // DOTS or other powerlifting scoring scores based off of SBD and bodyweight
@@ -767,6 +754,7 @@ Future<void> _deleteGoal(Goal goal) async {
   Widget _buildFullScreenSearch() {
     debugPrint(_isAddingGoal.toString());
     return ExerciseSearchWidget(
+      theme: widget.theme,
       onExerciseSelected: _handleExerciseSelected,
       onSearchModeChanged: (isSearching) {
         setState(() {
@@ -786,6 +774,8 @@ Future<void> _deleteGoal(Goal goal) async {
           _isAddingGoal = isSearching;
         });
       },
+
+      theme: widget.theme,
     );
   }
 }

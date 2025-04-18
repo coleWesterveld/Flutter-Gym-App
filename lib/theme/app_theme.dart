@@ -200,7 +200,7 @@ class AppTheme {
         surface: widgetBackground,
         onSurface: onWidgetBackground,
         surfaceContainerHighest: widgetBackgroundLight,
-        onSurfaceVariant: onWidgetBackground.withOpacity(0.8),
+        onSurfaceVariant: onWidgetBackground.withAlpha((0.8 * 255).round()),
         outline: outlineColor,
       ),
 

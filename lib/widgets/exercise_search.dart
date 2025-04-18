@@ -4,16 +4,19 @@ import 'custom_exercise_form.dart';
 
 class ExerciseSearchWidget extends StatefulWidget {
   const ExerciseSearchWidget({
-    Key? key,
+    super.key,
     this.onExerciseSelected,
     this.onSearchModeChanged,
-  }) : super(key: key);
+    required this.theme,
+  });
 
   /// Called when an exercise is selected.
   final void Function(Map<String, dynamic> exercise)? onExerciseSelected;
 
   /// Called when the search mode changes. True means active search mode.
   final void Function(bool isSearching)? onSearchModeChanged;
+
+  final ThemeData theme;
 
   @override
   State<ExerciseSearchWidget> createState() => _ExerciseSearchWidgetState();
@@ -24,7 +27,6 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
   final FocusNode _searchFocus = FocusNode();
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
 
-  bool _isSearching = false;
   String _searchQuery = "";
   List<Map<String, dynamic>> _exercises = [];
   bool _showCustomMaker = false;
@@ -35,15 +37,12 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
     _loadExercisesFromDatabase();
 
     // Automatically focus the search field when the widget appears.
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _searchFocus.requestFocus();
-  });
-  _searchFocus.addListener(() {
-    setState(() {
-      _isSearching = _searchFocus.hasFocus;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocus.requestFocus();
     });
-    widget.onSearchModeChanged?.call(_searchFocus.hasFocus);
-  });
+    _searchFocus.addListener(() {
+      widget.onSearchModeChanged?.call(_searchFocus.hasFocus);
+    });
   }
 
   Future<void> _loadExercisesFromDatabase() async {
@@ -55,36 +54,9 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
     setState(() {
       _searchQuery = "";
       _searchController.clear();
-      _isSearching = false;
       _searchFocus.unfocus();
     });
     widget.onSearchModeChanged?.call(false);
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextField(
-        controller: _searchController,
-        focusNode: _searchFocus,
-        onChanged: (query) {
-          setState(() {
-            _searchQuery = query;
-          });
-        },
-        decoration: InputDecoration(
-          hintText: "Search exercise",
-          prefixIcon: const Icon(Icons.search, color: Color(0xFFdee3e5)),
-          filled: true,
-          fillColor: const Color(0xFF1e2025),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        style: const TextStyle(color: Colors.white),
-      ),
-    );
   }
 
   Widget _buildFullScreenSearch(List<Map<String, dynamic>> filteredExercises) {
@@ -92,7 +64,9 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
       height: MediaQuery.of(context).size.height-MediaQuery.of(context).viewInsets.bottom,
       exit: ()=> setState(() {
         _showCustomMaker=false;
-      })
+      }),
+
+      theme: widget.theme,
     ): 
     Positioned.fill(
       child: GestureDetector(
@@ -212,12 +186,6 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
         .toList();
 
     return _buildFullScreenSearch(filteredExercises);
-    // return Stack(
-    //   children: [
-    //      if (!_isSearching) _buildSearchBar(),
-    //     if (_isSearching) ,
-    //   ],
-    // );
   }
 }
 

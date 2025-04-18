@@ -1,3 +1,6 @@
+// Where the user can add an exercise to the exercise database
+// Navigated from the select exercise page
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firstapp/database/database_helper.dart';
@@ -5,14 +8,17 @@ import '../providers_and_settings/settings_provider.dart';
 import 'package:provider/provider.dart';
 
 class CustomExerciseForm extends StatefulWidget {
-  final double height;
+
   const CustomExerciseForm({
     super.key, 
     required this.height,
     required this.exit,
-    });
+    required this.theme,
+  });
 
   final void Function() exit;
+  final double height;
+  final ThemeData theme;
 
   @override
   CustomExerciseFormState createState() => CustomExerciseFormState();
@@ -44,8 +50,6 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
 
   @override
   Widget build(BuildContext context) {
-    // You can adjust maxHeight as needed, for example if this is inside a modal.
-    //final maxHeight = MediaQuery.of(context).size.height * 0.5;
 
     return SizedBox(
       height: widget.height,
@@ -54,10 +58,11 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
         child: Form(
           key: _formKey,
           child: Column(
-            // mainAxisSize.min allows the column to wrap its content
             mainAxisSize: MainAxisSize.min,
             children: [
+
               // Main exercise text field
+              // Shakes if user tries to submit without entering
               ShakeWidget(
                 shake: _shakeExercise,
                 child: TextFormField(
@@ -66,32 +71,37 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                   decoration: InputDecoration(
                     errorText: _exerciseError,
                     hintText: "Enter Exercise",
-                    errorBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
-                      borderSide: BorderSide(width: 2.0), // Optional focus border
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                      borderSide: BorderSide(
+                        width: 2.0, 
+                        color: widget.theme.colorScheme.error
+                      ),
                     ),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0),                    ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
-                      borderSide: BorderSide(color: Colors.grey), // Optional border color
+
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                      borderSide: BorderSide(
+                        width: 2.0, 
+                        color: widget.theme.colorScheme.error
+                      ),
                     ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
-                    ),
+
                     suffixIcon: IconButton(
-                      icon:const  Icon(Icons.highlight_remove),
+                      icon: const Icon(Icons.highlight_remove),
                       onPressed: _exerciseTEC.clear,
                     ),
                   ),
+
+                  // Nothing happens until the done button is pressed. This is just haptics
                   onFieldSubmitted: (value) {
                     if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                   },
                 ),
               ),
+
               const SizedBox(height: 16.0),
+
               // Optional Muscles Worked field
               TextFormField(
                 onChanged: (value) {
@@ -101,22 +111,8 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                     });
                   }
                 },
-                
                 controller: _musclesTEC,
-                
                 decoration: InputDecoration(
-                  border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // Adjust the radius as needed
-                      borderSide: BorderSide.none, // Removes the border if you want only the filled background
-                    ),
-                    enabledBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For non-focused state
-                      borderSide: BorderSide(color: Colors.grey), // Optional border color
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)), // For focused state
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0), // Optional focus border
-                    ),
                   
                   hintText: "Muscles Worked (Optional)",
   
@@ -126,7 +122,9 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16.0),
+
               // Done button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -136,96 +134,90 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                      width: (MediaQuery.sizeOf(context).width - 32) / 2,
                     child: Card(
                     
-                      color: const Color(0XFF1A78EB),
+                      color: widget.theme.colorScheme.primary,
                       child: InkWell(
-                      
-                        splashColor: Colors.deepOrange,
+                        splashColor: widget.theme.colorScheme.secondary,
                         borderRadius: BorderRadius.circular(16),
                         onTap: () {
-                                          
-                          
+
                           // Retrieve and trim text values
                           final exerciseText = _exerciseTEC.text.trim();
-                                          
+
                           if (exerciseText.isEmpty) {
-                              setState(() {
-                                _exerciseError = "You need to enter a title";
-                                _shakeExercise = true;
-                              });
-                              // Reset the shake flag after the animation duration.
-                              Future.delayed(const Duration(milliseconds: 500), () {
-                                setState(() {
-                                  _shakeExercise = false;
-                                });
-                              });
-                              return;
-                            }
-                            // Clear error if input is valid.
                             setState(() {
-                              _exerciseError = null;
+                              _exerciseError = "You need to enter a title";
+                              _shakeExercise = true;
                             });
-                                          
-                                          
+
+                            // Reset the shake flag after the animation duration.
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              setState(() {
+                                _shakeExercise = false;
+                              });
+                            });
+                            return;
+                          }
+
+                          // Clear error if input is valid.
+                          setState(() {
+                            _exerciseError = null;
+                          });
+     
                           final musclesText = _musclesTEC.text.trim();
                                         
                           // Capitalize each word in the inputs
                           final formattedExercise = capitalizeWords(exerciseText);
-                          final formattedMuscles =
-                              musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
+                          final formattedMuscles = musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
                             
-                     
-                        
                             dbHelper.insertCustomExercise(
                               exerciseTitle: formattedExercise, 
                               musclesWorked: formattedMuscles
                             );
 
                             widget.exit();
-                          
-                                          
+       
                         },
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             "Done",
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.w600
+                              fontWeight: FontWeight.w600,
+                              color: widget.theme.colorScheme.onPrimary,
                             )
                           )
                         ),
                       ),
                     ),
                   ),
-
 
                   SizedBox(
                      height: 60,
                      width: (MediaQuery.sizeOf(context).width - 32) / 2,
                     child: Card(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12), // Optional: Rounded corners
-                        side: const BorderSide(
-                          color: Color(0XFF1A78EB), // Outline color
-                          width: 2, // Outline width
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: widget.theme.colorScheme.primary,
+                          width: 2,
                         ),
                       ),
                     
-                      //color: const Color(0XFF1A78EB),
                       child: InkWell(
                       
-                        splashColor: Colors.deepOrange,
-                        borderRadius: BorderRadius.circular(16),
+                        splashColor: widget.theme.colorScheme.primary,
+                        borderRadius: BorderRadius.circular(12),
                         
                         onTap: () {
                           widget.exit();
                                         
                         },
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             "Cancel",
                             
                             style: TextStyle(
-                              color: Color(0XFF1A78EB),
+                              color: widget.theme.colorScheme.primary,
                               fontSize: 18,
                               fontWeight: FontWeight.w600
                             )
@@ -233,33 +225,10 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                         ),
                       ),
                     ),
-                    
-                                    
+                             
                   ),
                 ],
               ),
-              // ElevatedButton(
-              //   onPressed: () {
-              //     // Retrieve and trim text values
-              //     final exerciseText = _exerciseTEC.text.trim();
-              //     final musclesText = _musclesTEC.text.trim();
-
-              //     // Capitalize each word in the inputs
-              //     final formattedExercise = capitalizeWords(exerciseText);
-              //     final formattedMuscles =
-              //         musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
-                    
-              //     
-              //     Navigator.of(context).pop(
-              //       dbHelper.insertCustomExercise(
-              //         exerciseTitle: formattedExercise, 
-              //         musclesWorked: formattedMuscles
-              //       ),
-              //     );
-
-              //   },
-              //   child: const Text("Done"),
-              // ),
             ],
           ),
         ),
@@ -268,25 +237,24 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
   }
 }
 
-
 /////////////////////////////////////////////////
-// shake widget for text box if not entered properly
+// Shake widget for text box if not entered properly
 
 class ShakeWidget extends StatefulWidget {
   final Widget child;
   final bool shake;
 
   const ShakeWidget({
-    Key? key,
+    super.key,
     required this.child,
     required this.shake,
-  }) : super(key: key);
+  });
 
   @override
-  _ShakeWidgetState createState() => _ShakeWidgetState();
+  ShakeWidgetState createState() => ShakeWidgetState();
 }
 
-class _ShakeWidgetState extends State<ShakeWidget>
+class ShakeWidgetState extends State<ShakeWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _offsetAnimation;
@@ -309,6 +277,7 @@ class _ShakeWidgetState extends State<ShakeWidget>
   @override
   void didUpdateWidget(covariant ShakeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+
     // When the "shake" flag changes to true, trigger the animation.
     if (widget.shake && !oldWidget.shake) {
       _controller.forward(from: 0.0);

@@ -166,6 +166,8 @@ class ProgramPageState extends State<ProgramPage> {
           debugPrint("New: $selectedProgram");
           context.read<Profile>().updateProgram(selectedProgram);
         },
+
+        theme: widget.theme,
       ),
       
       // Bottom Calendar Sheet
@@ -173,12 +175,15 @@ class ProgramPageState extends State<ProgramPage> {
       
       // List of day cards
       body: _isEditing ? Stack(
-          children: [ExerciseSearchWidget(
-            onExerciseSelected: (exercise) {
-              _handleExerciseSelected(context, exercise, _activeIndex!);
-            },
-            onSearchModeChanged: _updateSearchMode,
-          ),]
+          children: [
+            ExerciseSearchWidget(
+              theme: widget.theme,
+              onExerciseSelected: (exercise) {
+                _handleExerciseSelected(context, exercise, _activeIndex!);
+              },
+              onSearchModeChanged: _updateSearchMode,
+            ),
+          ]
         ): Column(
           children: [
             Expanded(
