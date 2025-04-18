@@ -1,10 +1,10 @@
-import 'package:firstapp/widgets/custom_exercise_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import '../providers_and_settings/settings_provider.dart';
+import 'package:firstapp/widgets/shake_widget.dart';
 
 class GymSetRow extends StatefulWidget {
   final int repsLower;

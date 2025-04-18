@@ -40,6 +40,7 @@ Add a "Random Stat of the Day" widget that shows:
 
 // TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
+import 'package:firstapp/widgets/target_weight_dialog.dart';
 import 'package:firstapp/widgets/weekly_progress.dart';
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
@@ -81,10 +82,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _fetchGoals();
   }
 
-  Future<void> _fetchData() async {
+  // Load existing goals from the database
+  Future<void> _fetchGoals() async {
     setState(() => _isLoadingGoals = true);
     try {
       final dbHelper = DatabaseHelper.instance;
@@ -99,15 +101,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1e2025),
+        backgroundColor: widget.theme.colorScheme.surface,
         centerTitle: true,
         title:  Text(
           _isAddingGoal ? "Select Exercise For Goal": "Analytics",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
         ),
+
         leading: _displayChart
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -123,16 +124,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
         actions: [
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
           ),
         ]
       ),
+
       body: Stack(
         children: [
           // Show analytics content with the persistent search bar only when not searching.
@@ -147,6 +149,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ),
               ],
             ),
+
           // When search is active, show the full-screen search overlay.
           if (_isSearching) _buildFullScreenSearch(),
           if (_isAddingGoal) _createGoal(),
@@ -155,9 +158,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // Callback when an exercise is selected.
+  // Callback when an exercise is selected - get history from the database
   void _handleExerciseSelected(Map<String, dynamic> exercise) async {
-    debugPrint("selected: ${exercise}");
     final dbHelper = DatabaseHelper.instance;
     final records = await dbHelper.getExerciseHistoryGroupedBySession(exercise['exercise_id']);
     setState(() {
@@ -167,114 +169,83 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     });
   }
 
+  // When a goal is being added and the user selected the exercise for the goal to be for
+  // This brings up the selector for target weight
   void _exerciseForGoalSelected(Map<String, dynamic> exercise) async {
-  final dbHelper = DatabaseHelper.instance;
-  final weightController = TextEditingController();
-  final exerciseName = exercise['exercise_title'];
+    final dbHelper = DatabaseHelper.instance;
+    final weightController = TextEditingController();
+    final exerciseName = exercise['exercise_title'];
 
-  final weight = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Set Target for $exerciseName"),
-        
 
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Target Weight",
-                suffixText: "lbs",
-                border: OutlineInputBorder(),
-              ),
-              autofocus: true,
+    final weight = await showDialog<int>(
+        context: context,
+        builder: (context) => TargetWeightDialog( // Use the new StatefulWidget
+              exerciseName: exerciseName,
+              theme: widget.theme, // Pass theme if needed
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (weightController.text.isNotEmpty) {
-                Navigator.pop(context, int.parse(weightController.text));
-              }
-            },
-            child: Text("Save"),
-          ),
-        ],
-      ),
-    ); // (keep your existing dialog code)
+      ); // (keep your existing dialog code)
 
-  if (weight != null) {
-    debugPrint("test 1 $exercise");
-    
-    // 1. First calculate current 1RM for this exercise
-    final currentOneRm = await _calculateCurrentOneRm(exercise['exercise_id']);
-    debugPrint("test 2");
+    if (weight != null) {
+      debugPrint("test 1 $exercise");
+      
+      // 1. First calculate current 1RM for this exercise
+      final currentOneRm = await _calculateCurrentOneRm(exercise['exercise_id']);
+      debugPrint("test 2");
 
-    // 2. Create and save the goal with accurate progress
-    final newGoal = Goal(
-      exerciseId: exercise['exercise_id'] as int ,
-      exerciseTitle: exerciseName,
-      targetWeight: weight,
-      currentOneRm: currentOneRm, // Now has real value immediately
+      // 2. Create and save the goal with accurate progress
+      final newGoal = Goal(
+        exerciseId: exercise['exercise_id'] as int ,
+        exerciseTitle: exerciseName,
+        targetWeight: weight,
+        currentOneRm: currentOneRm, // Now has real value immediately
+      );
+
+      final insertedId = await dbHelper.insertGoal(newGoal);
+      debugPrint("test 3");
+      final savedGoal = newGoal.copyWith(id: insertedId);
+
+      debugPrint('''
+        Goal Debug:
+        Current 1RM: ${savedGoal.currentOneRm}
+        Target: ${savedGoal.targetWeight}
+        Progress: ${savedGoal.progressPercentage}%
+      ''');
+      debugPrint("goals: $_goals");
+      // 3. Update UI
+      setState(() {
+        _goals.add(savedGoal);
+      });
+      debugPrint("goals: $_goals");
+
+      // 4. Still refresh later for any other updates
+      _fetchGoals(); // Runs in background without await
+      debugPrint("goals: $_goals");
+    }
+  }
+
+  Future<int> _calculateCurrentOneRm(int exerciseId) async {
+
+    debugPrint("exercise id: $exerciseId");
+    final db = await DatabaseHelper.instance.database;
+    final recentSet = await db.query(
+      'set_log',
+      where: 'exercise_id = ?',
+      whereArgs: [exerciseId],
+      orderBy: 'date DESC',
+      limit: 1,
     );
 
+    debugPrint("this should run/....");
+
+    if (recentSet.isEmpty) return 0;
     
-       
-
-
-    final insertedId = await dbHelper.insertGoal(newGoal);
-     debugPrint("test 3");
-    final savedGoal = newGoal.copyWith(id: insertedId);
-
-    debugPrint('''
-      Goal Debug:
-      Current 1RM: ${savedGoal.currentOneRm}
-      Target: ${savedGoal.targetWeight}
-      Progress: ${savedGoal.progressPercentage}%
-    ''');
-    debugPrint("goals: $_goals");
-    // 3. Update UI
-    setState(() {
-      _goals.add(savedGoal);
-    });
-    debugPrint("goals: $_goals");
-
-    // 4. Still refresh later for any other updates
-    _fetchData(); // Runs in background without await
-    debugPrint("goals: $_goals");
+    // Use your preferred 1RM formula (here's Epley)
+    final weight = recentSet.first['weight'] as int;
+    final reps = (recentSet.first['reps'] as int);
+    debugPrint("Reps: $reps");
+    print("goal: ${(weight * (1 + reps / 30)).round()}");
+    return (weight * (1 + reps / 30)).round();
   }
-}
-
-Future<int> _calculateCurrentOneRm(int exerciseId) async {
-
-  debugPrint("exercise id: $exerciseId");
-  final db = await DatabaseHelper.instance.database;
-  final recentSet = await db.query(
-    'set_log',
-    where: 'exercise_id = ?',
-    whereArgs: [exerciseId],
-    orderBy: 'date DESC',
-    limit: 1,
-  );
-
-  debugPrint("this should run/....");
-
-  if (recentSet.isEmpty) return 0;
-  
-  // Use your preferred 1RM formula (here's Epley)
-  final weight = recentSet.first['weight'] as int;
-  final reps = (recentSet.first['reps'] as int);
-  debugPrint("Reps: $reps");
-  print("goal: ${(weight * (1 + reps / 30)).round()}");
-  return (weight * (1 + reps / 30)).round();
-}
 
 
   // Build the exercise history view.
@@ -415,7 +386,6 @@ Future<int> _calculateCurrentOneRm(int exerciseId) async {
   // }
 
 List<Widget> _buildGoalList() {
-  debugPrint("here: $_goals");
   return _goals.map((goal) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
     child: GestureDetector(
@@ -520,7 +490,7 @@ Future<void> _editGoalWeight(Goal goal) async {
   if (newWeight != null) {
     final updatedGoal = goal.copyWith(targetWeight: newWeight);
     await dbHelper.updateGoal(updatedGoal);
-    await _fetchData(); // Refresh goals list
+    await _fetchGoals(); // Refresh goals list
   }
 }
 

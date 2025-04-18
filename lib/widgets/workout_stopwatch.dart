@@ -1,4 +1,4 @@
-import 'package:firstapp/widgets/custom_exercise_form.dart';
+import 'package:firstapp/widgets/shake_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
