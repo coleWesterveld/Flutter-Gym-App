@@ -167,7 +167,6 @@ class Program {
 
   factory Program.fromMap(Map<String, dynamic> map) {
 
-    debugPrint("maps: ${map.toString()}");
     return Program(
       programID: map['id'],
       programTitle: map['program_title'],

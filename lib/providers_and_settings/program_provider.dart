@@ -139,13 +139,13 @@ class Profile extends ChangeNotifier {
     // Else we're at the end of the workout
     else {
       // Optionally handle workout completion here
-      debugPrint("Workout complete!");
+      ("Workout complete!");
       shakeFinish = true;
       // Keep nextSet pointing to last subset
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];
     }
 
-    debugPrint("Next set: $nextSet");
+    ("Next set: $nextSet");
     notifyListeners();
   }
 
@@ -375,7 +375,7 @@ class Profile extends ChangeNotifier {
     if (newProgram.programID != -1) {
       currentProgram = newProgram;
     } else{
-      debugPrint("No program found with ID : $programID");
+      ("No program found with ID : $programID");
     }
 
     notifyListeners();
@@ -595,7 +595,7 @@ Future<void> updateDaysOrderInDatabase() async {
         }
       }
     });
-    debugPrint("reordered");
+    ("reordered");
     // Notify listeners after transaction completes
     notifyListeners();
   }

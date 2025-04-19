@@ -42,7 +42,7 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-    debugPrint('path: $path');
+    ('path: $path');
 
     // open database at path, create tables if first time opening
     return await openDatabase(
@@ -216,7 +216,7 @@ class DatabaseHelper {
         if (parts.length >= 2) {
           final name = parts[0].trim();
           final category = parts[1].trim();
-          // debugPrint('Batching exercise: $name');
+          // ('Batching exercise: $name');
 
           batch.insert('exercises', {
             'exercise_title': name,
@@ -228,7 +228,6 @@ class DatabaseHelper {
     }
 
     await batch.commit(); // Execute all inserts at once
-    debugPrint("Done Initial Insert");
   }
 
 
@@ -446,46 +445,42 @@ class DatabaseHelper {
     final db = await database;
     
     await db.transaction((txn) async {
-      try {
-        // 1. Restore the day with original ID
-        await txn.insert(
-          'days',
-          day.toMap(),
+
+      // 1. Restore the day with original ID
+      await txn.insert(
+        'days',
+        day.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // 2. Restore all exercises and their sets
+      for (int i = 0; i < exercises.length; i++) {
+        final exercise = exercises[i];
+        
+        // Insert exercise with original ID
+        final exerciseId = await txn.insert(
+          'exercise_instances',
+          exercise.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-        // 2. Restore all exercises and their sets
-        for (int i = 0; i < exercises.length; i++) {
-          final exercise = exercises[i];
-          
-          // Insert exercise with original ID
-          final exerciseId = await txn.insert(
-            'exercise_instances',
-            exercise.toMap(),
+        // 3. Restore all sets for this exercise using direct index access
+        final sets = setsForExercises[i];
+        for (final set in sets) {
+          await txn.insert(
+            'plannedSets',
+            {
+              'id': set.setID, // Preserve original set ID
+              'num_sets': set.numSets,
+              'set_lower': set.setLower,
+              'set_upper': set.setUpper,
+              'exercise_instance_id': exerciseId,
+              'set_order': set.setOrder,
+              'rpe': set.rpe ?? 0,
+            },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-
-          // 3. Restore all sets for this exercise using direct index access
-          final sets = setsForExercises[i];
-          for (final set in sets) {
-            await txn.insert(
-              'plannedSets',
-              {
-                'id': set.setID, // Preserve original set ID
-                'num_sets': set.numSets,
-                'set_lower': set.setLower,
-                'set_upper': set.setUpper,
-                'exercise_instance_id': exerciseId,
-                'set_order': set.setOrder,
-                'rpe': set.rpe ?? 0,
-              },
-              conflictAlgorithm: ConflictAlgorithm.replace,
-            );
-          }
         }
-      } catch (e) {
-        debugPrint('Restore failed: $e');
-        rethrow;
       }
     });
   }
@@ -609,7 +604,6 @@ class DatabaseHelper {
   // Create a goal
   Future<int> insertGoal(Goal goal) async {
     final db = await database;
-     debugPrint("test 6");
     return await db.insert('goals', goal.toMap());
   }
 
@@ -665,9 +659,6 @@ class DatabaseHelper {
 
   // Calculate 1RM using Epley formula
   int _calculateOneRm(int weight, int reps) {
-    debugPrint("reps: $reps");
-    debugPrint("weight: $weight");
-    debugPrint("Weigh from DB: ${(weight * (1 + (reps / 30))).round()}");
     return (weight * (1 + (reps / 30))).round();
   }
 
@@ -751,10 +742,6 @@ class DatabaseHelper {
         limit: 1,
       );
 
-      debugPrint("program retrieved at ID $programId: ${maps.toString()}");
-
-  
-
       // if (maps.isEmpty) {
       //   return null; // No program found with this ID
       // }
@@ -763,7 +750,7 @@ class DatabaseHelper {
     // } catch (e) {
     //   // I dont really see this ever happening, unless DB gets corrupted or user-deleted
     //   // but then again, of course I wouldnt I guess
-    //   debugPrint('Error fetching program by ID: $e');
+    //   ('Error fetching program by ID: $e');
     //   return Program(programID: -1, programTitle: "Error");
     // }
   }
@@ -771,7 +758,6 @@ class DatabaseHelper {
   Future<Program> initializeProgram() async {
 
     final programID = await getCurrentProgramId();
-    debugPrint("id: ${programID.toString()}");
     return fetchProgramById(programID);
     
   }
@@ -889,7 +875,6 @@ class DatabaseHelper {
   // TODO: make naming better of exercises vs exercise instances in methods
   Future<List<String>> fetchExerciseTitlesFromAll() async {
     final db = await DatabaseHelper.instance.database;
-    debugPrint('Querying exercises...');  
     final result = await db.query(
       'exercises',
     );
@@ -900,7 +885,6 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> fetchExercisesWithIds() async {
     final db = await DatabaseHelper.instance.database;
-    debugPrint('Querying exercises...');
 
     final result = await db.query(
       'exercises',

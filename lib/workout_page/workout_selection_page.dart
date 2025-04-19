@@ -65,7 +65,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   @override
   Widget build(BuildContext context) {
 
-    //debugPrint("split here: ${context.watch<Profile>().split}");
+    //("split here: ${context.watch<Profile>().split}");
     // expansion tiles here are lowkey tweakin out
     // thats for some other bozo to fix haha (future me)
     //Another exception was thrown: 'package:flutter/src/material/expansion_tile.dart': Failed assertion: line 107 pos 12:

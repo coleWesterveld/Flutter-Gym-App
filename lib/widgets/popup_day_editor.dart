@@ -58,7 +58,7 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
           onPressed: (){
             if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
             
-            debugPrint("dayTitle: ${widget.titleTEC.text}");
+            ("dayTitle: ${widget.titleTEC.text}");
             
             if (widget.titleTEC.text.isNotEmpty) {
               Provider.of<Profile>(context, listen: false).splitAssign(

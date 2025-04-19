@@ -72,7 +72,6 @@ class ProgramPageState extends State<ProgramPage> {
   
   // Add exercise to a day
   void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
-    debugPrint("Adding $exercise to $index ");
     setState(() {
       _exerciseID = exercise['exercise_id'];
     });
@@ -84,7 +83,7 @@ class ProgramPageState extends State<ProgramPage> {
       exerciseId: _exerciseID!,
     );
 
-    debugPrint("ExerciseID: $_exerciseID");
+    ("ExerciseID: $_exerciseID");
   }
 
   // Search mode callback - is choosing exercise or not
@@ -138,7 +137,7 @@ class ProgramPageState extends State<ProgramPage> {
             ],
             onSelected: (value) {
               if (value == 'phaseAdder'){
-                debugPrint(value);
+                (value);
                 // set program to multiphase
                 // we will have to change the DB schema for this
                 // whole lotta changes... 
@@ -163,7 +162,7 @@ class ProgramPageState extends State<ProgramPage> {
       drawer: ProgramsDrawer(
         currentProgramId: context.read<Profile>().currentProgram.programID,
         onProgramSelected: (selectedProgram) {
-          debugPrint("New: $selectedProgram");
+          ("New: $selectedProgram");
           context.read<Profile>().updateProgram(selectedProgram);
         },
 

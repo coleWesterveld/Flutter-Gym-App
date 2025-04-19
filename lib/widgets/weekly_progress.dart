@@ -8,9 +8,12 @@ import '../other_utilities/lightness.dart';
 
 class PageViewWithIndicator extends StatefulWidget {
   final Function(Exercise) onSelected;
+  final ThemeData theme;
+
   const PageViewWithIndicator({
     Key? key,
     required this.onSelected,
+    required this.theme,
   }) : super(key: key);
 
   @override
@@ -39,6 +42,7 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
                 day: days[index],
                 exercises: exercisesPerDay[index],
                 onSelected: widget.onSelected,
+                theme: widget.theme,
               );
             },
           ),
@@ -67,13 +71,15 @@ class DayProgress extends StatefulWidget {
   final Day day;
   final List<Exercise> exercises;
   final Function(Exercise) onSelected;
+  final ThemeData theme;
 
   const DayProgress({
     Key? key,
     required this.index,
     required this.day,
     required this.exercises,
-    required this.onSelected
+    required this.onSelected,
+    required this.theme,
   }) : super(key: key);
 
   @override
@@ -88,7 +94,7 @@ class _DayProgressState extends State<DayProgress> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: lighten(const Color(0xFF1e2025), 10),
+          color: widget.theme.colorScheme.surfaceContainerHighest,
         ),
         width: 200,
         height: 200,

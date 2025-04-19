@@ -34,6 +34,13 @@ import '../providers_and_settings/settings_page.dart';
 // i am not saving origin 
 
 class EditSchedule extends StatefulWidget {
+  const EditSchedule({
+    super.key,
+    required this.theme,
+  });
+
+  final ThemeData theme;
+
   @override
   _EditScheduleState createState() => _EditScheduleState();
 }
@@ -51,15 +58,14 @@ class _EditScheduleState extends State<EditSchedule> {
     splitLenTEC.text = context.read<Profile>().splitLength.toString();
 
     generateDays();
-    //debugPrint(_days.toString());
+    //(_days.toString());
     super.initState();
   }
-
 
   void generateDays(){
     List<Day?> newDays = [];
     _days = context.read<Profile>().split;
-    //debugPrint(_days.toString());
+    //(_days.toString());
 
     int oldIdx = 0;
     if (_days.isNotEmpty){
@@ -81,8 +87,6 @@ class _EditScheduleState extends State<EditSchedule> {
 
   @override
   Widget build(BuildContext context) {
-    //debugPrint(_days.toString());
-
 
     return GestureDetector(
 
@@ -96,7 +100,7 @@ class _EditScheduleState extends State<EditSchedule> {
         bottomSheet: buildBottomSheet(),
       
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1e2025),
+          backgroundColor: widget.theme.colorScheme.surface,
           title: const Text(
             "Edit Schedule",
             style: TextStyle(
@@ -129,7 +133,7 @@ class _EditScheduleState extends State<EditSchedule> {
                   Container(
                     
                     decoration: BoxDecoration(
-                      color: darken(Color(0xFF1e2025), 40),
+                      color: widget.theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(8)
                     ),
       
@@ -195,7 +199,7 @@ class _EditScheduleState extends State<EditSchedule> {
 
                                   }
                                   else{
-                                      //debugPrint("no");
+                                      //("no");
                                       splitLenTEC.selection = TextSelection(
                                         baseOffset: 0,
                                         extentOffset: splitLenTEC.text.length,
@@ -379,7 +383,7 @@ class _EditScheduleState extends State<EditSchedule> {
                 });
 
                 //ebugPrint(context.read<Profile>().split[2].toString());
-                //debugPrint(context.read<Profile>().origin.toString());
+                //(context.read<Profile>().origin.toString());
               },
         
               builder: (context, candidateData, rejectedData) {

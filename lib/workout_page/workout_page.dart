@@ -9,6 +9,7 @@ import '../database/database_helper.dart';
 import '../database/profile.dart';
 import 'package:intl/intl.dart';
 import '../providers_and_settings/settings_page.dart';
+import 'package:firstapp/widgets/history_session_view.dart';
 
 // list todo: 
 // TACKLING: expanded index should expand once, initially, and when a user finishes an exercise, but should not interfere further with user interaction
@@ -69,7 +70,7 @@ class _WorkoutState extends State<Workout> {
       index++;
     }
 
-    debugPrint("history: ${_exerciseHistory}");
+    ("history: ${_exerciseHistory}");
   }
 
 
@@ -102,7 +103,7 @@ class _WorkoutState extends State<Workout> {
         });
       }
     } catch (e) {
-      debugPrint("Error fetching history: $e");
+      ("Error fetching history: $e");
       if (mounted) {
         setState(() {
           _fullHistory = [];
@@ -289,55 +290,12 @@ class _WorkoutState extends State<Workout> {
                                 const Text("Most Recent History:"),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Container(
-                                    
-                                    decoration: BoxDecoration(
-                                      color: lighten(Color(0xFF1e2025), 20),
-                                      borderRadius: BorderRadius.circular(12)
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              "${formatDate(_exerciseHistory[index]![0].dateAsDateTime)}: ",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              )
-                                            )
-                                          ),
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            physics: NeverScrollableScrollPhysics(),
-                                            itemCount: _exerciseHistory[index]!.length,
-                                            itemBuilder: (context, historyIndex) {
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(
-                                                  vertical: 4.0,
-                                                  horizontal: 32,
-                                                ),
-                                                child: Text(
-                                                  "${_exerciseHistory[index]![historyIndex].numSets} sets x ${_exerciseHistory[index]![historyIndex].reps} reps @ ${_exerciseHistory[index]![historyIndex].weight} lbs (RPE: ${_exerciseHistory[index]![historyIndex].rpe})",
-                                                  style: TextStyle(
-                                                    fontSize: 16, 
-                                                    fontWeight: FontWeight.w700
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                  child: HistorySessionView(
+                                    exerciseHistory: _exerciseHistory[index]!,
+                                    theme: widget.theme,
                                   ),
                                 ),
-                                if (_exerciseHistory[index]?[0].historyNote != null && _exerciseHistory[index]![0].historyNote!.isNotEmpty) Text(
-                                  "Notes: ${_exerciseHistory[index]![0].historyNote}"
-                                ),
+                                
                                         
                                 TextButton(
                                     onPressed: () {
@@ -422,12 +380,12 @@ class _WorkoutState extends State<Workout> {
                                     bool allLogged = true;
                                     outerLoop: // Label for the outer loop
                                     for (final workoutSet in context.read<Profile>().sets[primaryIndex][index]) {
-                                      debugPrint("logged: ${workoutSet.hasBeenLogged}");
+                                      ("logged: ${workoutSet.hasBeenLogged}");
                                       for (int j = 0; j < workoutSet.hasBeenLogged.length; j++) {
-                                        debugPrint("sublog: ${workoutSet.hasBeenLogged[j]}");
+                                        ("sublog: ${workoutSet.hasBeenLogged[j]}");
                                         if (!workoutSet.hasBeenLogged[j]) {
                                           allLogged = false;
-                                          debugPrint("ran");
+                                          ("ran");
                                           break outerLoop; // Break both loops immediately
                                         }
                                       }
@@ -473,7 +431,7 @@ class _WorkoutState extends State<Workout> {
                                       BorderRadius.all(Radius.circular(8))),
                             ),
                             onPressed: () {
-                              debugPrint("exercise at $primaryIndex, $index");
+                              ("exercise at $primaryIndex, $index");
                               context.read<Profile>().setsAppend(
                                     index1: primaryIndex,
                                     index2: index,
@@ -556,7 +514,7 @@ class _WorkoutState extends State<Workout> {
         builder: (context) => _buildHistoryBottomSheet(records, exerciseTitle),
       );
     } catch (e) {
-      debugPrint("Error fetching history: $e");
+      ("Error fetching history: $e");
       if (!mounted) return;
 
       Navigator.of(context).pop();
@@ -588,7 +546,6 @@ class _WorkoutState extends State<Workout> {
         ),
       );
     }
-    //debugPrint("records here: $records");
 
     return DraggableScrollableSheet(
       expand: false,
@@ -626,52 +583,15 @@ class _WorkoutState extends State<Workout> {
                     }
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: lighten(Color(0xFF1e2025), 20),
-                          borderRadius: BorderRadius.circular(12)
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "${formatDate(records[index][0].dateAsDateTime)}: ",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  )
-                                )
-                              ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemCount: records[index].length,
-                                itemBuilder: (context, historyIndex) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 4.0,
-                                      horizontal: 32,
-                                    ),
-                                    child: Text(
-                                      "${records[index][historyIndex].numSets} sets x ${records[index][historyIndex].reps} reps @ ${records[index][historyIndex].weight} lbs (RPE: ${records[index][historyIndex].rpe})",
-                                      style: TextStyle(
-                                        fontSize: 16, 
-                                        fontWeight: FontWeight.w700
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0
+                      ),
+                      child: HistorySessionView(
+                        exerciseHistory: records[index], 
+                        theme: widget.theme
                       ),
                     );
+                    
                   }, 
                 ),
               ),

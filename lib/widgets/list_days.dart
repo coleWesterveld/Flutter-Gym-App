@@ -122,7 +122,7 @@ class _ListDaysState extends State<ListDays> {
                         textColor: widget.theme.colorScheme.onSecondary,
                         onPressed: () {
                           try{
-                            debugPrint("re-add: ${deletedDay.toString()}");
+                            ("re-add: ${deletedDay.toString()}");
                             
                             context.read<Profile>().splitInsert(
                               index: index, 
@@ -131,7 +131,7 @@ class _ListDaysState extends State<ListDays> {
                               newSets: deletedSets,
                             );
                           } catch(e){
-                            debugPrint('Undo failed: $e');
+                            ('Undo failed: $e');
                             // Show error message
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Failed to undo deletion :(')),

@@ -141,7 +141,7 @@ class _MyScheduleState extends State<SchedulePage> {
     final events = _getEventsForDay(today);
     if (events.isNotEmpty){
       return BoxDecoration(
-        border: Border.all(color: Colors.white, width: 3),
+        border: Border.all(color: widget.theme.colorScheme.onSurface, width: 3),
         borderRadius: const BorderRadius.all(Radius.circular(14)),
         color: darken(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
         shape: BoxShape.rectangle, 
@@ -150,7 +150,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
     return  BoxDecoration(
         color:  darken(const Color(0xFF1e2025), 20),
-        border: Border.all(color: Colors.white, width: 3),
+        border: Border.all(color: widget.theme.colorScheme.onSurface, width: 3),
         borderRadius:  const BorderRadius.all(Radius.circular(14)),
         shape: BoxShape.rectangle, 
       );
@@ -162,7 +162,7 @@ class _MyScheduleState extends State<SchedulePage> {
     final events = _getEventsForDay(_selectedDay!);
     if (events.isNotEmpty){
       return BoxDecoration(
-        border: Border.all(color: Color(0xFF1e2025), width: 3),
+        border: Border.all(color: widget.theme.colorScheme.surface, width: 3),
         borderRadius: const BorderRadius.all(Radius.circular(14)),
         color: lighten(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
         shape: BoxShape.rectangle, 
@@ -170,18 +170,16 @@ class _MyScheduleState extends State<SchedulePage> {
     }
 
     return  BoxDecoration(
-        color:  lighten(const Color(0xFF1e2025), 20),
-        border: Border.all(color: Color(0xFF1e2025), width: 3),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        color:  widget.theme.colorScheme.outline,
+        border: Border.all(color: widget.theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
         shape: BoxShape.rectangle, 
       );
     
     
   }
-//TODO: fix error where clicking on day in next month scrolls to next month and throws an error
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Safe to access context.watch<Profile>() here
     _selectedEvents.value = _getEventsForDay(_selectedDay!);
     loadEvents();
   }
@@ -194,7 +192,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1e2025),
+        backgroundColor: widget.theme.colorScheme.surface,
         centerTitle: true,
         title: const Text(
           "Planner",
@@ -231,7 +229,9 @@ class _MyScheduleState extends State<SchedulePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            EditSchedule(),
+                            EditSchedule(
+                              theme: widget.theme
+                            ),
                       ));
                   }, 
                   child: const Text("Edit Schedule")),
@@ -244,9 +244,19 @@ class _MyScheduleState extends State<SchedulePage> {
                 
                 decoration: BoxDecoration(
                   
-                  color: const Color(0xFF1e2025),
+                  color: widget.theme.colorScheme.surface,
                   //border: Border
                   borderRadius: BorderRadius.circular(12),
+
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 5,
+                      offset: const Offset(0, 0),
+                      spreadRadius: 2,
+                      color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+
+                    )
+                  ]
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -255,7 +265,6 @@ class _MyScheduleState extends State<SchedulePage> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
                       child: Container(
-                        //color: Colors.red,
                         child: TableCalendar(
 
 
@@ -303,7 +312,7 @@ class _MyScheduleState extends State<SchedulePage> {
                                   child: Center(
                                     child: Text(
                                       '${day.day}',
-                                      style: const TextStyle(color: Colors.white),
+                                      style: TextStyle(color: widget.theme.colorScheme.onSurface),
                                     ),
                                   ),
                                 ),
@@ -313,6 +322,8 @@ class _MyScheduleState extends State<SchedulePage> {
                           
                             return null;
                           },
+
+
 
 
                           defaultBuilder: (context, day, focusedDay) {
@@ -336,7 +347,7 @@ class _MyScheduleState extends State<SchedulePage> {
                                   child: Center(
                                     child: Text(
                                       '${day.day}',
-                                      style: const TextStyle(color: Colors.white),
+                                      style: TextStyle(color: widget.theme.colorScheme.onPrimary),
                                     ),
                                   ),
                                 ),
@@ -358,7 +369,6 @@ class _MyScheduleState extends State<SchedulePage> {
                               shape: BoxShape.rectangle,
                             ),
                             
-                            //cellMargin: const EdgeInsets.all(1.0),
                             
                             selectedDecoration: _buildSelected(),
                             todayDecoration: _buildToday(),
@@ -381,8 +391,8 @@ class _MyScheduleState extends State<SchedulePage> {
                               shape: BoxShape.rectangle,
                             ),
 
-                            selectedTextStyle: const TextStyle(
-                              color: Colors.white, 
+                            selectedTextStyle: TextStyle(
+                              color: widget.theme.colorScheme.onPrimary, 
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -405,17 +415,23 @@ class _MyScheduleState extends State<SchedulePage> {
                       ),
                       decoration: BoxDecoration(
                         
-                        border: Border.all(color: const Color(0xFF1e2025)),
+                        //border: Border.all(color: const Color(0xFF1e2025)),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1e2025),
+                          color: widget.theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF1e2025)
-                            //color: context.watch<Profile>().split[index].dayColor,
-                          
-                        ),),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 5,
+                              offset: const Offset(0, 0),
+                              spreadRadius: 2,
+                              color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+
+                            )
+                          ]
+                        ),
                         child: ListTile(
                           //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
                           title: Text(value[0].title)

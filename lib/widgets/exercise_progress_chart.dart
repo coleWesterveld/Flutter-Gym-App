@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
-import '../database/profile.dart';
 
 class ExerciseProgressChart extends StatefulWidget {
   final Map<String, dynamic> exercise;
+  final ThemeData theme;
 
-  const ExerciseProgressChart({Key? key, required this.exercise}) : super(key: key);
+  const ExerciseProgressChart({
+    super.key, 
+    required this.exercise,
+    required this.theme,
+  });
 
   @override
   _ExerciseProgressChartState createState() => _ExerciseProgressChartState();
