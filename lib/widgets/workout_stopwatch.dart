@@ -33,9 +33,9 @@ class WorkoutControlBar extends StatelessWidget {
             border: Border(
               top: positionAtTop 
                   ? BorderSide.none 
-                  : BorderSide(color: Colors.grey.shade800),
+                  : BorderSide(color: theme.colorScheme.outline),
               bottom: positionAtTop 
-                  ? BorderSide(color: Colors.grey.shade800)
+                  ? BorderSide(color: theme.colorScheme.outline)
                   : BorderSide.none,
             ),
           ),
@@ -50,9 +50,9 @@ class WorkoutControlBar extends StatelessWidget {
                   children: [
                     Text(
                       "Workout: ${_formatDuration(profile.workoutStopwatch.elapsed)}",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white,
+                        color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -61,7 +61,7 @@ class WorkoutControlBar extends StatelessWidget {
                       "Rest: ${_formatDuration(profile.restStopwatch.elapsed)}",
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade400,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ],

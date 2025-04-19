@@ -87,7 +87,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         ),
       ],
 
-        backgroundColor: const Color(0xFF1e2025),
+        backgroundColor: widget.theme.colorScheme.surface,
         centerTitle: true,
         title: const Text(
           "Workout",
@@ -136,7 +136,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
               //height: 0.5,
               fontWeight: FontWeight.w700,
               fontSize: 18,
-              color: lighten(const Color(0xFF1e2025), 40)
+              color: widget.theme.colorScheme.onSurface
             )
           )
         ),
@@ -153,7 +153,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
             // TODO: dont like how this goes all the way down under "start workout" button and stuff,
             decoration: BoxDecoration(
     
-              border: Border.all(color: lighten(const Color(0xFF141414), 20)),
+              border: Border.all(color: widget.theme.colorScheme.outline),
               boxShadow: [
                 todaysWorkout
                     ? BoxShadow(
@@ -163,7 +163,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                       )
                     : const BoxShadow(),
               ],
-              color:  const Color(0xFF1e2025),
+              color: widget.theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12.0),
             ),
 
@@ -193,8 +193,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   initiallyExpanded: todaysWorkout,
                   //initiallyExpanded: toExpand(index),
                   //controller: context.watch<Profile>().controllers[index],
-                  iconColor: const Color.fromARGB(255, 255, 255, 255),
-                  collapsedIconColor: const Color.fromARGB(255, 255, 255, 255),
+                  iconColor: widget.theme.colorScheme.onSurface,
+                  collapsedIconColor: widget.theme.colorScheme.onSurface,
 
                   //top row always displays day title, and edit button
                   //sized boxes and padding is just a bunch of formatting stuff
@@ -235,8 +235,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                     child: Text(
                                       overflow: TextOverflow.ellipsis,
                                       context.watch<Profile>().split[index].dayTitle,
-                                      style: const TextStyle(
-                                        color: Color.fromARGB(255, 255, 255, 255),
+                                      style: TextStyle(
+                                        color: widget.theme.colorScheme.onSurface,
                                         fontSize: 18,
                                         fontWeight: FontWeight.w800,
                                       ),
@@ -258,8 +258,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   //exercises are reorderable
                   children: [
                     Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1e2025),
+                      decoration: BoxDecoration(
+                        color: widget.theme.colorScheme.surface,
                         borderRadius: BorderRadius.only(
                             bottomRight: Radius.circular(12.0),
                             bottomLeft: Radius.circular(12.0)),
@@ -308,15 +308,14 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                               12))),
                                               backgroundColor:
                                                   WidgetStateProperty.all(
-                                                const Color(0XFF1A78EB),
+                                                widget.theme.colorScheme.primary,
                                               ),
                                               overlayColor: WidgetStateProperty
                                                   .resolveWith<Color?>(
                                                       (states) {
                                                 if (states.contains(
                                                     WidgetState.pressed)) {
-                                                  return const Color(
-                                                      0XFF1A78EB);
+                                                  return  widget.theme.colorScheme.primary;
                                                 }
                                                 return null;
                                               }),
@@ -363,13 +362,13 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                             12))),
                                             backgroundColor:
                                                 WidgetStateProperty.all(
-                                              const Color(0XFF1A78EB),
+                                               widget.theme.colorScheme.primary,
                                             ),
                                             overlayColor: WidgetStateProperty
                                                 .resolveWith<Color?>((states) {
                                               if (states.contains(
                                                   WidgetState.pressed)) {
-                                                return const Color(0XFF1A78EB);
+                                                return  widget.theme.colorScheme.primary;
                                               }
                                               return null;
                                             }),
@@ -384,10 +383,10 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                     Workout(theme: widget.theme),
                                                 ));
                                           },
-                                          child: const Text(
+                                          child: Text(
                                             "Start This Workout",
                                             style: TextStyle(
-                                                color: Colors.white,
+                                                color: widget.theme.colorScheme.onPrimary,
                                                 fontWeight: FontWeight.w800),
                                           )),
                                     ),
@@ -396,10 +395,10 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                             return Container(
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.all(Radius.circular(1)),
-                                border: Border(bottom: BorderSide(color: lighten(const Color(0xFF1e2025), 20)/*Theme.of(context).dividerColor*/, width: 0.5),),
+                                border: Border(bottom: BorderSide(color: widget.theme.colorScheme.outline),),
                               ),
                               child: Material(
-                                color:const Color(0xFF1e2025),
+                                color:widget.theme.colorScheme.surface,
                                 child: Padding(
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 8.0),
@@ -418,9 +417,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                     overflow: TextOverflow.visible,
                                                     //softWrap: true,
                                                     context.watch<Profile>().exercises[index][exerciseIndex].exerciseTitle,
-                                                    style: const TextStyle(
-                                                      color: Color.fromARGB(
-                                                          255, 255, 255, 255),
+                                                    style: TextStyle(
+                                                      color: widget.theme.colorScheme.onSurface,
                                                       fontSize: 16,
                                                       fontWeight: FontWeight.w600,
                                                     ),

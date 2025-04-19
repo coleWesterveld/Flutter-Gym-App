@@ -1,4 +1,5 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
+import 'package:firstapp/widgets/done_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
@@ -17,6 +18,7 @@ import 'package:firstapp/widgets/history_session_view.dart';
 // the logged sets should be indicated even upon expanding/collapsing
 // the timer could work better I think - need to ingtegrate with set logging
 // fix notes - for now, they only work if you create a note after logging the sets
+// Use datatable for target, rpe, weight, reps
 
 // I think it may be more clear to change all imports to this package version
 // then again, idk if it really matters
@@ -42,7 +44,6 @@ class _WorkoutState extends State<Workout> {
 
 
   Map<int, List<SetRecord>> _exerciseHistory = {};
-  List<SetRecord> _fullHistory = [];
 
   // will be false until all sets in an exercise are logged.
   List<bool> isExerciseComplete = [];
@@ -59,7 +60,7 @@ class _WorkoutState extends State<Workout> {
     );
 
     for (Exercise exercise
-        in context.read<Profile>().exercises[primaryIndex!]) {
+        in context.read<Profile>().exercises[primaryIndex]) {
       final record = await dbHelper.getPreviousSessionSets(
         exercise.exerciseID, 
         context.read<Profile>().sessionID!,
@@ -87,46 +88,6 @@ class _WorkoutState extends State<Workout> {
     super.dispose();
   }
 
-
-  void _handleExerciseSelected(int id) async {
-    setState(() {
-      _fullHistory = [];
-    });
-
-    final dbHelper = DatabaseHelper.instance;
-    try {
-      final records = await dbHelper.fetchSetRecords(exerciseId: id);
-      if (mounted) {
-        setState(() {
-          _fullHistory =
-              records.map((record) => SetRecord.fromMap(record)).toList();
-        });
-      }
-    } catch (e) {
-      ("Error fetching history: $e");
-      if (mounted) {
-        setState(() {
-          _fullHistory = [];
-        });
-      }
-    }
-  }
-
-  // void _stopStopwatch() {
-  //   _stopwatch.stop();
-  //   _timer?.cancel();
-  // }
-
-  String _formatTime(int milliseconds) {
-    int seconds = (milliseconds / 1000).truncate();
-    int hours = seconds ~/ 3600;
-    int minutes = (seconds % 3600) ~/ 60;
-    int remainingSeconds = seconds % 60;
-    return "${hours.toString().padLeft(2, '0')}:"
-        "${minutes.toString().padLeft(2, '0')}:"
-        "${remainingSeconds.toString().padLeft(2, '0')}";
-  }
-
   @override
   Widget build(BuildContext context) {
     int? primaryIndex = context.read<Profile>().activeDayIndex;
@@ -139,37 +100,7 @@ class _WorkoutState extends State<Workout> {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         bottomSheet: context.watch<Profile>().done
-            ? Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                      top: BorderSide(color: lighten(Color(0xFF141414), 20))),
-                  color: Color(0xFF1e2025),
-                ),
-                height: 50,
-                width: double.infinity,
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4))),
-                        backgroundColor:
-                            WidgetStateProperty.all(Color(0xFF6c6e6e)),
-                      ),
-                      onPressed: () {
-                        WidgetsBinding.instance.focusManager.primaryFocus
-                            ?.unfocus();
-                        context.read<Profile>().done = false;
-                        setState(() {});
-                      },
-                      child: Text('Done',
-                          style: TextStyle(color: widget.theme.colorScheme.onPrimary)),
-                    ),
-                  ],
-                ),
-              )
+            ? DoneButtonBottom(context: context, theme: widget.theme)
             : null,
             appBar: AppBar(
               title: Text(
@@ -219,11 +150,14 @@ class _WorkoutState extends State<Workout> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-              width: isNextSet ? 2 : 1,
-              color: isNextSet
-                  ? Colors.blue
-                  : lighten(const Color(0xFF141414), 20)),
-          color: isExerciseComplete[index] ? Colors.blue.withAlpha(64) :const Color(0xFF1e2025),
+            width: isNextSet ? 2 : 1,
+            color: isNextSet
+                ? widget.theme.colorScheme.primary
+                : widget.theme.colorScheme.outline,
+          ),
+          color: isExerciseComplete[index] 
+            ? widget.theme.colorScheme.primary.withAlpha((255 * 0.25).round()) 
+            :widget.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Theme(
@@ -236,8 +170,8 @@ class _WorkoutState extends State<Workout> {
             key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
             controller: context.read<Profile>().workoutExpansionControllers[index],
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white,
+            iconColor: widget.theme.colorScheme.onSurface,
+            collapsedIconColor: widget.theme.colorScheme.onSurface,
             title: Row(
               children: [
                 Expanded(
@@ -250,8 +184,8 @@ class _WorkoutState extends State<Workout> {
                           .exerciseTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: widget.theme.colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -412,7 +346,7 @@ class _WorkoutState extends State<Workout> {
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withAlpha((255 * 0.5).round()),
                                 offset: const Offset(0.0, 0.0),
                                 blurRadius: 12.0,
                               ),
@@ -423,10 +357,10 @@ class _WorkoutState extends State<Workout> {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               padding: const EdgeInsets.only(
                                   top: 0, bottom: 0, right: 0, left: 8),
-                              backgroundColor: const Color(0xFF1e2025),
+                              backgroundColor: widget.theme.colorScheme.surface,
                               shape: RoundedRectangleBorder(
-                                  side: const BorderSide(
-                                      width: 2, color: Color(0XFF1A78EB)),
+                                  side: BorderSide(
+                                      width: 2, color: widget.theme.colorScheme.primary),
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(8))),
                             ),
@@ -441,10 +375,11 @@ class _WorkoutState extends State<Workout> {
                             label: Row(
                               children: [
                                 Icon(Icons.add,
-                                    color: lighten(Color(0xFF141414), 70)),
+                                    color: widget.theme.colorScheme.onSurface),
                                 Text("Set",
                                     style: TextStyle(
-                                        color: lighten(Color(0xFF141414), 70))),
+                                        color: widget.theme.colorScheme.onSurface),
+                                )
                               ],
                             ),
                           ),
@@ -472,7 +407,7 @@ class _WorkoutState extends State<Workout> {
                           maxLines: null,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: const Color(0xFF1e2025),
+                            //fillColor: const Color(0xFF1e2025),
                             contentPadding:
                                 const EdgeInsets.only(bottom: 10, left: 8),
                             border: const OutlineInputBorder(

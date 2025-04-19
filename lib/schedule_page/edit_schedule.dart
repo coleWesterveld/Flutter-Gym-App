@@ -2,6 +2,7 @@
 // TODO: this shoudl come back just for now it was everywhere and annoying
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firstapp/widgets/done_button.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
 import '../providers_and_settings/program_provider.dart';
@@ -10,6 +11,8 @@ import 'package:provider/provider.dart';
 import '../other_utilities/lightness.dart';
 import '../other_utilities/day_of_week.dart';
 import '../providers_and_settings/settings_page.dart';
+import 'package:firstapp/schedule_page/rest_day.dart';
+import 'package:firstapp/schedule_page/draggable_day.dart';
 
 // this page whats left: 
 // TODO: make pretty - notably, when a day hovers another day, preview changes
@@ -133,8 +136,18 @@ class _EditScheduleState extends State<EditSchedule> {
                   Container(
                     
                     decoration: BoxDecoration(
-                      color: widget.theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(8)
+                      color: widget.theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 5,
+                          offset: const Offset(0, 0),
+                          spreadRadius: 2,
+                          color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                        )
+                      ]
+
                     ),
       
                     child: Padding(
@@ -220,8 +233,8 @@ class _EditScheduleState extends State<EditSchedule> {
                                   keyboardType: TextInputType. numberWithOptions(decimal: true),
                                                                       
                                   decoration:  InputDecoration(
-                                    filled: true,
-                                    fillColor: Color(0xFF1e2025),
+                                    //filled: true,
+                                    //fillColor: Color(0xFF1e2025),
                                     contentPadding: EdgeInsets.only(
                                       bottom: 10, 
                                       left: 8 
@@ -256,8 +269,18 @@ class _EditScheduleState extends State<EditSchedule> {
                   Container(
                     
                     decoration: BoxDecoration(
-                      color: darken(Color(0xFF1e2025), 40),
-                      borderRadius: BorderRadius.circular(8)
+                      color: widget.theme.colorScheme.surfaceContainerHighest,
+
+                      borderRadius: BorderRadius.circular(8),
+
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 5,
+                          offset: const Offset(0, 0),
+                          spreadRadius: 2,
+                          color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                        )
+                      ]
                     ),
       
                     child: Padding(
@@ -319,7 +342,7 @@ class _EditScheduleState extends State<EditSchedule> {
                 //height: 0.5,
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
-                color: lighten(const Color(0xFF1e2025), 40)
+                //color: ,
               )
             )
           ),
@@ -389,10 +412,20 @@ class _EditScheduleState extends State<EditSchedule> {
               builder: (context, candidateData, rejectedData) {
                 final isActive = candidateData.isNotEmpty;
                 if (_days[index] != null) {
-                  return _DraggableDay(days: _days, index: index, startDay: startDay);
+                  return DraggableDay(
+                    days: _days, 
+                    index: index, 
+                    startDay: startDay,
+                    theme: widget.theme
+                  );
         
                 } else {
-                  return _RestDay(isActive: isActive, index: index, startDay: startDay);
+                  return RestDay(
+                    isActive: isActive, 
+                    index: index, 
+                    startDay: startDay,
+                    theme: widget.theme
+                  );
                 }
                 // for draggable: 
                 // child is initial state, before dragging
@@ -410,498 +443,14 @@ class _EditScheduleState extends State<EditSchedule> {
 
   Widget? buildBottomSheet(){
     // if we should be displaying done button for numeric keyboard, then create.
-    // else display calendar
-  if (context.read<Profile>().done){ 
-    //return done bottom sheet
-    return Container(
-      decoration: BoxDecoration(
-
-        border: Border(
-          top: BorderSide(
-            color:  lighten(Color(0xFF141414), 20),
-          ),
-        ),
-        
-        color: Color(0xFF1e2025),
-          //borderRadius: BorderRadius.circular(12.0),
-        ),
-
-        height: 50,
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              style: ButtonStyle(
-                //when clicked, it splashes a lighter purple to show that button was clicked
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4)
-                  ),
-                ),
-                backgroundColor: WidgetStateProperty.all(Color(0xFF6c6e6e),),
-              ),
-                
-              onPressed: () {
-                WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                context.read<Profile>().done = false;
-                setState((){});
-              },
-
-              child: Text(
-                'Done',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
+    if (context.read<Profile>().done){ 
+      //return done bottom sheet
+      return DoneButtonBottom(
+        context: context, 
+        theme: widget.theme
       );
-
-      }else{
+    }else{
         return null;
       }
     }
-  }
-
-
-class _RestDay extends StatelessWidget {
-  const  _RestDay({
-    //super.key,
-    required this.isActive,
-    required this.index,
-    required this.startDay,
-  });
-
-  final bool isActive;
-  final int index;
-  final int startDay;
-
-  static List<String> daysOfWeek = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      child: DottedBorder(
-        strokeWidth: 2,
-        // [strokelength, spacelength]
-        dashPattern: const [15, 10],
-        borderType: BorderType.RRect, // Rounded rectangle border
-        radius: Radius.circular(12),
-        
-        color: isActive ? lighten(Color(0XFF1A78EB), 20) : lighten(const Color(0xFF1e2025), 20),
-        
-        
-        child: Container(
-        height: 56,
-        width: double.infinity,
-        
-        decoration: BoxDecoration(
-          color: isActive ? Color(0XFF1A78EB) : const Color(0xFF1e2025),
-          borderRadius: BorderRadius.circular(12),
-          //border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  topLeft: Radius.circular(12),
-                ),
-
-                // border: Border(
-                //   right: BorderSide(
-                //     color: Colors.grey,
-                //     width: 2.0,
-                //   ),
-                // ),
-
-                color: darken(const Color(0xFF1e2025), 40),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                     
-                      daysOfWeek[(index + startDay) % 7],
-                      style: TextStyle(
-                        height: 1.0,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-
-                    Text(
-                     
-                      "${index + 1}",
-                    
-                      style: TextStyle(
-                        height: 1.0,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: lighten(const Color(0xFF1e2025), 60)
-                      ),
-                    ),
-                  ],
-                )
-              ),
-
-            ),
-
-            Expanded(
-              //width: double.infinity,
-              child: Center(
-                //alignment: Alignment.center,
-                child: Container(
-                  child: Text(
-                    "Rest Day",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                    ),
-                  )
-                ),
-              ),
-            ),
-            
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-}
-
-class _DraggableDay extends StatelessWidget {
-  // this widget isnt exactly following DRY, could use refactor
-  const _DraggableDay({
-    //super.key,
-    required List<Day?> days,
-    required int index,
-    required int startDay,
-
-  }) : 
-  _days = days, 
-  _index = index,
-  _startDay = startDay;
-
-  final List<Day?> _days;
-  final int _index;
-  final int _startDay;
-
-  @override
-  Widget build(BuildContext context) {
-    return LongPressDraggable(
-
-    // this should be tweaked - I want it to be pretty easy to drag and reorder 
-    // cuz thats the whole purpose of this page
-    // at the same time, user needs to be able to scroll whout dragging stuff everywhere instantly 
-
-    delay: Duration(milliseconds: 200),
-    data: _days[_index]!,
-    
-    feedback: Container(
-      decoration: BoxDecoration(
-      boxShadow: [
-              BoxShadow(
-                blurStyle: BlurStyle.normal,
-                color: Colors.black.withValues(alpha: 0.6), // Shadow color
-                offset: Offset(0, 4), // Horizontal and ßvertical offset
-                blurRadius: 8, // Blur effect
-                spreadRadius: 12, // Spread effect
-              ),
-            ],
-      ),
-
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Material(
-          child: Container(
-              height: 70,
-              width: MediaQuery.sizeOf(context).width,
-              
-              decoration: BoxDecoration(
-                
-      
-                border: Border.all(
-                  color: Color(_days[_index]!.dayColor),
-                  
-                  width: 3.0,
-                ),
-          
-                borderRadius: BorderRadius.circular(13),
-                //border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(10.0),
-                        topLeft: Radius.circular(10.0),
-                        ),
-                      // border: Border(
-                      //   right: BorderSide(
-                      //     color: Colors.grey,
-                      //     width: 2.0,
-                      //   ),
-                      // ),
-          
-                      color: Color(_days[_index]!.dayColor),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-          
-                           
-                            _RestDay.daysOfWeek[(_index + _startDay) % 7],
-                            style: TextStyle(
-                              //color: darken(const Color(0xFF1e2025), 60),
-                              height: 1.0,
-                              fontSize: 20,
-                              color: darken(Color(_days[_index]!.dayColor), 70),
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-          
-                          Text(
-                           
-                            "${_index + 1}",
-                          
-                            style: TextStyle(
-                              height: 1.0,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: darken(Color(_days[_index]!.dayColor), 50)
-                            ),
-                          ),
-                        ],
-                      )
-                    ),
-          
-                  ),
-          
-                  Expanded(
-                    //width: double.infinity,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          _days[_index]!.dayTitle,
-                          style: TextStyle(
-                            fontSize: 18,
-                        
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-        ),
-      ),
-    ),
-    
-    childWhenDragging: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: Container(
-          height: 60,
-          width: double.infinity,
-          
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Color(0xFF1e2025),
-              //width: 2.0,
-            ),
-
-            borderRadius: BorderRadius.circular(12),
-            //border: Border.all(color: Colors.white, width: 2),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(10.0),
-                    topLeft: Radius.circular(10.0),
-                    ),
-                  // border: Border(
-                  //   right: BorderSide(
-                  //     color: Colors.grey,
-                  //     width: 2.0,
-                  //   ),
-                  // ),
-      
-                  color: darken(Color(_days[_index]!.dayColor), 50),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-
-                       
-                        _RestDay.daysOfWeek[(_index + _startDay) % 7],
-                        style: TextStyle(
-                          //color: darken(const Color(0xFF1e2025), 60),
-                          height: 1.0,
-                          fontSize: 20,
-                          color: darken(Color(_days[_index]!.dayColor), 80),
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-      
-                      Text(
-                       
-                        "${_index + 1}",
-                      
-                        style: TextStyle(
-                          height: 1.0,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: darken(Color(_days[_index]!.dayColor), 60)
-                        ),
-                      ),
-                    ],
-                  )
-                ),
-      
-              ),
-      
-              Expanded(
-                //width: double.infinity,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      _days[_index]!.dayTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        // this is ugly but works for now
-                        color: (Theme.of(context).textTheme.bodyMedium != null && Theme.of(context).textTheme.bodyMedium!.color != null) 
-                          ? darken(Theme.of(context).textTheme.bodyMedium!.color!, 30) : Colors.white,
-                    
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-    ),
-
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: Container(
-          height: 60,
-          width: double.infinity,
-          
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: lighten(Color(0xFF1e2025), 20),
-              //width: 2.0,
-            ),
-
-            borderRadius: BorderRadius.circular(12),
-            //border: Border.all(color: Colors.white, width: 2),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(10.0),
-                    topLeft: Radius.circular(10.0),
-                    ),
-                  // border: Border(
-                  //   right: BorderSide(
-                  //     color: Colors.grey,
-                  //     width: 2.0,
-                  //   ),
-                  // ),
-      
-                  color: Color(_days[_index]!.dayColor),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-
-                       
-                        _RestDay.daysOfWeek[(_index + _startDay) % 7],
-                        style: TextStyle(
-                          //color: darken(const Color(0xFF1e2025), 60),
-                          height: 1.0,
-                          fontSize: 20,
-                          color: darken(Color(_days[_index]!.dayColor), 70),
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-      
-                      Text(
-                       
-                        "${_index + 1}",
-                      
-                        style: TextStyle(
-                          height: 1.0,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: darken(Color(_days[_index]!.dayColor), 50)
-                        ),
-                      ),
-                    ],
-                  )
-                ),
-      
-              ),
-      
-              Expanded(
-                //width: double.infinity,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      _days[_index]!.dayTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                    
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(Icons.drag_handle),
-              ),
-            ],
-          ),
-        ),
-    ),
-    );
-  }
 }

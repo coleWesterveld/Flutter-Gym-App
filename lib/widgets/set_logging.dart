@@ -108,7 +108,7 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
       shake: _moveItmoveIt,
       child: Container(
         decoration: BoxDecoration(
-          color: _isChecked ? Colors.blue.withAlpha(100) : null,
+          color: _isChecked ? Colors.blue.withAlpha(128) : null,
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -203,7 +203,7 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(
           filled: true,
-          fillColor: hasError ? Colors.red.withAlpha(64) : const Color(0xFF1e2025),
+          fillColor: hasError ? Colors.red.withAlpha(64) : null,
           contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
           constraints: BoxConstraints(
             maxWidth: width,
