@@ -1,5 +1,6 @@
 // workout page
 //not updated
+import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
@@ -182,13 +183,15 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   controller: context.watch<Profile>().controllers[index],
                   key: ValueKey(context.watch<Profile>().split[index]),
                   onExpansionChanged: (isExpanded) {
-                    setState(() {
-                      for (int i = 0; i < context.read<Profile>().controllers.length; i++) {
-                        if (i != index && isExpanded) {
-                          context.read<Profile>().controllers[i].collapse();
+                    if (isExpanded){
+                      setState(() {
+                        for (int i = 0; i < context.read<Profile>().controllers.length; i++) {
+                          if (i != index) {
+                            context.read<Profile>().controllers[i].collapse();
+                          }
                         }
-                      }
-                    });
+                      });
+                    }
                   },
                   initiallyExpanded: todaysWorkout,
                   //initiallyExpanded: toExpand(index),
@@ -328,7 +331,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 .then((finished) {
                                                   if (finished == true) {
                                                     // only clear activeDay once the Workout route is fully popped
-                                                    context.read<Profile>().setActiveDay(null);
+                                                    context.read<ActiveWorkoutProvider>().setActiveDay(null);
                                                   }
                                                 });
                                               
@@ -338,8 +341,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               //       builder: (context) =>
                                               //           const Workout(),
                                               //     ));
-                                              context.read<Profile>().generateWorkoutSessionId();
-                                              context.read<Profile>().setActiveDay(index);
+                                              context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
+                                              context.read<ActiveWorkoutProvider>().setActiveDay(index);
                                             },
                                             child: const Text(
                                               "Start This Workout",
@@ -374,8 +377,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                             }),
                                           ),
                                           onPressed: () {
-                                            context.read<Profile>().generateWorkoutSessionId();
-                                            context.read<Profile>().setActiveDay(index);
+                                            context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
+                                            context.read<ActiveWorkoutProvider>().setActiveDay(index);
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

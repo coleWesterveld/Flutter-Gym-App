@@ -5,6 +5,7 @@ import 'package:firstapp/providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import '../providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/shake_widget.dart';
+import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 
 class GymSetRow extends StatefulWidget {
   final int repsLower;
@@ -32,10 +33,10 @@ class GymSetRow extends StatefulWidget {
   });
 
   @override
-  _GymSetRowState createState() => _GymSetRowState();
+  GymSetRowState createState() => GymSetRowState();
 }
 
-class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixin {
+class GymSetRowState extends State<GymSetRow> {
 
   final FocusNode weightFocus = FocusNode();
   final FocusNode repsFocus = FocusNode();
@@ -100,9 +101,9 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    assert(context.read<Profile>().sessionID != null, "SessionID is null");
-    assert(context.read<Profile>().activeDayIndex != null, "No active day index");
-    assert(context.read<Profile>().activeDay != null, "No active day");
+    assert(context.read<ActiveWorkoutProvider>().sessionID != null, "SessionID is null");
+    assert(context.read<ActiveWorkoutProvider>().activeDayIndex != null, "No active day index");
+    assert(context.read<ActiveWorkoutProvider>().activeDay != null, "No active day");
 
     return ShakeWidget(
       shake: _moveItmoveIt,
@@ -144,18 +145,18 @@ class _GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMix
                     if (_isChecked) {
                       context.read<Profile>().logSet(
                         SetRecord.fromDateTime(
-                          sessionID: context.read<Profile>().sessionID!,
+                          sessionID: context.read<ActiveWorkoutProvider>().sessionID!,
                           exerciseID: context.read<Profile>()
-                            .exercises[context.read<Profile>().activeDayIndex!][widget.exerciseIndex].exerciseID,
+                            .exercises[context.read<ActiveWorkoutProvider>().activeDayIndex!][widget.exerciseIndex].exerciseID,
                           date: DateTime.now(),
                           numSets: 1,
                           reps: int.parse(widget.repsController.text),
                           weight: int.parse(widget.weightController.text),
                           rpe: int.parse(widget.rpeController.text),
-                          historyNote: context.read<Profile>().workoutNotesTEC[widget.exerciseIndex].text,
+                          historyNote: context.read<ActiveWorkoutProvider>().workoutNotesTEC[widget.exerciseIndex].text,
                         ),
                       );
-                      context.read<Profile>().restStopwatch.reset();
+                      context.read<ActiveWorkoutProvider>().restStopwatch.reset();
                     }
                   },
                   child: Container(

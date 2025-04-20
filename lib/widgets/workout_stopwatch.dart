@@ -1,3 +1,4 @@
+import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/widgets/shake_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
 import '../workout_page/workout_page.dart';
 import '../providers_and_settings/settings_provider.dart';
+
 
 class WorkoutControlBar extends StatelessWidget {
   final bool positionAtTop;
@@ -24,8 +26,8 @@ class WorkoutControlBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Profile>(
-      builder: (context, profile, child) {
+    return Consumer<ActiveWorkoutProvider>(
+      builder: (context, activeWorkout, child) {
         return Container(
           height: 80,
           decoration: BoxDecoration(
@@ -49,7 +51,7 @@ class WorkoutControlBar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Workout: ${_formatDuration(profile.workoutStopwatch.elapsed)}",
+                      "Workout: ${_formatDuration(activeWorkout.workoutStopwatch.elapsed)}",
                       style: TextStyle(
                         fontSize: 16,
                         color: theme.colorScheme.onSurface,
@@ -58,7 +60,7 @@ class WorkoutControlBar extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Rest: ${_formatDuration(profile.restStopwatch.elapsed)}",
+                      "Rest: ${_formatDuration(activeWorkout.restStopwatch.elapsed)}",
                       style: TextStyle(
                         fontSize: 14,
                         color: theme.colorScheme.onSurface,
@@ -74,11 +76,11 @@ class WorkoutControlBar extends StatelessWidget {
                   // Pause/Play Button
                   IconButton(
                     icon: Icon(
-                      profile.isPaused ? Icons.play_arrow : Icons.pause,
+                      activeWorkout.isPaused ? Icons.play_arrow : Icons.pause,
                       color: theme.colorScheme.primary,
                       size: 28,
                     ),
-                    onPressed: profile.togglePause,
+                    onPressed: activeWorkout.togglePause,
                   ),
                   const SizedBox(width: 8),
                   
@@ -86,7 +88,7 @@ class WorkoutControlBar extends StatelessWidget {
                   if (!positionAtTop) ...[
                     ElevatedButton(
                       onPressed: () {
-                        if (context.read<Profile>().isPaused) context.read<Profile>().togglePause();
+                        if (context.read<ActiveWorkoutProvider>().isPaused) context.read<ActiveWorkoutProvider>().togglePause();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -110,18 +112,18 @@ class WorkoutControlBar extends StatelessWidget {
                   
                   // Finish Button
                   ShakeWidget(
-                    shake: context.watch<Profile>().shakeFinish,
+                    shake: context.watch<ActiveWorkoutProvider>().shakeFinish,
                     child: OutlinedButton(
                       onPressed: () {
                         if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                        profile.workoutStopwatch.reset();
-                        profile.restStopwatch.reset();
-                        profile.timer?.cancel();
+                        activeWorkout.workoutStopwatch.reset();
+                        activeWorkout.restStopwatch.reset();
+                        activeWorkout.timer?.cancel();
                         
                         if(positionAtTop) Navigator.pop(context, true);
                         
                       
-                        context.read<Profile>().setActiveDay(null);
+                        context.read<ActiveWorkoutProvider>().setActiveDay(null);
                       
                       },
                       style: OutlinedButton.styleFrom(

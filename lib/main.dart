@@ -1,3 +1,4 @@
+import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +54,8 @@ class _MainPage extends State<GymApp> {
           create: (context) => SettingsModel()
         ),
 
+        
+
 
         ChangeNotifierProvider(
           // this got a bit big and should probably be split into maybe 2 or more providers
@@ -63,12 +66,31 @@ class _MainPage extends State<GymApp> {
             reps2TEC: [],
             rpeTEC: [],
             setsTEC: [],
+          ),
+        ),
+
+        ChangeNotifierProxyProvider<Profile, ActiveWorkoutProvider>(
+
+
+          create: (context) => ActiveWorkoutProvider(
+            dbHelper: dbHelper,
+            programProvider: Provider.of<Profile>(context, listen: false),
             workoutNotesTEC: [],
             workoutRepsTEC: [],
             workoutRpeTEC: [],
             workoutWeightTEC: [],
             workoutExpansionControllers: []
           ),
+
+          update: (context, programProvider, previousActiveWorkoutProvider) {
+            // In this simple case, we might not need to do much in update,
+            // as ActiveWorkoutProvider reads programProvider directly when needed.
+            // If ActiveWorkoutProvider held copies of program data that needed
+            // syncing, you'd do it here.
+             // Ensure dbHelper is passed along if needed (though create handles it)
+            return previousActiveWorkoutProvider ?? ActiveWorkoutProvider(
+                dbHelper: dbHelper, programProvider: programProvider);
+          },
         ),
       ],
       child: MaterialApp(
@@ -159,7 +181,21 @@ class MainScaffoldState extends State<MainScaffold> {
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
 
-      bottomSheet: (context.watch<Profile>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
+
+      bottomSheet: Consumer<ActiveWorkoutProvider>(
+      builder: (context, activeWorkout, child) {
+        if (activeWorkout.activeDay != null){
+          return WorkoutControlBar(theme: theme);
+        } else{
+          return const SizedBox.shrink();
+        }
+      },
+      // Pass the potentially expensive body (page switcher) as the child
+      // child: IndexedStack(...) or YourPageSwitcherWidget(),
+      // --> Or keep the simple page list if performance is okay there:
+      // child: <Widget>[ ... AnalyticsPage ... ][currentPageIndex],
+    ),
+//      bottomSheet: (context.watch<ActiveWorkoutProvider>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
     );
   }
 }

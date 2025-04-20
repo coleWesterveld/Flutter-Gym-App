@@ -1,4 +1,5 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
+import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +52,7 @@ class _WorkoutState extends State<Workout> {
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
     int index = 0;
-    int? primaryIndex = context.read<Profile>().activeDayIndex;
+    int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
 
     isExerciseComplete = List.filled(
       context.read<Profile>().exercises[primaryIndex!].length,
@@ -63,7 +64,7 @@ class _WorkoutState extends State<Workout> {
         in context.read<Profile>().exercises[primaryIndex]) {
       final record = await dbHelper.getPreviousSessionSets(
         exercise.exerciseID, 
-        context.read<Profile>().sessionID!,
+        context.read<ActiveWorkoutProvider>().sessionID!,
       );
       if (record.isNotEmpty) {
         _exerciseHistory[index] = record;
@@ -90,7 +91,7 @@ class _WorkoutState extends State<Workout> {
 
   @override
   Widget build(BuildContext context) {
-    int? primaryIndex = context.read<Profile>().activeDayIndex;
+    int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
 
     return GestureDetector(
       onTap: () {
@@ -106,7 +107,7 @@ class _WorkoutState extends State<Workout> {
               title: Text(
                 // this only happens for short period during transition from popping
                 // so nobody should see the const value, it will hopefully blend in
-                (primaryIndex != null) ? "Day ${primaryIndex + 1} • ${context.read<Profile>().activeDay!.dayTitle}" : "Workout",
+                (primaryIndex != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
                 style: TextStyle(fontWeight: FontWeight.w900),
               ),
               bottom: PreferredSize(
@@ -141,8 +142,8 @@ class _WorkoutState extends State<Workout> {
   }
 
   Padding exerciseBuild(BuildContext context, int index) {
-    int? primaryIndex = context.read<Profile>().activeDayIndex;
-    bool isNextSet = index == context.watch<Profile>().nextSet[0];
+    int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
+    bool isNextSet = index == context.watch<ActiveWorkoutProvider>().nextSet[0];
 
     return Padding(
       key: ValueKey(context.watch<Profile>().exercises[primaryIndex!][index]),
@@ -169,7 +170,7 @@ class _WorkoutState extends State<Workout> {
           child: ExpansionTile(
             key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
-            controller: context.read<Profile>().workoutExpansionControllers[index],
+            controller: context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index],
             iconColor: widget.theme.colorScheme.onSurface,
             collapsedIconColor: widget.theme.colorScheme.onSurface,
             title: Row(
@@ -201,19 +202,19 @@ class _WorkoutState extends State<Workout> {
                         //_userHasInteracted = true;
                       }
                       // Toggle history visibility
-                      context.read<Profile>().showHistory![index] =
-                          !context.read<Profile>().showHistory![index];
+                      context.read<ActiveWorkoutProvider>().showHistory![index] =
+                          !context.read<ActiveWorkoutProvider>().showHistory![index];
                     });
                   },
                   icon: Icon(
-                    context.watch<Profile>().showHistory![index]
+                    context.watch<ActiveWorkoutProvider>().showHistory![index]
                         ? Icons.swap_horiz
                         : Icons.history,
                   ),
                 ),
               ],
             ),
-            children: context.watch<Profile>().showHistory![index]
+            children: context.watch<ActiveWorkoutProvider>().showHistory![index]
                 ? [
                     _exerciseHistory.containsKey(index)
                         ? Padding(
@@ -284,9 +285,9 @@ class _WorkoutState extends State<Workout> {
                                 expectedRPE: context.read<Profile>().sets[primaryIndex][index][setIndex].rpe?.toDouble() ?? 0.0,
                                 exerciseIndex: index,
                                 setIndex: setIndex,
-                                rpeController: context.read<Profile>().workoutRpeTEC[index][setIndex][subSetIndex],
-                                repsController: context.read<Profile>().workoutRepsTEC[index][setIndex][subSetIndex],
-                                weightController: context.read<Profile>().workoutWeightTEC[index][setIndex][subSetIndex],
+                                rpeController: context.read<ActiveWorkoutProvider>().workoutRpeTEC[index][setIndex][subSetIndex],
+                                repsController: context.read<ActiveWorkoutProvider>().workoutRepsTEC[index][setIndex][subSetIndex],
+                                weightController: context.read<ActiveWorkoutProvider>().workoutWeightTEC[index][setIndex][subSetIndex],
                                 initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged[subSetIndex],
                                 
                                 
@@ -297,14 +298,14 @@ class _WorkoutState extends State<Workout> {
                                       .hasBeenLogged[subSetIndex] = isChecked;
 
                                     if (isChecked) {
-                                      context.read<Profile>().incrementSet([index, setIndex, subSetIndex]);
+                                      context.read<ActiveWorkoutProvider>().incrementSet([index, setIndex, subSetIndex]);
                                       
                                       // Handle exercise expansion/collapse
-                                      if (context.read<Profile>().nextSet[0] != index) {
-                                        context.read<Profile>().workoutExpansionControllers[
-                                          context.read<Profile>().nextSet[0]
+                                      if (context.read<ActiveWorkoutProvider>().nextSet[0] != index) {
+                                        context.read<ActiveWorkoutProvider>().workoutExpansionControllers[
+                                          context.read<ActiveWorkoutProvider>().nextSet[0]
                                         ].expand();
-                                        context.read<Profile>().workoutExpansionControllers[index].collapse();
+                                        context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index].collapse();
                                       }
                                     }
 
@@ -392,9 +393,9 @@ class _WorkoutState extends State<Workout> {
                         onFocusChange: (hasFocus) {
                           if (!hasFocus)  {
                             // Save when focus is lost
-                            final notes = context.read<Profile>().workoutNotesTEC[index].text;
+                            final notes = context.read<ActiveWorkoutProvider>().workoutNotesTEC[index].text;
                             _updateSetNotesInDB(
-                              context.read<Profile>().sessionID!,
+                              context.read<ActiveWorkoutProvider>().sessionID!,
                               context.read<Profile>().exercises[primaryIndex][index].exerciseID,
                               notes
                             );
@@ -416,7 +417,7 @@ class _WorkoutState extends State<Workout> {
                             hintText: "Notes: ",
                           ),
                         
-                          controller: context.watch<Profile>().workoutNotesTEC[index],
+                          controller: context.watch<ActiveWorkoutProvider>().workoutNotesTEC[index],
                         
                         ),
                       ),

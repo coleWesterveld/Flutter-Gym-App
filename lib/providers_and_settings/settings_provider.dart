@@ -47,6 +47,7 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // TODO: this should be a dropdown with dark, light and system
   Future<void> toggleTheme() async {
     final newTheme = _settings.themeMode == 'dark' ? 'light' : 'dark';
     _settings = _settings.copyWith(themeMode: newTheme);

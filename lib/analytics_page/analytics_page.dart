@@ -84,6 +84,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   String? tempGoalTitle;
   bool _isLoadingGoals = true;
 
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +104,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("test");
     return Scaffold(
 
       appBar: AppBar(

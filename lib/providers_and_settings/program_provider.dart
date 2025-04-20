@@ -43,111 +43,7 @@ class Profile extends ChangeNotifier {
   late Program currentProgram;
 
   DatabaseHelper dbHelper;
-  int? activeDayIndex;
-  Day? activeDay;
-  List<bool>? showHistory;
 
-  final Stopwatch workoutStopwatch = Stopwatch();
-  final Stopwatch restStopwatch = Stopwatch();
-  Timer? timer;
-  bool isPaused = false;
-  bool shakeFinish = false;
-
-  // during a workout, logged sets will go here before being added to the database
-  // UPDATE: I am abandonning this, instant logging is more practical as of now
-  // TODO: keep an eye on performance, especially as setrecord becomes long
-  // List<SetRecord> sessionBuffer = [];
-
-  String? sessionID;
-
-  void togglePause() {
-  
-    isPaused = !isPaused;
-    if (isPaused) {
-      workoutStopwatch.stop();
-      restStopwatch.stop();
-    } else {
-      workoutStopwatch.start();
-      restStopwatch.start();
-    }
-    notifyListeners();
-    // TODO: persist in DB
-    //_saveWorkoutState();
-}
-  void startTimers() {
-    timer = Timer.periodic(Duration(seconds: 1), (_) {
-    if (!isPaused) {
-      notifyListeners(); // This makes the UI update
-    }
-    });
-    // //togglePause();
-    // timer = Timer.periodic(Duration(seconds: 1), (_) {
-
-    //   //if (mounted) setState(() {});
-    // });
-
-    restStopwatch.start();
-    workoutStopwatch.start();
-    notifyListeners();
-  }
-
-  // returns sessionID, as well as sets in internally.
-  String generateWorkoutSessionId() {
-    final now = DateTime.now();
-    // Convert the current time to an ISO8601 string.
-    final timestamp = now.toIso8601String(); // e.g. "2025-03-16T14:22:31.123"
-    startTimers();
-    
-
-    sessionID = timestamp;
-    return timestamp;
-  }
-
-
-  // this will keep track of what the expected next set will be
-  // it will start as 0 but will change to be the set planned after the most recently logged set
-  // it will be a list [exercise, set]
-  List<int> nextSet = [0, 0, 0];
-
-  // List<int> get nextSet => _nextSet;
-
-  // will set nextSet to the set reccomended after justDone
-  void incrementSet(List<int> justDone) {
-    assert(activeDayIndex != null, "Trying to set an active set while no workout is in progress");
-    assert(justDone.length == 3, "justDone should be [exerciseIndex, setIndex, subsetIndex]");
-
-    final currentExerciseIndex = justDone[0];
-    final currentSetIndex = justDone[1];
-    final currentSubsetIndex = justDone[2];
-    final currentSet = sets[activeDayIndex!][currentExerciseIndex][currentSetIndex];
-
-    // Check if there are more subsets in current set
-    if (currentSubsetIndex < currentSet.numSets - 1) {
-      // Move to next subset in same set
-      nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex + 1];
-    } 
-    // Check if there are more sets in current exercise
-    else if (currentSetIndex < sets[activeDayIndex!][currentExerciseIndex].length - 1) {
-      // Move to first subset of next set in same exercise
-      nextSet = [currentExerciseIndex, currentSetIndex + 1, 0];
-    } 
-    // Check if there are more exercises in workout
-    else if (currentExerciseIndex < exercises[activeDayIndex!].length - 1) {
-      // Move to first subset of first set in next exercise
-      nextSet = [currentExerciseIndex + 1, 0, 0];
-    }
-    // Else we're at the end of the workout
-    else {
-      // Optionally handle workout completion here
-      ("Workout complete!");
-      shakeFinish = true;
-      // Keep nextSet pointing to last subset
-      nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];
-    }
-
-    ("Next set: $nextSet");
-    notifyListeners();
-  }
 
   void logSet(SetRecord record){
     dbHelper.insertSetRecord(record);
@@ -180,12 +76,6 @@ class Profile extends ChangeNotifier {
   List<List<List<TextEditingController>>> reps1TEC;
   List<List<List<TextEditingController>>> reps2TEC;
 
-  // I am trying to also make TEC's for the workout page
-  List<List<List<TextEditingController>>> workoutRpeTEC;
-  List<List<List<TextEditingController>>> workoutWeightTEC;
-  List<List<List<TextEditingController>>> workoutRepsTEC;
-  List<TextEditingController> workoutNotesTEC;
-  List<ExpansionTileController> workoutExpansionControllers;
   UserSettings? settings = UserSettings();
 
   int splitLength;
@@ -200,17 +90,9 @@ class Profile extends ChangeNotifier {
     this.reps1TEC = const <List<List<TextEditingController>>>[],
     this.reps2TEC = const <List<List<TextEditingController>>>[],
     this.setsTEC = const <List<List<TextEditingController>>>[],
-    this.workoutNotesTEC = const <TextEditingController>[],
-    this.workoutRepsTEC = const <List<List<TextEditingController>>>[],
-    this.workoutRpeTEC = const <List<List<TextEditingController>>>[],
-    this.workoutWeightTEC = const <List<List<TextEditingController>>>[],
-    this.workoutExpansionControllers = const <ExpansionTileController>[],
     
     required this.dbHelper,
     this.splitLength = 7,
-    this.activeDayIndex,
-    this.activeDay,
-    this.showHistory,
   }){
     _init();
   }
@@ -222,11 +104,6 @@ class Profile extends ChangeNotifier {
     reps1TEC.clear();
     reps2TEC.clear();
     rpeTEC.clear();
-    workoutNotesTEC.clear();
-    workoutRepsTEC.clear();
-    workoutRpeTEC.clear();
-    workoutWeightTEC.clear();
-
     currentProgram = await dbHelper.initializeProgram();
     // Fetch data from DB and assign to in-memory lists
     split = await dbHelper.initializeSplitList(currentProgram.programID);
@@ -292,72 +169,6 @@ class Profile extends ChangeNotifier {
   // TODO: I think many of these methods could be simpler setters and getters?
   void changeDone(bool val){
     _done = val;
-    notifyListeners();
-  }
-
-  // sets whatever day the user is currently doing
-  void setActiveDay(int? index){
-
-    if ((index != null && index >= 0 && index < split.length)){
-
-      activeDayIndex = index;
-      activeDay = split[index];
-      showHistory = List.filled(exercises[index].length, false);
-      workoutNotesTEC = List.generate(growable: true, exercises[index].length,  (_) => TextEditingController());
-      
-      workoutRepsTEC = List.generate(
-        growable: true, 
-        exercises[index].length,  
-        (int idx) => List.generate(
-          sets[index][idx].length, 
-          (setIndex) => List.generate(
-            sets[index][idx][setIndex].numSets, 
-            (subSetIndex) => TextEditingController()
-          )
-        )
-      );
-
-      workoutRpeTEC = List.generate(
-        growable: true, 
-        exercises[index].length,  
-        (int idx) => List.generate(
-          sets[index][idx].length,
-          (setIndex) => List.generate(
-            sets[index][idx][setIndex].numSets, 
-            (subSetIndex) => TextEditingController()
-          )
-        )
-      );
-
-      workoutWeightTEC = List.generate(
-        growable: true, 
-        exercises[index].length,  
-        (int idx) => List.generate(
-          sets[index][idx].length, 
-          (setIndex) => List.generate(
-            sets[index][idx][setIndex].numSets, 
-            (subSetIndex) => TextEditingController()
-          )
-        )
-      );
-
-      workoutExpansionControllers = List.generate(
-        growable: true, 
-        exercises[index].length,  
-        (_) => ExpansionTileController()
-      );
-    }else{
-      activeDayIndex = null;
-      activeDay = null;
-      showHistory = null;
-      // TODO: I think I should dispose first
-      workoutWeightTEC.clear();
-      workoutNotesTEC.clear();
-      workoutRepsTEC.clear();
-      workoutRpeTEC.clear();
-      workoutExpansionControllers.clear();
-    }
-    
     notifyListeners();
   }
 
@@ -998,22 +809,23 @@ void exerciseInsert({
     // if a workout is active, update the relevant text editing controllers
     // NOTE: indexed [exercise][subset]
     // If a workout is active, update workout-specific controllers
-    if (activeDayIndex != null) {
-      // The new set index is the current length before adding
-      final newSetIndex = workoutRepsTEC[index2].length;
+    // TODO: recreate this in active workout provider but it actually works this time
+    // if (activeDayIndex != null) {
+    //   // The new set index is the current length before adding
+    //   final newSetIndex = workoutRepsTEC[index2].length;
       
-      // Initialize lists if they don't exist
-      workoutRepsTEC[index2].add([]);
-      workoutRpeTEC[index2].add([]);
-      workoutWeightTEC[index2].add([]);
+    //   // Initialize lists if they don't exist
+    //   workoutRepsTEC[index2].add([]);
+    //   workoutRpeTEC[index2].add([]);
+    //   workoutWeightTEC[index2].add([]);
       
-      // Add controllers for each subset (using numSets from the new PlannedSet)
-      for (int i = 0; i < sets[index1][index2].last.numSets; i++) {
-        workoutRepsTEC[index2][newSetIndex].add(TextEditingController());
-        workoutRpeTEC[index2][newSetIndex].add(TextEditingController());
-        workoutWeightTEC[index2][newSetIndex].add(TextEditingController());
-      }
-    }
+    //   // Add controllers for each subset (using numSets from the new PlannedSet)
+    //   for (int i = 0; i < sets[index1][index2].last.numSets; i++) {
+    //     workoutRepsTEC[index2][newSetIndex].add(TextEditingController());
+    //     workoutRpeTEC[index2][newSetIndex].add(TextEditingController());
+    //     workoutWeightTEC[index2][newSetIndex].add(TextEditingController());
+    //   }
+    // }
 
     notifyListeners();
   }

@@ -1011,67 +1011,6 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  // // this is probably not needed, better to use grouped history anyways.
-  // Future<List<SetRecord>> getExerciseHistory(int exerciseId) async {
-  //   final db = await DatabaseHelper.instance.database;
-  //   // okay this is a crazy query, at least for me. lemme explain: 
-  //   /*
-  //   every set is logged individually, so if I do three sets of 200lbs on bench for 6 reps, RPE 9,
-  //   ^ this gets stored as three rows. for viewing, though, I want to consolidate this and just say 3x {200lbs blah blah}
-  //   thats what this query does with the COUNT. 
-  //   the rest is managing the date and history note of the returned record,
-  //   which is the info from the most recent set.
-  //   so if you have 3 sets in the same session, it will show the history note only from the most recent one
-  //   which is what I think people want anyways, the note should be for all three.
-  //   */
-  //   final results = await db.rawQuery('''
-  //     SELECT 
-  //       reps,
-  //       weight,
-  //       rpe,
-  //       COUNT(*) as num_sets,
-  //       exercise_id,
-  //       session_id,
-  //       MAX(datetime(date)) as date,
-  //       (
-  //         SELECT history_note 
-  //         FROM set_log AS s2 
-  //         WHERE s2.reps = set_log.reps 
-  //           AND s2.weight = set_log.weight 
-  //           AND s2.rpe = set_log.rpe 
-  //           AND s2.exercise_id = set_log.exercise_id
-  //         ORDER BY datetime(date) DESC 
-  //         LIMIT 1
-  //       ) as history_note,
-  //       (
-  //         SELECT id
-  //         FROM set_log AS s3
-  //         WHERE s3.reps = set_log.reps
-  //           AND s3.weight = set_log.weight
-  //           AND s3.rpe = set_log.rpe
-  //           AND s3.exercise_id = set_log.exercise_id
-  //         ORDER BY datetime(date) DESC
-  //         LIMIT 1
-  //       ) as record_id
-  //     FROM set_log
-  //     WHERE exercise_id = ?
-  //     GROUP BY reps, weight, rpe
-  //     ORDER BY datetime(date) DESC
-  //   ''', [exerciseId]);
-
-  //   return results.map((r) => SetRecord(
-  //     reps: r['reps'] as int,
-  //     weight: r['weight'] as int,
-  //     rpe: r['rpe'] as int,
-  //     numSets: r['num_sets'] as int,
-  //     sessionID: r['session_id'] as String,
-  //     exerciseID: r['exercise_id'] as int,
-  //     date: r['date'] as String, // Still returns ISO string
-  //     historyNote: r['history_note'] as String? ?? '',
-  //     recordID: r['record_id'] as int,
-  //   )).toList();
-  // }
-
   Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId) async {
     final db = await DatabaseHelper.instance.database;
     
