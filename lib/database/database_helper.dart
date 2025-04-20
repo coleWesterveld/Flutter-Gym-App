@@ -297,7 +297,7 @@ class DatabaseHelper {
     // TODO: remove for release
     // I think I should plot a first and second and potentially more sets on the same graph
     // so the line for second set will either be on top of or likely beloow the top set
-    if (kDebugMode) {
+    //if (kDebugMode) {
       List<String> feelings = [
         "Doc", "Grumpy", "Happy", "Sleepy", "Bashful", "Sneezy", "Dopey"
       ];
@@ -306,7 +306,7 @@ class DatabaseHelper {
       DateTime startDate = DateTime.now().subtract(const Duration(days: 15));
       double baseWeight = 180; // Start weight lower to simulate progression
 
-      for (int i = 1; i <= 15; i++) {
+      for (int i = 1; i <= 100; i++) {
         double weight = baseWeight + (i * 2) + random.nextInt(10) - 5; // Linear increase + noise
         int reps = 6 + random.nextInt(3) - 1; // Small variation in reps (5-7)
         int rpe = 7 + random.nextInt(3) - 1; // RPE fluctuates (6-8)
@@ -323,7 +323,7 @@ class DatabaseHelper {
           'exercise_id': 70 // Hardcoded to reference "bench press - medium grip"
         });
       }
-    }
+    //}
 
     
 

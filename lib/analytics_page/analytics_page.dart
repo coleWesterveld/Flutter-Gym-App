@@ -84,11 +84,30 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   String? tempGoalTitle;
   bool _isLoadingGoals = true;
 
+  final scrollControl = ScrollController();
+  bool showBackToTop = false;
 
   @override
   void initState() {
+    scrollControl.addListener(() {
+    // Determine the desired state based on scroll offset
+    final bool shouldShow = scrollControl.offset > 100;
+    // Only call setState if the state needs to change
+      if (shouldShow != showBackToTop) {
+        setState(() {
+          showBackToTop = shouldShow;
+        });
+      }
+    });
     super.initState();
     _fetchGoals();
+    
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    scrollControl.dispose();
   }
 
   // Load existing goals from the database
@@ -104,8 +123,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("test");
     return Scaffold(
+      floatingActionButton: (_displayChart && showBackToTop)
+        ? FloatingActionButton(
+          onPressed: (){
+            scrollControl.animateTo(
+              0, 
+              duration: const Duration(milliseconds: 300), 
+              curve: Curves.easeIn,
+            );
+          }, 
+        child: const Icon(Icons.keyboard_double_arrow_up_sharp),
+
+        
+      )
+      : null,
 
       appBar: AppBar(
         backgroundColor: widget.theme.colorScheme.surface,
@@ -236,19 +268,25 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
 
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          ExerciseProgressChart(
-            exercise: _exercise!,
-            theme: widget.theme,
-          ),
 
-          ExerciseHistoryList(
-            exerciseHistory: _exerciseHistory,
-            theme: widget.theme,
-          ),
-        ],
+    return Scrollbar(
+      controller: scrollControl,
+      child: SingleChildScrollView(
+        controller: scrollControl,
+        
+        child: Column(
+          children: [
+            ExerciseProgressChart(
+              exercise: _exercise!,
+              theme: widget.theme,
+            ),
+      
+            ExerciseHistoryList(
+              exerciseHistory: _exerciseHistory,
+              theme: widget.theme,
+            ),
+          ],
+        ),
       ),
     );
   }
