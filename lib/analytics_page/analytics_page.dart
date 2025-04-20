@@ -61,6 +61,7 @@ import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/widgets/exercise_history_list.dart';
 import 'package:firstapp/widgets/circular_progress.dart';
 import 'package:firstapp/widgets/goal_progress.dart';
+import 'package:firstapp/other_utilities/timespan.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -78,11 +79,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Map<String, dynamic>? _exercise;
   bool _isSearching = false;
   bool _displayChart = false;
-  List<List<SetRecord>> _exerciseHistory = [];
+
+  Future<List<List<SetRecord>>>? _exerciseHistory;
+
   List<Goal> _goals = [];
   bool _isAddingGoal = false;
   String? tempGoalTitle;
   bool _isLoadingGoals = true;
+
+  int _historyLimit = 100; // Initial limit
+  bool _isLoadingHistory = false; // To show loading indicator for history
+  Timespan _selectedTimespan = Timespan.sixMonths; // Default timespan
+
 
   final scrollControl = ScrollController();
   bool showBackToTop = false;
@@ -153,7 +161,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 setState(() {
                   _displayChart = false;
                   _exercise = null;
-                  _exerciseHistory.clear();
+                  _exerciseHistory = null;
                 });
               },
             )
@@ -196,14 +204,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // Callback when an exercise is selected - get history from the database
-  void _handleExerciseSelected(Map<String, dynamic> exercise) async {
+  Future<List<List<SetRecord>>> _handleExerciseSelected(Map<String, dynamic> exercise) async {
     final dbHelper = DatabaseHelper.instance;
     final records = await dbHelper.getExerciseHistoryGroupedBySession(exercise['exercise_id']);
-    setState(() {
-      _exercise = exercise;
-      _displayChart = true;
-      _exerciseHistory = records;
-    });
+    return records;
   }
 
   // When a goal is being added and the user selected the exercise for the goal to be for
@@ -268,26 +272,56 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
 
+    return FutureBuilder(
+      future: _exerciseHistory,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return const Center(child: Text('Error loading History. Sorry :/'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No History Found'));
+        }
 
-    return Scrollbar(
-      controller: scrollControl,
-      child: SingleChildScrollView(
-        controller: scrollControl,
-        
-        child: Column(
-          children: [
-            ExerciseProgressChart(
-              exercise: _exercise!,
-              theme: widget.theme,
+        final exerciseHistory = snapshot.data!;
+          
+        return Scrollbar(
+          controller: scrollControl,
+          child: SingleChildScrollView(
+            controller: scrollControl,
+            
+            child: Column(
+              children: [
+                ExerciseProgressChart(
+                  exercise: _exercise!,
+                  theme: widget.theme,
+                  selectedTimespan: _selectedTimespan,
+
+                  onTimespanChanged: (newTimespan) {
+                    setState(() {
+                      _selectedTimespan = newTimespan;
+                    });
+                  },
+                ),
+
+                Divider(
+                  color: widget.theme.colorScheme.outline,
+                  thickness: 2,
+                  endIndent: 40,
+                  indent: 40,
+                ),
+          
+                ExerciseHistoryList(
+                  exerciseHistory: exerciseHistory,
+                  theme: widget.theme,
+
+                  
+                ),
+              ],
             ),
-      
-            ExerciseHistoryList(
-              exerciseHistory: _exerciseHistory,
-              theme: widget.theme,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 
@@ -503,7 +537,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       child: PageViewWithIndicator(
                         theme: widget.theme,
                         onSelected: (exercise){
-                          _handleExerciseSelected(exercise.toMap());
+                          setState(() {
+                            _exercise = exercise.toMap();
+                            _displayChart = true;
+                          });
+
+                          _exerciseHistory = _handleExerciseSelected(exercise.toMap());
                         }
                      )
                     ),
@@ -663,7 +702,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Widget _buildFullScreenSearch() {
     return ExerciseSearchWidget(
       theme: widget.theme,
-      onExerciseSelected: _handleExerciseSelected,
+      onExerciseSelected: (exercise){
+        setState(() {
+          _exercise = exercise;
+          _displayChart = true;
+        });
+
+        _exerciseHistory = _handleExerciseSelected(exercise);
+      },
+
       onSearchModeChanged: (isSearching) {
         setState(() {
           _isSearching = isSearching;          

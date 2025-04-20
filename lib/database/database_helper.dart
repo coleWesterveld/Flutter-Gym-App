@@ -303,10 +303,10 @@ class DatabaseHelper {
       ];
       Random random = Random();
 
-      DateTime startDate = DateTime.now().subtract(const Duration(days: 15));
+      DateTime startDate = DateTime.now().subtract(const Duration(days: 30));
       double baseWeight = 180; // Start weight lower to simulate progression
 
-      for (int i = 1; i <= 100; i++) {
+      for (int i = 1; i <= 30; i++) {
         double weight = baseWeight + (i * 2) + random.nextInt(10) - 5; // Linear increase + noise
         int reps = 6 + random.nextInt(3) - 1; // Small variation in reps (5-7)
         int rpe = 7 + random.nextInt(3) - 1; // RPE fluctuates (6-8)
