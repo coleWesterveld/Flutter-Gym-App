@@ -297,6 +297,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   theme: widget.theme,
                   selectedTimespan: _selectedTimespan,
 
+                  // auto calculate based on number of records
+                  decimationFactor: -1,
+
                   onTimespanChanged: (newTimespan) {
                     setState(() {
                       _selectedTimespan = newTimespan;

@@ -12,6 +12,11 @@ class ExerciseProgressChart extends StatefulWidget {
   final Timespan selectedTimespan;
   final ValueChanged<Timespan>? onTimespanChanged;
 
+  // For long timespans we will drop some data to make the chart less busy
+  // I wont do this by default but will give the option to
+  // Ill let -1 mean to do it automatically based on the number of records
+  final int? decimationFactor;
+
 
   const ExerciseProgressChart({
     super.key, 
@@ -19,8 +24,7 @@ class ExerciseProgressChart extends StatefulWidget {
     required this.theme,
     required this.selectedTimespan,
     this.onTimespanChanged,
-
-
+    this.decimationFactor
   });
 
   @override
@@ -53,7 +57,6 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
     
     List<FlSpot> points = [];
     List<String> dates = [];
-
     // years for top labels
     List<String> years = [];
 
@@ -84,6 +87,35 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
       points.add(FlSpot((filteredSets.length - 1 - i).toDouble(), e1RM.toDouble()));
       dates.add(DateFormat('MMM d').format(date)); // Format date for X-axis
       years.add(DateFormat('yyyy').format(date)); // Store the year
+    }
+
+    // option to decimate - skip every few, meant for long timespans
+    if (widget.decimationFactor != null) {
+      int factor = widget.decimationFactor!;
+      if (widget.decimationFactor == -1) {
+        if (points.length <= 50) {
+          factor = 1;
+        } else {
+          factor = points.length ~/ 50;
+        }
+      }
+
+      List<FlSpot> newPoints = [];
+      List<String> newDates = [];
+      List<String> newYears = [];
+      
+      // Reindex the x values to be continuous after decimation
+      int newIndex = 0;
+      for (int i = 0; i < points.length; i += factor) {
+        newPoints.add(FlSpot(newIndex.toDouble(), points[i].y)); // Use newIndex instead of original x
+        newDates.add(dates[i]);
+        newYears.add(years[i]);
+        newIndex++;
+      }
+
+      points = newPoints;
+      dates = newDates;
+      years = newYears;
     }
 
     setState(() {
@@ -174,7 +206,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
                             int index = value.toInt();
-                            if (index % ((_dataPoints.length / 6).floor()) == 0 && index >= 0 && index < _dates.length) { 
+                            if (index % ((_dataPoints.length / 5).floor()) == 0 && index >= 0 && index < _dates.length) { 
                                //debugPrint("Runnnnn");
                               return SideTitleWidget(
                                 meta: meta,
