@@ -16,24 +16,16 @@ import 'package:firstapp/widgets/list_sets.dart';
 class ListExercises extends StatefulWidget {
   const ListExercises({
     super.key,
-    required this.editIndex,
     required this.context,
     required this.index,
     required this.onExerciseAdded,
     required this.theme,
-    required this.onSetAdded,
-    required this.onSetTapped,
-    required this.onSetSaved,
   });
 
-  final List<int> editIndex;
   final BuildContext context;
   final int index;
   final Function onExerciseAdded;
   final ThemeData theme;
-  final Function(int) onSetAdded;
-  final Function (int, int) onSetTapped;
-  final Function onSetSaved;
 
   @override
   State<ListExercises> createState() => _ListExercisesState();
@@ -247,12 +239,16 @@ class _ListExercisesState extends State<ListExercises> {
                               onPressed: () {
                                 if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                               
-                                  context.read<Profile>().setsAppend(
-                                    index1: widget.index,
-                                    index2: exerciseIndex,
-                                  );
+                                context.read<Profile>().setsAppend(
+                                  index1: widget.index,
+                                  index2: exerciseIndex,
+                                );
 
-                                  widget.onSetAdded(exerciseIndex);
+                                context.read<Profile>().editIndex = [
+                                  widget.index, 
+                                  exerciseIndex, 
+                                  context.read<Profile>().sets[widget.index][exerciseIndex].length
+                                ];
                               
                               },
 
@@ -300,20 +296,13 @@ class _ListExercisesState extends State<ListExercises> {
           
                     // Displaying list of sets for each exercise
                     ListSets(
-                      editIndex: widget.editIndex, 
                       //widget: widget.widget, 
                       context: context, 
                       index: widget.index, 
                       exerciseIndex: exerciseIndex,
                       theme: widget.theme,
                     
-                      onSetTapped: (setIndex){
-                        widget.onSetTapped(exerciseIndex, setIndex);
-                      },    
-                    
-                      onSetSaved: (){
-                        widget.onSetSaved();
-                      }                  
+             
                     ),
                   ],
                 ),

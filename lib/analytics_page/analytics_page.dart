@@ -87,8 +87,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   String? tempGoalTitle;
   bool _isLoadingGoals = true;
 
-  int _historyLimit = 100; // Initial limit
-  bool _isLoadingHistory = false; // To show loading indicator for history
   Timespan _selectedTimespan = Timespan.sixMonths; // Default timespan
 
 
@@ -314,6 +312,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   indent: 40,
                 ),
           
+                // for this I could implement a see more option maybe
+                // the listview.builder does only build the ones in view so its actually not bad performance-wise already
+                // performance testing shows this runs comfortably and not close to hitting memory ceiling on my mid-tier phone
+                // so its fine unless further testings shows an issue or I decide its best for UX
                 ExerciseHistoryList(
                   exerciseHistory: exerciseHistory,
                   theme: widget.theme,

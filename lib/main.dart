@@ -61,11 +61,6 @@ class _MainPage extends State<GymApp> {
           // this got a bit big and should probably be split into maybe 2 or more providers
           create: (context) => Profile(
             dbHelper: dbHelper,
-            controllers: [],
-            reps1TEC: [],
-            reps2TEC: [],
-            rpeTEC: [],
-            setsTEC: [],
           ),
         ),
 

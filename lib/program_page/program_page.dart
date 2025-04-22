@@ -66,9 +66,6 @@ class ProgramPageState extends State<ProgramPage> {
 
   TextEditingController customExerciseTEC = TextEditingController();
   TextEditingController alertTEC = TextEditingController();
-
-  // Will saved index of a set that is currently being edited
-  List<int> editIndex = [-1, -1, -1];
   
   // Add exercise to a day
   void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
@@ -187,7 +184,6 @@ class ProgramPageState extends State<ProgramPage> {
           children: [
             Expanded(
               child: ListDays(
-                editIndex: editIndex, 
                 theme: widget.theme, 
                 context: context,
 
@@ -197,25 +193,6 @@ class ProgramPageState extends State<ProgramPage> {
                     _isEditing = true;
                   });
                 },
-
-                onSetAdded: (index, exerciseIndex) {
-                  setState(() {
-                    editIndex = [
-                      index,
-                      exerciseIndex, 
-                      context.read<Profile>().sets[index][exerciseIndex].length
-                    ];
-                  });
-                },
-
-                onSetTapped:(index, exerciseIndex, setIndex) {
-                  setState(() {
-                    // Toggle between edit and display view
-                    editIndex = [index, exerciseIndex, setIndex]; 
-                  });
-                },
-
-                onSetSaved: () => setState(() => editIndex = [-1, -1, -1]),
 
               ),
             ),

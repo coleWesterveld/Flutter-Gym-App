@@ -16,21 +16,15 @@ import 'package:firstapp/widgets/display_set.dart';
 class ListSets extends StatefulWidget {
   const ListSets({
     super.key,
-    required this.editIndex,
     required this.context,
     required this.index,
     required this.exerciseIndex,
-    required this.onSetTapped,
-    required this.onSetSaved,
     required this.theme,
   });
 
-  final List<int> editIndex;
   final BuildContext context;
   final int index;
   final int exerciseIndex;
-  final Function(int) onSetTapped;
-  final Function onSetSaved;
   final ThemeData theme;
 
   @override
@@ -122,32 +116,10 @@ class _ListSetsState extends State<ListSets> {
       ),
           // Actual information about the sets
           child: DisplaySet(
-            editIndex: widget.editIndex, 
-            context: context, 
             index: widget.index, 
             exerciseIndex: widget.exerciseIndex, 
             setIndex: setIndex,
             theme: widget.theme,
-
-            onSetTapped: () => widget.onSetTapped(setIndex),
-            onSetSaved: (){
-              widget.onSetSaved();
-
-              context.read<Profile>().setsAssign(
-                index1: widget.index, 
-                index2: widget.exerciseIndex, 
-                index3: setIndex, 
-                // my silly way of getting around error where cant parse if box is blank is to prepend '0' in the string
-                // if empty, will save 0. else, will disregard the 0.
-                // THIS IS PROBLEMATIC IF -1 is put - have "0-1"
-                data: context.read<Profile>().sets[widget.index][widget.exerciseIndex][setIndex].copyWith(
-                  newNumSets: int.parse("0${context.read<Profile>().setsTEC[widget.index][widget.exerciseIndex][setIndex].text}"),
-                  newRpe: int.parse("0${context.read<Profile>().rpeTEC[widget.index][widget.exerciseIndex][setIndex].text}"),
-                  newSetLower: int.parse("0${context.read<Profile>().reps1TEC[widget.index][widget.exerciseIndex][setIndex].text}"),
-                  newSetUpper: int.parse("0${context.read<Profile>().reps2TEC[widget.index][widget.exerciseIndex][setIndex].text}"),
-                )
-              );
-            },
           ),
         );
       },

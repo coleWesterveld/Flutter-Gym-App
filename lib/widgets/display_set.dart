@@ -14,57 +14,109 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:firstapp/providers_and_settings/program_provider.dart';
+import 'package:collection/collection.dart';
 
-class DisplaySet extends StatelessWidget {
+
+class DisplaySet extends StatefulWidget {
   const DisplaySet({
     super.key,
-    required this.editIndex,
-    required this.context,
     required this.index,
     required this.exerciseIndex,
     required this.setIndex,
     required this.theme,
-    required this.onSetSaved,
-    required this.onSetTapped
   });
 
-  final List<int> editIndex;
-  final BuildContext context;
   final int index;
   final int exerciseIndex;
   final int setIndex;
   final ThemeData theme;
-  final Function onSetSaved;
-  final Function onSetTapped;
+
+
+  @override
+  State<DisplaySet> createState() => _DisplaySetState();
+}
+
+class _DisplaySetState extends State<DisplaySet> {
+  late TextEditingController _setsController;
+  late TextEditingController _rpeController;
+  late TextEditingController _repsLowerController;
+  late TextEditingController _repsUpperController;
+
+  final Function listEquals = const ListEquality().equals;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = Provider.of<Profile>(context, listen: false);
+    final setData = profile.sets[widget.index][widget.exerciseIndex][widget.setIndex];
+    
+    _setsController = TextEditingController(text: setData.numSets.toString());
+    _rpeController = TextEditingController(text: setData.rpe.toString());
+    _repsLowerController = TextEditingController(text: setData.setLower.toString());
+    _repsUpperController = TextEditingController(text: setData.setUpper.toString());
+  }
+
+  @override
+  void dispose() {
+    _setsController.dispose();
+    _rpeController.dispose();
+    _repsLowerController.dispose();
+    _repsUpperController.dispose();
+    super.dispose();
+  }
+
+  void _saveSet() {
+    context.read<Profile>().editIndex = [-1, -1, -1];
+    
+    final profile = Provider.of<Profile>(context, listen: false);
+    profile.setsAssign(
+      index1: widget.index,
+      index2: widget.exerciseIndex,
+      index3: widget.setIndex,
+      data: profile.sets[widget.index][widget.exerciseIndex][widget.setIndex].copyWith(
+        newNumSets: int.tryParse(_setsController.text) ?? 0,
+        newRpe: int.tryParse(_rpeController.text) ?? 0,
+        newSetLower: int.tryParse(_repsLowerController.text) ?? 0,
+        newSetUpper: int.tryParse(_repsUpperController.text) ?? 0,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Row(
       children: [
-        // Gesture detector to toggle between AxBxC and the editable fields
-        (editIndex[0] == index && editIndex[1] == exerciseIndex && editIndex[2] == setIndex) 
-          ? Container(
-            color: theme.colorScheme.surfaceContainerHighest,
-                    
+        if (
+          listEquals(
+            context.watch<Profile>().editIndex,
+            [widget.index, widget.exerciseIndex, widget.setIndex]
+          )
+        )
+          Container(
+            color: widget.theme.colorScheme.surfaceContainerHighest,
             width: MediaQuery.sizeOf(context).width - 48,
-          
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                
                 children: [
-                  // Show text fields when editing
-                  SetTextField(context: context, controller: context.watch<Profile>().setsTEC[index][exerciseIndex][setIndex], hint: 'Sets', maxWidth: 50),
-                  SetTextField(context: context, controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex], hint: 'RPE', maxWidth: 80),
+                  SetTextField(controller: _setsController, hint: 'Sets', maxWidth: 50),
+                  SetTextField(controller: _rpeController, hint: 'RPE', maxWidth: 50),
                   const Icon(Icons.clear),
-                  SetTextField(context: context, controller: context.watch<Profile>().reps1TEC[index][exerciseIndex][setIndex], hint: 'Reps', maxWidth: 80),
+                  SetTextField(controller: _repsLowerController, hint: 'Reps', maxWidth: 50),
+                  const Text("-"),
+                  SetTextField(controller: _repsUpperController, hint: 'Reps', maxWidth: 50),
                   const Spacer(flex: 1),
 
-                  // Save set button
                   IconButton(
+                    onPressed: _saveSet,
+                    icon: Icon(
+                      Icons.check, 
+                      color: widget.theme.colorScheme.secondary
+                    ),
+                    
                     padding: const EdgeInsets.all(0.0),
+
                     style: ButtonStyle(
                       shape: WidgetStateProperty.all<OutlinedBorder>(
                         const CircleBorder(), 
@@ -76,72 +128,58 @@ class DisplaySet extends StatelessWidget {
 
                       side: WidgetStateProperty.all<BorderSide>(
                         BorderSide(
-                          color: theme.colorScheme.secondary,
+                          color: widget.theme.colorScheme.secondary,
                           width: 2.0,
                         ),
                       ),
-                    ),
-
-                    // callback to parent widget
-                    onPressed: () {
-                      onSetSaved();
-                    },
-                    
-                    icon: Icon(
-                      Icons.check, 
-                      color: theme.colorScheme.secondary,
-                    )
+                    ),                  
                   )
                 ],
               ),
             ),
           )
-        : GestureDetector(
-          // callback to parent when widget tapped
-          onTap: () {
-            onSetTapped();
-            
-          },
-          child: AbsorbPointer(
-            child: SizedBox(
-            
-              width: MediaQuery.sizeOf(context).width - 48,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
-                child: Row(
+        else
+          GestureDetector(
+            onTap: () => context.read<Profile>().editIndex = [
+              widget.index, 
+              widget.exerciseIndex, 
+              widget.setIndex
+            ],
+
+            child: AbsorbPointer(
+              child: SizedBox(
+                width: MediaQuery.sizeOf(context).width - 48,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      // Display AxBxC format when not editing
                       Text(
-                        '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].numSets} x '
-                        '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].setLower} x '
-                        '${context.watch<Profile>().sets[index][exerciseIndex][setIndex].rpe}',
+                        '${context.watch<Profile>().sets[widget.index][widget.exerciseIndex][widget.setIndex].numSets} x '
+                        '${context.watch<Profile>().sets[widget.index][widget.exerciseIndex][widget.setIndex].setLower} x '
+                        '${context.watch<Profile>().sets[widget.index][widget.exerciseIndex][widget.setIndex].rpe}',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(width: 8),
                     ],
                   ),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
 }
 
-// Each textfield within the set
-// small wrapper of Flutter textformfield
+// Simplified SetTextField
 class SetTextField extends StatelessWidget {
   const SetTextField({
     super.key,
-    required this.context,
     required this.controller,
     required this.hint,
     required this.maxWidth,
   });
 
-  final BuildContext context;
   final TextEditingController controller;
   final String hint;
   final double maxWidth;
@@ -152,11 +190,7 @@ class SetTextField extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Focus(
         onFocusChange: (hasFocus) {
-          if(hasFocus){
-            context.read<Profile>().changeDone(true);
-          }else{
-            context.read<Profile>().changeDone(false);
-          }
+          context.read<Profile>().changeDone(hasFocus);
         },
         child: TextFormField(
           controller: controller,
@@ -164,10 +198,7 @@ class SetTextField extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
-            constraints: BoxConstraints(
-              maxWidth: maxWidth,
-              maxHeight: 30,
-            ),
+            constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: 30),
             border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),

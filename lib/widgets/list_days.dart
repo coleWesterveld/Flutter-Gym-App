@@ -13,22 +13,14 @@ import 'package:firstapp/widgets/day_tile.dart';
 class ListDays extends StatefulWidget {
   const ListDays({
     super.key,
-    required this.editIndex,
     required this.theme,
     required this.context,
     required this.onExerciseAdded,
-    required this.onSetAdded,
-    required this.onSetTapped,
-    required this.onSetSaved,
   });
 
-  final List<int> editIndex;
   final BuildContext context;
   final ThemeData theme;
   final Function(int) onExerciseAdded;
-  final Function(int, int) onSetAdded;
-  final Function(int, int, int) onSetTapped;
-  final Function onSetSaved;
 
   @override
   State<ListDays> createState() => _ListDaysState();
@@ -152,20 +144,9 @@ class _ListDaysState extends State<ListDays> {
             padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
                       
             child: DayTile(
-              editIndex: widget.editIndex, 
               context: context, 
               index: index,
               theme: widget.theme,
-
-              onSetSaved: () => widget.onSetSaved(),
-
-              onSetTapped: (exerciseIndex, setIndex) {
-                widget.onSetTapped(index, exerciseIndex, setIndex);
-              },
-
-              onSetAdded: (exerciseIndex) {
-                widget.onSetAdded(index, exerciseIndex);
-              },
 
               onExerciseAdded: () => widget.onExerciseAdded(index)
             

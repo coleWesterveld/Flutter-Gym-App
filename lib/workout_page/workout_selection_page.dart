@@ -24,15 +24,31 @@ class WorkoutSelectionPage extends StatefulWidget {
 
 class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   with SingleTickerProviderStateMixin {
+
   late AnimationController _pulseController;
+
+  List<ExpansionTileController> _expansionControllers = [];
+  // States tracked separately to maintain collapse/open state across rebuilds and profile.split size changes
+  List<bool> _expansionStates = [];
+
+
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    final profile = Provider.of<Profile>(context);
+    if (_expansionControllers.length != profile.split.length) {
+      _initializeControllersAndStates();
+    }
   }
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize controllers
+    _initializeControllersAndStates();
 
     //List<ExpansionTileController> _expansionControllers = List.filled(context.watch<Profile>().split.length, ExpansionTileController(), growable: true);
 
@@ -45,7 +61,32 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   @override
   void dispose() {
     _pulseController.dispose();
+
+    // for (var controller in _expansionControllers) {
+    //   controller.dispose()
+    // }
+
     super.dispose();
+  }
+
+   // Initialize or update controllers when split length changes
+  void _initializeControllersAndStates() {
+    final profile = Provider.of<Profile>(context, listen: false);
+    
+    // Save current expansion states before recreating
+    final oldStates = _expansionStates.asMap();
+    
+    // Create new controllers and states
+    _expansionControllers = List.generate(
+      profile.split.length,
+      (index) => ExpansionTileController(),
+    );
+    
+    // Initialize states - preserve old states where possible
+    _expansionStates = List.generate(
+      profile.split.length,
+      (index) => oldStates[index] ?? (index == toExpand()),
+    );
   }
 
   DateTime today = DateTime.now();
@@ -118,7 +159,6 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                 return dayBuild(context, index, false);
               }
             } else {
-              // TODO: here I want to make a little grayed box that says "no workouts planned today" so the user knows why none are highliughted
               return dayBuild(context, index - 1, false);
             }
           },
@@ -180,14 +220,14 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
               //expandable to see exercises and sets for that day
               child: ExpansionTile(
-                  controller: context.watch<Profile>().controllers[index],
+                  controller: _expansionControllers[index],
                   key: ValueKey(context.watch<Profile>().split[index]),
                   onExpansionChanged: (isExpanded) {
                     if (isExpanded){
                       setState(() {
-                        for (int i = 0; i < context.read<Profile>().controllers.length; i++) {
+                        for (int i = 0; i < _expansionControllers.length; i++) {
                           if (i != index) {
-                            context.read<Profile>().controllers[i].collapse();
+                            _expansionControllers[i].collapse();
                           }
                         }
                       });
@@ -430,19 +470,19 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               ),
                                             ),
                                             SizedBox(
-                                            height: context.watch<Profile>().setsTEC[index][exerciseIndex].length * 20 + 16,
+                                            height: context.watch<Profile>().sets[index][exerciseIndex].length * 20 + 16,
                                             width: 100,
                                             child: Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: ListView(
                                                 physics: const NeverScrollableScrollPhysics(),
                                                 children: [
-                                                  for(int i = 0; i < context.watch<Profile>().setsTEC[index][exerciseIndex].length; i++) 
+                                                  for(int i = 0; i < context.watch<Profile>().sets[index][exerciseIndex].length; i++) 
                                                     Padding(
                                                       padding: const EdgeInsets.only(right: 24.0),
                                                       child: Center(
                                                         child: Text(
-                                                          "${context.watch<Profile>().setsTEC[index][exerciseIndex][i].text} x ${context.watch<Profile>().reps1TEC[index][exerciseIndex][i].text}",
+                                                          "${context.watch<Profile>().sets[index][exerciseIndex][i].numSets} x (${context.watch<Profile>().sets[index][exerciseIndex][i].setLower}-${context.watch<Profile>().sets[index][exerciseIndex][i].setUpper})",
                                                           style: const TextStyle(
                                                             fontWeight: FontWeight.w700,
                                                           )

@@ -11,23 +11,15 @@ import 'package:firstapp/widgets/popup_day_editor.dart';
 class DayTile extends StatefulWidget {
   const DayTile({
     super.key,
-    required this.editIndex,
     required this.context,
     required this.index,
     required this.theme,
-    required this.onSetSaved,
-    required this.onSetTapped,
-    required this.onSetAdded,
     required this.onExerciseAdded,
   });
 
-  final List<int> editIndex;
   final BuildContext context;
   final int index;
   final ThemeData theme;
-  final Function onSetSaved;
-  final Function onSetTapped;
-  final Function onSetAdded;
   final Function onExerciseAdded;
 
   @override
@@ -171,7 +163,6 @@ class _DayTileState extends State<DayTile> {
                 ),
 
                 child: ListExercises(
-                  editIndex: widget.editIndex, 
                   context: context, 
                   index: widget.index,
                   theme: widget.theme,
@@ -180,17 +171,6 @@ class _DayTileState extends State<DayTile> {
                     widget.onExerciseAdded();
                   },
 
-                  onSetAdded: (exerciseIndex) {
-                    widget.onSetAdded(exerciseIndex);
-                  },
-
-                  onSetTapped: (exerciseIndex, setIndex) {
-                    widget.onSetTapped(exerciseIndex, setIndex);
-                  },
-
-                  onSetSaved: () {
-                    widget.onSetSaved();
-                  }
                 ),
               ),
             ]

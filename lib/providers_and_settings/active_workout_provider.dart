@@ -25,7 +25,6 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   // We need ActiveWorkoutProvider to have access to program providers members
   final Profile programProvider;
 
-
   // I am trying to also make TEC's for the workout page
   List<List<List<TextEditingController>>> workoutRpeTEC;
   List<List<List<TextEditingController>>> workoutWeightTEC;
