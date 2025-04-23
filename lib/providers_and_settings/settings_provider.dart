@@ -11,6 +11,8 @@ class SettingsModel extends ChangeNotifier {
     themeMode: 'system',
     useMetric: false,
     colourBlindMode: false,
+    enableNotifications: true,
+    timeReminder: 30,
   );
 
   // Getters
@@ -20,6 +22,10 @@ class SettingsModel extends ChangeNotifier {
   String get themeMode => _settings.themeMode;
   bool get soundsEnabled => _settings.enableSound;
   bool get hapticsEnabled => _settings.enableHaptics;
+  bool get notificationsEnabled => _settings.enableNotifications;
+  int get timeReminder => _settings.timeReminder;
+
+
 
   // Initialize settings
   Future<void> init() async {
@@ -48,9 +54,9 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // TODO: this should be a dropdown with dark, light and system
-  Future<void> toggleTheme() async {
-    final newTheme = _settings.themeMode == 'dark' ? 'light' : 'dark';
+  Future<void> changeTheme(String newTheme) async {
+    assert(['dark', 'light', 'system'].contains(newTheme), "Theme $newTheme not one of: light, dark, or system");
+
     _settings = _settings.copyWith(themeMode: newTheme);
 
     await dbHelper.updateUserSettings(_settings);
@@ -74,6 +80,22 @@ class SettingsModel extends ChangeNotifier {
   Future<void> toggleHaptics() async {
     _settings = _settings.copyWith(
       enableHaptics: !_settings.enableHaptics,
+    );
+    await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
+  }
+
+  Future<void> toggleNotifications() async {
+    _settings = _settings.copyWith(
+      enableNotifications: !_settings.enableNotifications,
+    );
+    await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
+  }
+
+  Future<void> setTimeReminder(int newValue) async {
+    _settings = _settings.copyWith(
+      timeReminder: newValue,
     );
     await dbHelper.updateUserSettings(_settings);
     notifyListeners();

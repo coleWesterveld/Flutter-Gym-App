@@ -87,6 +87,8 @@ class DatabaseHelper {
         enable_haptics BOOLEAN DEFAULT 1,
         auto_rest_timer BOOLEAN DEFAULT 0,
         colour_blind_mode BOOLEAN DEFAULT 0,
+        enable_notifications BOOLEAN DEFAULT 1,
+        time_reminder INTEGER DEFAULT 30,
         
         FOREIGN KEY (current_program_id) REFERENCES programs(id),
         FOREIGN KEY (last_workout_id) REFERENCES days(id)

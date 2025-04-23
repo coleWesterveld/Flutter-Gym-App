@@ -169,6 +169,11 @@ class _MyScheduleState extends State<SchedulePage> {
   
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
+
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
     startDay = context.watch<Profile>().origin;
 
     return Scaffold(

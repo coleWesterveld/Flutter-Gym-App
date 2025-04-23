@@ -129,6 +129,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
     return Scaffold(
       floatingActionButton: (_displayChart && showBackToTop)
         ? FloatingActionButton(

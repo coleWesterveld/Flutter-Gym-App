@@ -91,18 +91,31 @@ class _MainPage extends State<GymApp> {
           },
         ),
       ],
-      child: MaterialApp(
-        title: 'TempTitle',
-        debugShowCheckedModeBanner: false,
-        //theme: AppTheme.lightTheme, // Apply the dark theme by default
-        themeMode: ThemeMode.system, // If you implement theme switching via SettingsModel
-        darkTheme: AppTheme.darkTheme,
-        theme: AppTheme.lightTheme, // Define lightTheme similarly if needed
-        home: MainScaffold(
-          dbHelper: dbHelper,
-        ),
+      child: Consumer<SettingsModel>(
+        builder: (context, settings, child) {
+          return MaterialApp(
+            title: 'TempTitle',
+            debugShowCheckedModeBanner: false,
+            themeMode: _getThemeMode(settings.themeMode),
+            darkTheme: AppTheme.darkTheme,
+            theme: AppTheme.lightTheme,
+            home: MainScaffold(dbHelper: dbHelper),
+          );
+        },
       ),
     );
+  }
+
+  ThemeMode _getThemeMode(String themeMode) {
+    switch (themeMode) {
+      case 'dark':
+        return ThemeMode.dark;
+      case 'light':
+        return ThemeMode.light;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
   }
 }
 

@@ -31,6 +31,9 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   // States tracked separately to maintain collapse/open state across rebuilds and profile.split size changes
   List<bool> _expansionStates = [];
 
+  bool _isInitialized = false; // Add this flag
+
+
 
 
   @override
@@ -41,6 +44,8 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
     if (_expansionControllers.length != profile.split.length) {
       _initializeControllersAndStates();
     }
+    _isInitialized = true;
+
   }
 
   @override
@@ -101,14 +106,11 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
   @override
   Widget build(BuildContext context) {
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    //("split here: ${context.watch<Profile>().split}");
-    // expansion tiles here are lowkey tweakin out
-    // thats for some other bozo to fix haha (future me)
-    //Another exception was thrown: 'package:flutter/src/material/expansion_tile.dart': Failed assertion: line 107 pos 12:
-    // '_state != null': is not true.
-    // recreated by opening a tile, changing programs and then coming back
-    // I should really just reset the list of controllers.
+    
     int todaysWorkout = toExpand();
     return Scaffold(
       appBar: AppBar(

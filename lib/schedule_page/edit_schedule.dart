@@ -91,6 +91,10 @@ class _EditScheduleState extends State<EditSchedule> {
   @override
   Widget build(BuildContext context) {
 
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return GestureDetector(
 
       onTap: (){

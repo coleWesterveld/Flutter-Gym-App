@@ -43,6 +43,7 @@ class Profile extends ChangeNotifier {
   late Program currentProgram;
 
   List<int> _editIndex = [-1, -1, -1];
+  bool isInitialized = false;
 
   set editIndex(List<int> newVal){
     assert(newVal.length == 3, "edit index must be length 3");
@@ -104,7 +105,7 @@ class Profile extends ChangeNotifier {
     //assert(settings != null, "settings not found...");
     if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
     
-
+    isInitialized = true;
     notifyListeners();
   }
 

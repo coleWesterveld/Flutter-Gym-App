@@ -92,6 +92,10 @@ class ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     // Allow user to tap outside of any box to unfocus
     return GestureDetector(
       onTap: (){

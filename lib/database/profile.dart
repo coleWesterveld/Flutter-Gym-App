@@ -27,6 +27,10 @@ class UserSettings {
   final bool enableHaptics;
   final bool autoRestTimer;
   final bool colourBlindMode;
+  final bool enableNotifications;
+
+  // How long before a workout to remind user, if notifications are enabled
+  final int timeReminder;
 
   UserSettings({
     this.id,
@@ -43,6 +47,8 @@ class UserSettings {
     this.enableHaptics = true,
     this.autoRestTimer = false,
     this.colourBlindMode = false,
+    this.enableNotifications = true,
+    this.timeReminder = 30,
   });
 
   // convert to map for database operations, and remove null vals
@@ -61,7 +67,9 @@ class UserSettings {
       'enable_sound': enableSound ? 1 : 0,
       'enable_haptics': enableHaptics ? 1 : 0,
       'auto_rest_timer': autoRestTimer ? 1 : 0,
-      'colour_blind_mode': colourBlindMode ? 1 : 0
+      'colour_blind_mode': colourBlindMode ? 1 : 0,
+      'enable_notifications': enableNotifications ? 1 : 0,
+      'time_reminder': timeReminder
     };
     
     // Remove null values
@@ -90,7 +98,9 @@ class UserSettings {
       enableSound: (map['enable_sound'] as int? ?? 1) == 1,
       enableHaptics: (map['enable_haptics'] as int? ?? 1) == 1,
       autoRestTimer: (map['auto_rest_timer'] as int? ?? 0) == 1,
-      colourBlindMode: (map['colourBlindMode'] as int? ?? 0) == 1
+      colourBlindMode: (map['colourBlindMode'] as int? ?? 0) == 1,
+      enableNotifications: (map['enable_notifications'] as int? ?? 0) == 1,
+      timeReminder: map['time_reminder'] as int? ?? 30,
     );
   }
 
@@ -109,6 +119,8 @@ class UserSettings {
     bool? enableHaptics,
     bool? autoRestTimer,
     bool? colourBlindMode,
+    bool? enableNotifications,
+    int? timeReminder
   }) {
     return UserSettings(
       id: id ?? this.id,
@@ -125,6 +137,8 @@ class UserSettings {
       enableHaptics: enableHaptics ?? this.enableHaptics,
       autoRestTimer: autoRestTimer ?? this.autoRestTimer,
       colourBlindMode: colourBlindMode ?? this.colourBlindMode,
+      enableNotifications: enableNotifications ?? this.enableNotifications,
+      timeReminder: timeReminder ?? this.timeReminder
     );
   }
 
@@ -145,6 +159,8 @@ class UserSettings {
         'enableHaptics: $enableHaptics, '
         'autoRestTimer: $autoRestTimer'
         'colourBlindMode: $colourBlindMode'
+        'enableNotifications: $enableNotifications'
+        'timeRemider: $timeReminder'
         ')';
   }
 }
