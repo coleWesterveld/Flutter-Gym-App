@@ -47,11 +47,6 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   void initState() {
     super.initState();
 
-    // Initialize controllers
-    _initializeControllersAndStates();
-
-    //List<ExpansionTileController> _expansionControllers = List.filled(context.watch<Profile>().split.length, ExpansionTileController(), growable: true);
-
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1300),
       vsync: this,

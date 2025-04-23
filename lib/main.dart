@@ -51,14 +51,17 @@ class _MainPage extends State<GymApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => SettingsModel()
+          create: (context) {
+            final settings = SettingsModel();
+            settings.init(); 
+            return settings;
+          }
         ),
 
         
 
 
         ChangeNotifierProvider(
-          // this got a bit big and should probably be split into maybe 2 or more providers
           create: (context) => Profile(
             dbHelper: dbHelper,
           ),
