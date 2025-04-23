@@ -14,12 +14,7 @@ import 'edit_schedule.dart';
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../providers_and_settings/settings_page.dart';
-
-class Event{
-  final String title;
-  final int index;
-  Event(this.title, this.index);
-}
+import 'package:firstapp/other_utilities/events.dart';
 
 class SchedulePage extends StatefulWidget {
   final ThemeData theme;
@@ -46,28 +41,15 @@ class _MyScheduleState extends State<SchedulePage> {
   DateTime? _selectedDay;
   late ValueNotifier<List<Event>> _selectedEvents;
 
-  void loadEvents(){
-    //
-  }
+
 
   @override
   void initState(){
     
     super.initState();
     _selectedDay = today;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _selectedEvents = ValueNotifier(getEventsForDay(day: _selectedDay!, context: context));
     //loadEvents();
-  }
-
-  List<Event> _getEventsForDay (DateTime day){
-    for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
-      // if days between origin and day is equal to dayorder
-
-      if (daysBetween(startDay , day) % context.read<Profile>().splitLength == context.read<Profile>().split[splitDay].dayOrder) {
-        return [Event(context.read<Profile>().split[splitDay].dayTitle, splitDay)];
-      }
-    }
-    return [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay){
@@ -75,7 +57,7 @@ class _MyScheduleState extends State<SchedulePage> {
       setState((){
         _selectedDay = selectedDay;
         //today = focusedDay;
-        _selectedEvents.value = _getEventsForDay(selectedDay);
+        _selectedEvents.value = getEventsForDay(day: selectedDay, context: context);
       });
       
     }
@@ -138,7 +120,7 @@ class _MyScheduleState extends State<SchedulePage> {
   }
 
   BoxDecoration _buildToday(){
-    final events = _getEventsForDay(today);
+    final events = getEventsForDay(day: today, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: widget.theme.colorScheme.onSurface, width: 3),
@@ -159,7 +141,7 @@ class _MyScheduleState extends State<SchedulePage> {
   }
 
   BoxDecoration _buildSelected(){
-    final events = _getEventsForDay(_selectedDay!);
+    final events = getEventsForDay(day: _selectedDay!, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: widget.theme.colorScheme.surface, width: 3),
@@ -180,8 +162,7 @@ class _MyScheduleState extends State<SchedulePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedEvents.value = _getEventsForDay(_selectedDay!);
-    loadEvents();
+    _selectedEvents.value = getEventsForDay(day: _selectedDay!, context: context);
   }
 
   @override
@@ -232,7 +213,8 @@ class _MyScheduleState extends State<SchedulePage> {
                             EditSchedule(
                               theme: widget.theme
                             ),
-                      ));
+                      )
+                    );
                   }, 
                   child: const Text("Edit Schedule")),
               ),
@@ -285,14 +267,16 @@ class _MyScheduleState extends State<SchedulePage> {
                           onDaySelected: _onDaySelected,
 
                           // given a day, load its events
-                          eventLoader: _getEventsForDay,
+                          eventLoader: (day){
+                            return getEventsForDay(day: day, context: context);
+                          },
                           
                           
                           // build by day
                           
                           calendarBuilders: CalendarBuilders(
                           outsideBuilder: (context, day, focusedDay) {
-                            var events = _getEventsForDay(day);
+                            var events = getEventsForDay(day: day, context: context);
                           
                             //DateTime origin = DateTime(2024, 1, 7);
                             
@@ -327,7 +311,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
 
                           defaultBuilder: (context, day, focusedDay) {
-                            var events = _getEventsForDay(day);
+                            var events = getEventsForDay(day: day, context: context);
                           
                             //DateTime origin = DateTime(2024, 1, 7);
                             

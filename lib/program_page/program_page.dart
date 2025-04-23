@@ -121,26 +121,26 @@ class ProgramPageState extends State<ProgramPage> {
 
         actions: [
           // More Actions - currently implementing multi-phase programs
-          PopupMenuButton<String>(            
-            icon: const Icon(Icons.more_horiz, size: 28),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'phaseAdder',
-                child: ListTile(
-                  leading: Icon(Icons.add),
-                  title: Text('Make Multi-Phase'),
-                ),
-              ),
-            ],
-            onSelected: (value) {
-              if (value == 'phaseAdder'){
-                (value);
-                // set program to multiphase
-                // we will have to change the DB schema for this
-                // whole lotta changes... 
-              }
-            },
-          ),
+          // PopupMenuButton<String>(            
+          //   icon: const Icon(Icons.more_horiz, size: 28),
+          //   itemBuilder: (context) => [
+          //     const PopupMenuItem(
+          //       value: 'phaseAdder',
+          //       child: ListTile(
+          //         leading: Icon(Icons.add),
+          //         title: Text('Make Multi-Phase'),
+          //       ),
+          //     ),
+          //   ],
+          //   onSelected: (value) {
+          //     if (value == 'phaseAdder'){
+          //       (value);
+          //       // set program to multiphase
+          //       // we will have to change the DB schema for this
+          //       // whole lotta changes... 
+          //     }
+          //   },
+          // ),
 
           // Takes to settings page
           IconButton(
