@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'dart:math'; // For random variations
 import '../other_utilities/day_of_week.dart';
+import 'package:firstapp/other_utilities/time_strings.dart';
 
 // you may notice that I have separate methods to insert exercises, lists of exercises, and same with sets, 
 // when I could just loop inserting a single exercise.
@@ -42,7 +43,7 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-    ('path: $path');
+    debugPrint('path: $path');
 
     // open database at path, create tables if first time opening
     return await openDatabase(
@@ -113,6 +114,7 @@ class DatabaseHelper {
         day_order INTEGER NOT NULL,
         program_id INTEGER NOT NULL,
         day_color INTEGER NOT NULL,
+        workout_time TEXT,
         FOREIGN KEY (program_id) REFERENCES programs (id) ON DELETE CASCADE
       );
     '''
@@ -360,6 +362,9 @@ class DatabaseHelper {
         dayColor: day['day_color'],
         dayTitle: day['day_title'], 
         dayID: day['id'],
+        workoutTime: day['workout_time'] != null 
+          ? stringToTimeOfDay(day['workout_time']) 
+          : null,
       );
     }).toList();
 

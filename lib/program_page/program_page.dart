@@ -79,8 +79,6 @@ class ProgramPageState extends State<ProgramPage> {
       index: index,
       exerciseId: _exerciseID!,
     );
-
-    ("ExerciseID: $_exerciseID");
   }
 
   // Search mode callback - is choosing exercise or not
@@ -163,7 +161,6 @@ class ProgramPageState extends State<ProgramPage> {
       drawer: ProgramsDrawer(
         currentProgramId: context.read<Profile>().currentProgram.programID,
         onProgramSelected: (selectedProgram) {
-          ("New: $selectedProgram");
           context.read<Profile>().updateProgram(selectedProgram);
         },
 

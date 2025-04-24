@@ -203,13 +203,11 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     // Else we're at the end of the workout
     else {
       // Optionally handle workout completion here
-      ("Workout complete!");
       shakeFinish = true;
       // Keep nextSet pointing to last subset
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];
     }
 
-    ("Next set: $nextSet");
     notifyListeners();
   }
 }

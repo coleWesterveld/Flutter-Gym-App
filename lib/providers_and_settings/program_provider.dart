@@ -5,6 +5,9 @@ import '../database/profile.dart';
   // import 'dart:math';
   import 'dart:async';
   import '../../other_utilities/day_of_week.dart';
+  import 'package:firstapp/notifications/notification_service.dart';
+  import 'package:provider/provider.dart';
+  import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 //import 'dart:math';
 // split, sets, etc in provider
@@ -88,10 +91,10 @@ class Profile extends ChangeNotifier {
     required this.dbHelper,
     this.splitLength = 7,
   }){
-    _init();
+    init();
   }
 
-  Future<void> _init() async {
+  Future<void> init() async {
     // Fetch data from DB and assign to in-memory lists
     currentProgram = await dbHelper.initializeProgram();
     split = await dbHelper.initializeSplitList(currentProgram.programID);
@@ -140,7 +143,7 @@ class Profile extends ChangeNotifier {
     if (newProgram.programID != -1) {
       currentProgram = newProgram;
     } else{
-      ("No program found with ID : $programID");
+      debugPrint("No program found with ID : $programID");
     }
 
     notifyListeners();
@@ -149,7 +152,7 @@ class Profile extends ChangeNotifier {
   void updateProgram(Program program) async {
     currentProgram = program;
     dbHelper.setCurrentProgramId(currentProgram.programID);
-    _init();
+    init();
     notifyListeners();
   }
 
@@ -299,7 +302,6 @@ class Profile extends ChangeNotifier {
         }
       }
     });
-    ("reordered");
     // Notify listeners after transaction completes
     notifyListeners();
   }
@@ -356,12 +358,24 @@ class Profile extends ChangeNotifier {
     //required int id,
     required Day newDay,
     required int index,
-
+    required BuildContext context,
   }) async {
 
     dbHelper.updateDay(split[index].dayID, newDay.toMap());
     split[index] = newDay;
 
+    // If time changed, enable notifications
+    if (split[index].workoutTime != newDay.workoutTime){
+      // Reschedule notifications if enabled
+      final settings = Provider.of<SettingsModel>(context, listen: false);
+      if (settings.notificationsEnabled) {
+        final notiService = NotiService();
+        notiService.scheduleWorkoutNotifications(
+          profile: context.read<Profile>(),
+          settings: context.read<SettingsModel>(),
+        );
+      }
+    }
 
     notifyListeners();
   }

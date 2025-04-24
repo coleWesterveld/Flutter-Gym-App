@@ -58,12 +58,12 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
           onPressed: (){
             if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
             
-            ("dayTitle: ${widget.titleTEC.text}");
             
             if (widget.titleTEC.text.isNotEmpty) {
               Provider.of<Profile>(context, listen: false).splitAssign(
                 index: widget.index, 
                 newDay: context.read<Profile>().split[widget.index].copyWith(newDayTitle: widget.titleTEC.text),
+                context: context
               );
             }
     
@@ -122,6 +122,7 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
               context.read<Profile>().splitAssign(
                 index: index,
                 newDay: context.read<Profile>().split[index].copyWith(newDayColor: color.toARGB32()),
+                context: context
               );
             },
             

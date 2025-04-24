@@ -9,6 +9,9 @@
 // at some point, should probably make  exercises -> many setClusterHistory -> many Individual sets
 // to group by date, session, and have one note to define everything
 
+import 'package:flutter/material.dart';
+import 'package:firstapp/other_utilities/time_strings.dart';
+
 class UserSettings {
   final int? id;
   final int? currentProgramId;
@@ -206,9 +209,17 @@ class Day {
   final String dayTitle;
   final int programID;
   final int dayColor;
+  TimeOfDay? workoutTime;
   int dayOrder;
 
-  Day({required this.dayID, required this.dayTitle, required this.programID, required this.dayColor, required this.dayOrder});
+  Day({
+    required this.dayID, 
+    required this.dayTitle, 
+    required this.programID, 
+    required this.dayColor, 
+    required this.dayOrder,
+    this.workoutTime,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -217,6 +228,7 @@ class Day {
       'program_id': programID,
       'day_color': dayColor,
       'day_order': dayOrder,
+      'workout_time': workoutTime != null ? timeOfDayToString(workoutTime!) : null,
     };
   }
 
@@ -227,22 +239,33 @@ class Day {
       dayTitle: map['day_title'],
       programID: map['program_id'],
       dayOrder: map['day_order'],
+      workoutTime: map['workout_time'] != null 
+        ? stringToTimeOfDay(map['workout_time']) 
+        : null,
     );
   }
 
   @override
   String toString() {
-    return 'Day{title: $dayTitle, id: $dayID, prgmID: $programID, order: $dayOrder}';
+    return 'Day{time: $workoutTime title: $dayTitle, id: $dayID, prgmID: $programID, order: $dayOrder}';
   }
 
 
-  Day copyWith({int? newDayColor, int? newDayID, String? newDayTitle, int? newProgramID, int? newDayOrder}) {
+  Day copyWith({
+    int? newDayColor, 
+    int? newDayID, 
+    String? newDayTitle, 
+    int? newProgramID, 
+    int? newDayOrder,
+    TimeOfDay? newTime,
+    }) {
     return Day(
       dayOrder: newDayOrder ?? dayOrder,
       dayColor: newDayColor ?? dayColor,
       dayID: newDayID ?? dayID,
       dayTitle: newDayTitle ?? dayTitle,
       programID: newProgramID ?? programID,
+      workoutTime: newTime ?? workoutTime,
     );
   }
 }

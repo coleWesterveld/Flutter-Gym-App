@@ -50,6 +50,7 @@ class EditSchedule extends StatefulWidget {
 
 class _EditScheduleState extends State<EditSchedule> {
   int startDay = 0;
+  bool _allWorkoutsAtSameTime = true;
   // List of days with initial content
   List<Day?> _days = [];
   TextEditingController splitLenTEC = TextEditingController();
@@ -86,6 +87,8 @@ class _EditScheduleState extends State<EditSchedule> {
     }
     _days = newDays;
   }
+
+
   
 
   @override
@@ -130,204 +133,228 @@ class _EditScheduleState extends State<EditSchedule> {
           ],
       
           bottom: PreferredSize(
-            preferredSize: Size.fromHeight(80.0), // Height of the persistent widget
+            preferredSize: Size.fromHeight(135.0), // Height of the persistent widget
             child: Container(
               //color: Colors.blue[100], // Background color
               padding: EdgeInsets.all(8.0), // Padding for the persistent widget
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    
-                    decoration: BoxDecoration(
-                      color: widget.theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5,
-                          offset: const Offset(0, 0),
-                          spreadRadius: 2,
-                          color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
-                        )
-                      ]
-
-                    ),
-      
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          
-                      
-                          Text(
-                            "Repeat Every:",
-      
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        
+                        decoration: BoxDecoration(
+                          color: widget.theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(8),
+                  
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 5,
+                              offset: const Offset(0, 0),
+                              spreadRadius: 2,
+                              color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
                             )
-                          ),
-      
-                          SizedBox(height: 5),
-      
-                          //TODO: it would maybe be good to have these dropdowns match the OS of user
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                          ]
+                  
+                        ),
+                        
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Focus(
-                                onFocusChange: (hasFocus) {
-
-                                  // this should not allow splitlength to be shorter than number of days 
-                                  if (!hasFocus){
-                                    
-                                    
-                                    if (splitLenTEC.text.isNotEmpty){
-                                      if (int.parse(splitLenTEC.text) < context.read<Profile>().split.length){
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text("Length must be at least number of days in split (${context.read<Profile>().split.length})")),
-                                        );
-                                      }
-                                      else{
-
-                                        setState(() {
-                                          context.read<Profile>().done = false;
-                                          context.read<Profile>().splitLength = int.parse(splitLenTEC.text);
-                                        
-                                        });
-
-                                      }
-                                      
-                                      // I made this a second setsate with the idea being that this might take a bit longer, 
-                                      // and I want the done button going away to be fast, so it happens first, displays, and then we do this.
-                                      // by slower, its like.. <0.25s but yeah
-                                      // this is theory and im not an expert so should be tested during optimization.
-                                      
-                                      setState(() {
-                                        generateDays();
-                                      });
-
-                                    }else{
-                                      splitLenTEC.text = context.read<Profile>().splitLength.toString();
-                                    }
-
-
-
-                                  }
-                                  else{
-                                      //("no");
-                                      splitLenTEC.selection = TextSelection(
-                                        baseOffset: 0,
-                                        extentOffset: splitLenTEC.text.length,
-                                      );
-                                      
-                                      setState(() {
-                                        context.read<Profile>().done = true;
-                                      });
-                                      
-                                    }
-                                },
-      
-                                child: TextFormField(
-                                  controller: splitLenTEC,
-                                                                        
-                                  //controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
-                                  
-                                  keyboardType: TextInputType. numberWithOptions(decimal: true),
-                                                                      
-                                  decoration:  InputDecoration(
-                                    //filled: true,
-                                    //fillColor: Color(0xFF1e2025),
-                                    contentPadding: EdgeInsets.only(
-                                      bottom: 10, 
-                                      left: 8 
-                                    ),
-                                    constraints: BoxConstraints(
-                                      maxWidth: 30,
-                                      maxHeight: 30,
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                                    //hintText: context.watch<Profile>().splitLength.toString(), //This should be made to be whateever this value was last workout
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 5),
+                              
                           
                               Text(
-                                "Days",
-                                style: TextStyle(
-                                  height: 2,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              )
-                            ]
-                          ),
-      
-                          
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    
-                    decoration: BoxDecoration(
-                      color: widget.theme.colorScheme.surfaceContainerHighest,
-
-                      borderRadius: BorderRadius.circular(8),
-
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5,
-                          offset: const Offset(0, 0),
-                          spreadRadius: 2,
-                          color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
-                        )
-                      ]
-                    ),
-      
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
+                                "Repeat Every:",
                         
-                          children: [
-                            
-                            
-                            DropdownButton<int>(
-                              isDense: true,
-                              value: startDay,
-                              items: const [
-                                DropdownMenuItem(value: 0, child: Text("Monday")),
-                                DropdownMenuItem(value: 1, child: Text("Tuesday")),
-                                DropdownMenuItem(value: 2, child: Text("Wednesday")),
-                                DropdownMenuItem(value: 3, child: Text("Thursday")),
-                                DropdownMenuItem(value: 4, child: Text("Friday")),
-                                DropdownMenuItem(value: 5, child: Text("Saturday")),
-                                DropdownMenuItem(value: 6, child: Text("Sunday")),
-                              ],
-                              onChanged: (newValue) {
-                                if (newValue != null) {
-                                  setState(() {
-                                    startDay = newValue;
-                                    context.read<Profile>().origin = getDayOfCurrentWeek(startDay + 1);
-                                  });
-                                  }
-                                
-                                // Handle starting day change
-                              },
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                )
+                              ),
+                        
+                              SizedBox(height: 5),
+                        
+                              //TODO: it would maybe be good to have these dropdowns match the OS of user
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Focus(
+                                    onFocusChange: (hasFocus) {
+                  
+                                      // this should not allow splitlength to be shorter than number of days 
+                                      if (!hasFocus){
+                                        
+                                        
+                                        if (splitLenTEC.text.isNotEmpty){
+                                          if (int.parse(splitLenTEC.text) < context.read<Profile>().split.length){
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Length must be at least number of days in split (${context.read<Profile>().split.length})")),
+                                            );
+                                          }
+                                          else{
+                  
+                                            setState(() {
+                                              context.read<Profile>().done = false;
+                                              context.read<Profile>().splitLength = int.parse(splitLenTEC.text);
+                                            
+                                            });
+                  
+                                          }
+                                          
+                                          // I made this a second setsate with the idea being that this might take a bit longer, 
+                                          // and I want the done button going away to be fast, so it happens first, displays, and then we do this.
+                                          // by slower, its like.. <0.25s but yeah
+                                          // this is theory and im not an expert so should be tested during optimization.
+                                          
+                                          setState(() {
+                                            generateDays();
+                                          });
+                  
+                                        }else{
+                                          splitLenTEC.text = context.read<Profile>().splitLength.toString();
+                                        }
+                  
+                  
+                  
+                                      }
+                                      else{
+                                          splitLenTEC.selection = TextSelection(
+                                            baseOffset: 0,
+                                            extentOffset: splitLenTEC.text.length,
+                                          );
+                                          
+                                          setState(() {
+                                            context.read<Profile>().done = true;
+                                          });
+                                          
+                                        }
+                                    },
+                        
+                                    child: TextFormField(
+                                      textAlign: TextAlign.center,
+                                      textAlignVertical: TextAlignVertical.center,
+                                      
+                                      controller: splitLenTEC,
+                                                                            
+                                      //controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
+                                      
+                                      keyboardType: TextInputType. numberWithOptions(decimal: true),
+                                                                          
+                                      decoration:  InputDecoration(
+                                        
+                                        //filled: true,
+                                        //fillColor: Color(0xFF1e2025),
+                                        contentPadding: EdgeInsets.only(
+                                          bottom: 10, 
+                                          //left: 8 
+                                        ),
+                                        constraints: BoxConstraints(
+                                          maxWidth: 30,
+                                          maxHeight: 30,
+                                        ),
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                                        //hintText: context.watch<Profile>().splitLength.toString(), //This should be made to be whateever this value was last workout
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                              
+                                  Text(
+                                    "Days",
+                                    style: TextStyle(
+                                      height: 2,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                ]
+                              ),
+                        
+                              
+                            ],
                           ),
-                          SizedBox(height: 5),
-                          Text(
-                              "Start Day",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                              )
-                            ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Container(
+                        
+                        decoration: BoxDecoration(
+                          color: widget.theme.colorScheme.surfaceContainerHighest,
+                  
+                          borderRadius: BorderRadius.circular(8),
+                  
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 5,
+                              offset: const Offset(0, 0),
+                              spreadRadius: 2,
+                              color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                            )
+                          ]
+                        ),
+                        
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            
+                              children: [
+                                
+                                
+                                DropdownButton<int>(
+                                  isDense: true,
+                                  value: startDay,
+                                  items: const [
+                                    DropdownMenuItem(value: 0, child: Text("Monday")),
+                                    DropdownMenuItem(value: 1, child: Text("Tuesday")),
+                                    DropdownMenuItem(value: 2, child: Text("Wednesday")),
+                                    DropdownMenuItem(value: 3, child: Text("Thursday")),
+                                    DropdownMenuItem(value: 4, child: Text("Friday")),
+                                    DropdownMenuItem(value: 5, child: Text("Saturday")),
+                                    DropdownMenuItem(value: 6, child: Text("Sunday")),
+                                  ],
+                                  onChanged: (newValue) {
+                                    if (newValue != null) {
+                                      setState(() {
+                                        startDay = newValue;
+                                        context.read<Profile>().origin = getDayOfCurrentWeek(startDay + 1);
+                                      });
+                                      }
+                                    
+                                    // Handle starting day change
+                                  },
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                  "Start Day",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  )
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+
+
+                  Row(
+                    children: [
+                      Text("All Workouts at Same Time"),
+                      Checkbox(
+                        value: _allWorkoutsAtSameTime, 
+                        onChanged: (newVal){
+                          setState(() {
+                            _allWorkoutsAtSameTime = newVal!;
+                          });
+                        }
+
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -403,7 +430,11 @@ class _EditScheduleState extends State<EditSchedule> {
                       // Find the index in the split list and update there as well
                       int splitIndex = context.read<Profile>().split.indexWhere((day) => day.dayID == _days[i]!.dayID);
                       if (splitIndex != -1) {
-                        context.read<Profile>().splitAssign(newDay: _days[i]!, index: splitIndex);
+                        context.read<Profile>().splitAssign(
+                          newDay: _days[i]!, 
+                          index: splitIndex,
+                          context: context
+                        );
                       }
                     }
                   }
@@ -420,7 +451,43 @@ class _EditScheduleState extends State<EditSchedule> {
                     days: _days, 
                     index: index, 
                     startDay: startDay,
-                    theme: widget.theme
+                    theme: widget.theme,
+
+                    onTimeChanged: (pickedTime) {
+                      if (!_allWorkoutsAtSameTime){
+                        // only update the specific day chosen
+                        // Update through provider
+                        context.read<Profile>().splitAssign(
+                          newDay: _days[index]!.copyWith(newTime: pickedTime),
+                          index: context.read<Profile>().split.indexWhere((day) => day.dayID == _days[index]!.dayID),
+                          context: context
+                        );
+
+                        setState(() {
+                          _days[index] = _days[index]!.copyWith(newTime: pickedTime);
+                        });
+                      } else{
+                        // update all the days with the new time
+                        for (int i = 0; i < _days.length; i++) {
+                          if (_days[i] != null) {
+                            // Update the workoutTime property directly
+                            _days[i]!.workoutTime = pickedTime;
+
+                            // Find the index in the split list and update there as well
+                            int splitIndex = context.read<Profile>().split.indexWhere((day) => day.dayID == _days[i]!.dayID);
+
+                            if (splitIndex != -1) {
+                              context.read<Profile>().splitAssign(
+                                newDay: _days[i]!, 
+                                index: splitIndex,
+                                context: context
+                              );
+                            }
+                          }
+                        }
+                      }
+                     
+                    },
                   );
         
                 } else {

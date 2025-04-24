@@ -14,7 +14,8 @@ import 'package:firstapp/widgets/workout_stopwatch.dart';                 // Act
 import 'package:firstapp/providers_and_settings/program_provider.dart';   // Program Management
 import 'package:firstapp/providers_and_settings/settings_provider.dart';  // Settings
 import 'package:firstapp/theme/app_theme.dart';                           // Theme
-import 'package:firstapp/notifications/notification_service.dart';        // Notifications
+import 'package:firstapp/notifications/notification_service.dart';
+
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -34,10 +35,8 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Init notifications
-  NotiService().initNotification();
-
   runApp(const GymApp());
+
 }
 
 class GymApp extends StatefulWidget {
@@ -48,7 +47,13 @@ class GymApp extends StatefulWidget {
 
 class _MainPage extends State<GymApp> {
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   final dbHelper = DatabaseHelper.instance;
+
 
   @override
   Widget build(BuildContext context) {
@@ -136,11 +141,34 @@ class MainScaffold extends StatefulWidget {
 class MainScaffoldState extends State<MainScaffold> {
   int currentPageIndex = 0;
 
+  // for testing notifications
+  //String notifications = "";
+
   @override
   Widget build(BuildContext context) {
+
+    if (!context.watch<Profile>().isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final ThemeData theme = Theme.of(context);
 
+    final notiService = NotiService();
+    notiService.scheduleWorkoutNotifications(
+      profile: context.read<Profile>(),
+      settings: context.read<SettingsModel>(),
+    );
+
+
     return Scaffold(
+      // floatingActionButton: TextButton(
+      //   onPressed: () async {
+      //     notifications = await notiService.debugPrintScheduledNotifications();
+      //   }, 
+      //   child: const Text("see notifs")
+      // ),
+
+
       resizeToAvoidBottomInset: true,
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
@@ -183,19 +211,38 @@ class MainScaffoldState extends State<MainScaffold> {
       ),
 
       //what opens for each page
-      body: <Widget>[
+      body: //Stack(
+        //children: [
+          
+      <Widget>[
 
         WorkoutSelectionPage(theme: theme),
-
+      
         SchedulePage(theme: theme),
-
+      
         ProgramPage(
           dbHelper: widget.dbHelper,
           theme: theme
         ),
-
+      
         AnalyticsPage(theme: theme),
       ][currentPageIndex],
+
+      // Positioned(
+      //   bottom: 100,
+      //   child: Container(height: 500,
+      //   color: Colors.red,
+      //         child: Text(
+      //           notifications,
+      //           softWrap: true,
+      //           maxLines: 100
+               
+      //           )
+      //       ),
+      // ),
+      //   ],
+      //),
+      
 
 
       bottomSheet: Consumer<ActiveWorkoutProvider>(

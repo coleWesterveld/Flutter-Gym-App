@@ -72,7 +72,6 @@ class _WorkoutState extends State<Workout> {
       index++;
     }
 
-    ("history: ${_exerciseHistory}");
   }
 
 
@@ -315,12 +314,9 @@ class _WorkoutState extends State<Workout> {
                                     bool allLogged = true;
                                     outerLoop: // Label for the outer loop
                                     for (final workoutSet in context.read<Profile>().sets[primaryIndex][index]) {
-                                      ("logged: ${workoutSet.hasBeenLogged}");
                                       for (int j = 0; j < workoutSet.hasBeenLogged.length; j++) {
-                                        ("sublog: ${workoutSet.hasBeenLogged[j]}");
                                         if (!workoutSet.hasBeenLogged[j]) {
                                           allLogged = false;
-                                          ("ran");
                                           break outerLoop; // Break both loops immediately
                                         }
                                       }
@@ -366,7 +362,6 @@ class _WorkoutState extends State<Workout> {
                                       BorderRadius.all(Radius.circular(8))),
                             ),
                             onPressed: () {
-                              ("exercise at $primaryIndex, $index");
                               context.read<Profile>().setsAppend(
                                     index1: primaryIndex,
                                     index2: index,
@@ -450,7 +445,7 @@ class _WorkoutState extends State<Workout> {
         builder: (context) => _buildHistoryBottomSheet(records, exerciseTitle),
       );
     } catch (e) {
-      ("Error fetching history: $e");
+      debugPrint("Error fetching history: $e");
       if (!mounted) return;
 
       Navigator.of(context).pop();

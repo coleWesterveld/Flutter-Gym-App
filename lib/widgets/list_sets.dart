@@ -89,7 +89,6 @@ class _ListSetsState extends State<ListSets> {
                       textColor: Colors.white,
                       onPressed: () {
                         try{
-                        ("re-add: ${deletedSet.toString()}");
 
                         setState(() {
                           context.read<Profile>().setsInsert(
@@ -100,7 +99,7 @@ class _ListSetsState extends State<ListSets> {
                           );
                         });
                         } catch(e){
-                          ('Undo failed: $e');
+                          debugPrint('Undo failed: $e');
                           // Show error message
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Failed to undo deletion :(')),

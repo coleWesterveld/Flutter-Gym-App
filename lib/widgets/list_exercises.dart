@@ -140,7 +140,6 @@ class _ListExercisesState extends State<ListExercises> {
                         label: 'Undo',
                         onPressed: () {
                           try{
-                            ("re-add: ${deletedExercise.toString()}");
 
                             setState(() {
                               context.read<Profile>().exerciseInsert(
@@ -151,7 +150,7 @@ class _ListExercisesState extends State<ListExercises> {
                               );
                             });
                           } catch(e){
-                            ('Undo failed: $e');
+                            debugPrint('Undo failed: $e');
 
                             // Show error message
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../database/database_helper.dart';
 import '../database/profile.dart';
+import 'package:firstapp/notifications/notification_service.dart';
+import 'package:firstapp/providers_and_settings/program_provider.dart';
+import 'package:provider/provider.dart';
 
 class SettingsModel extends ChangeNotifier {
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
@@ -85,19 +88,23 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleNotifications() async {
+  Future<void> toggleNotifications(BuildContext context) async {
     _settings = _settings.copyWith(
       enableNotifications: !_settings.enableNotifications,
     );
     await dbHelper.updateUserSettings(_settings);
+
+  
+
     notifyListeners();
   }
 
-  Future<void> setTimeReminder(int newValue) async {
+  Future<void> setTimeReminder(int newValue, BuildContext context) async {
     _settings = _settings.copyWith(
       timeReminder: newValue,
     );
     await dbHelper.updateUserSettings(_settings);
+
     notifyListeners();
   }
 
@@ -108,3 +115,5 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+
