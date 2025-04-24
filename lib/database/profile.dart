@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
-// at some point, this should be merged with Profile class in user.dart
 // for now, I am setting up relational local database to store user data, 
 // and so I will start fresh 
 // to make it easier to follow the tutorial.
 // https://www.youtube.com/watch?v=t39VV2XyqR0&t=128s
 // ^ tutorial series from SmartHerd on YT, used to create this
 
-// Also with help of the one and only ChatGPT
 
 // For now, for saving the set record I will match sets by sessionID and the history note will be copied for every set, or maybe just the first one
 // at some point, should probably make  exercises -> many setClusterHistory -> many Individual sets

@@ -10,10 +10,11 @@ import 'package:firstapp/analytics_page/analytics_page.dart';             // Ana
 
 // Utilities
 import 'package:firstapp/database/database_helper.dart';                  // Database Methods
-import 'package:firstapp/widgets/workout_stopwatch.dart';         // Active Workout Clock
+import 'package:firstapp/widgets/workout_stopwatch.dart';                 // Active Workout Clock
 import 'package:firstapp/providers_and_settings/program_provider.dart';   // Program Management
 import 'package:firstapp/providers_and_settings/settings_provider.dart';  // Settings
 import 'package:firstapp/theme/app_theme.dart';                           // Theme
+import 'package:firstapp/notifications/notification_service.dart';        // Notifications
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -32,6 +33,10 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 // ENTRYPOINT OF APP HERE
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Init notifications
+  NotiService().initNotification();
+
   runApp(const GymApp());
 }
 

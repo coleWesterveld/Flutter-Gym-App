@@ -1,3 +1,4 @@
+import 'package:firstapp/notifications/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -128,7 +129,13 @@ class SettingsPage extends StatelessWidget {
               subtitle: const Text("Get notified of upcoming workout and to bring equipment such as a belt or straps"),
               trailing: Switch.adaptive(
                 value: settings.notificationsEnabled,
-                onChanged: (_) => settings.toggleNotifications(),
+                onChanged: (_) {
+                  settings.toggleNotifications();
+
+                  // for now, I am having this schedule a notification for like 1 min later
+                  // just for testing
+                  NotiService().scheduleNotification(title: "Testing", body: "this is a body", hour: 14, minute: 32);
+                },
               ),
             ),
 
