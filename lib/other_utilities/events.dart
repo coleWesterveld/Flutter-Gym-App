@@ -16,7 +16,7 @@ class Event{
 // from the split in the program provider
 List<Event> getEventsForDay ({required DateTime day, required BuildContext context, DateTime? startDay}){
   // startday should be provider origin if not provided
-  startDay ??= context.read<Profile>().origin;
+  startDay = context.read<Profile>().origin;
 
   for (var splitDay = 0; splitDay < context.read<Profile>().split.length; splitDay ++){
     // if days between origin and day is equal to dayorder

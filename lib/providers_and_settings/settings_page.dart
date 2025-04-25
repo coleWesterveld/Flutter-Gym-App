@@ -133,12 +133,14 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (isEnabled) {
                   settings.toggleNotifications(context);
 
-                  if (settings.notificationsEnabled){
-                    final notiService = NotiService();
+                  final notiService = NotiService();
+                  if (isEnabled){
                     notiService.scheduleWorkoutNotifications(
                       profile: context.read<Profile>(),
                       settings: context.read<SettingsModel>(),
                     );
+                  } else{
+                    notiService.cancelAllNotifications();
                   }
                   
                 },

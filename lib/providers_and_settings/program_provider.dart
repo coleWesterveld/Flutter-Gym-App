@@ -162,10 +162,10 @@ class Profile extends ChangeNotifier {
 
     split.add(
       Day(
-        dayOrder: split.length + 1,
+        dayOrder: split.length,
         dayTitle: "New Day", 
         programID: currentProgram.programID,
-        dayColor: colors[(split.length + 1) % (colors.length)].value,
+        dayColor: colors[(split.length) % (colors.length)].value,
         dayID: id,
       )
     );

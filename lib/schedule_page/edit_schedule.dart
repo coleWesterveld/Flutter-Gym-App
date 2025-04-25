@@ -50,7 +50,7 @@ class EditSchedule extends StatefulWidget {
 
 class _EditScheduleState extends State<EditSchedule> {
   int startDay = 0;
-  bool _allWorkoutsAtSameTime = true;
+  bool _allWorkoutsAtSameTime = false;
   // List of days with initial content
   List<Day?> _days = [];
   TextEditingController splitLenTEC = TextEditingController();

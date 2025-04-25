@@ -141,8 +141,8 @@ class MainScaffold extends StatefulWidget {
 class MainScaffoldState extends State<MainScaffold> {
   int currentPageIndex = 0;
 
-  // for testing notifications
-  //String notifications = "";
+  //for testing notifications
+  // String notifications = "";
 
   @override
   Widget build(BuildContext context) {
