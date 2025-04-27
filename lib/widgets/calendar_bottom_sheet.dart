@@ -4,6 +4,7 @@
 // TODO: make tappable => take to schedule edit page
 // TODO: location of days in week is not accurate - based on old system
 
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,10 +34,12 @@ class CalendarBottomSheet extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                EditSchedule(
-                  theme: theme
-                ),
+            builder: (context) {
+              //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
+              return EditSchedule(
+                theme: theme
+              );
+            }
           )
         );
       },

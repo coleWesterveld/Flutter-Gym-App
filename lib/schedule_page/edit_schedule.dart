@@ -2,6 +2,7 @@
 // TODO: this shoudl come back just for now it was everywhere and annoying
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ class _EditScheduleState extends State<EditSchedule> {
   TextEditingController splitLenTEC = TextEditingController();
 
   @override
-  void initState() {
+  void initState() {    
     startDay = context.read<Profile>().origin.weekday - 1;
 
     splitLenTEC.text = context.read<Profile>().splitLength.toString();
@@ -106,9 +107,7 @@ class _EditScheduleState extends State<EditSchedule> {
         },
 
       child: Scaffold(
-      
-        bottomSheet: buildBottomSheet(),
-      
+            
         appBar: AppBar(
           backgroundColor: widget.theme.colorScheme.surface,
           title: const Text(
@@ -511,17 +510,4 @@ class _EditScheduleState extends State<EditSchedule> {
       ),
     );
   }
-
-  Widget? buildBottomSheet(){
-    // if we should be displaying done button for numeric keyboard, then create.
-    if (context.read<Profile>().done){ 
-      //return done bottom sheet
-      return DoneButtonBottom(
-        context: context, 
-        theme: widget.theme
-      );
-    }else{
-        return null;
-      }
-    }
 }

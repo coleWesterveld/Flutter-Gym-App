@@ -62,6 +62,7 @@ import 'package:firstapp/widgets/exercise_history_list.dart';
 import 'package:firstapp/widgets/circular_progress.dart';
 import 'package:firstapp/widgets/goal_progress.dart';
 import 'package:firstapp/other_utilities/timespan.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -83,7 +84,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Future<List<List<SetRecord>>>? _exerciseHistory;
 
   List<Goal> _goals = [];
-  bool _isAddingGoal = false;
   String? tempGoalTitle;
   bool _isLoadingGoals = true;
 
@@ -129,11 +129,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final uiState = context.watch<UiStateProvider>();
+
+
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
     
     return Scaffold(
+      extendBody: true, // Allows FAB to overlap MainScaffold's bottom nav
+      backgroundColor: Colors.transparent, // Prevents double background
+
       floatingActionButton: (_displayChart && showBackToTop)
         ? FloatingActionButton(
           onPressed: (){
@@ -144,48 +150,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             );
           }, 
         child: const Icon(Icons.keyboard_double_arrow_up_sharp),
-
-        
       )
       : null,
-
-      appBar: AppBar(
-        backgroundColor: widget.theme.colorScheme.surface,
-        centerTitle: true,
-        title:  Text(
-          _isAddingGoal ? "Select Exercise For Goal": "Analytics",
-        ),
-
-        leading: _displayChart
-          ? IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                setState(() {
-                  _displayChart = false;
-                  _exercise = null;
-                  _exerciseHistory = null;
-                });
-              },
-            )
-          : null,
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-          ),
-        ]
-      ),
 
       body: Stack(
         children: [
           // Show analytics content with the persistent search bar only when not searching.
-          if (!_isSearching && !_isAddingGoal)
+          if (!_isSearching && !uiState.isAddingGoal)
             Column(
               children: [
                 if (!_displayChart) _buildPersistentSearchBar(),
@@ -199,7 +170,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
           // When search is active, show the full-screen search overlay.
           if (_isSearching) _buildFullScreenSearch(),
-          if (_isAddingGoal) _createGoal(),
+          if (uiState.isAddingGoal) _createGoal(context),
         ],
       ),
     );
@@ -500,6 +471,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Build the original analytics content.
   SingleChildScrollView _buildAnalyticsContent() {
+    final uiState = context.watch<UiStateProvider>();
 
     return SingleChildScrollView(
       child: Padding(
@@ -619,7 +591,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                   minWidth: 100,
                                   child: TextButton.icon(
                                     onPressed: () {
-                                      setState(() => _isAddingGoal = true,);
+                                      setState(() => uiState.isAddingGoal = true,);
                                     },
                                   
                                     style: ButtonStyle(
@@ -728,12 +700,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  Widget _createGoal(){
+  Widget _createGoal(BuildContext context){
+    final uiState = context.watch<UiStateProvider>();
+
+
     return ExerciseSearchWidget(
       onExerciseSelected: _exerciseForGoalSelected,
       onSearchModeChanged: (isSearching) {
         setState(() {
-          _isAddingGoal = isSearching;
+          uiState.isAddingGoal = isSearching;
         });
       },
       theme: widget.theme,

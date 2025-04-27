@@ -38,6 +38,7 @@ import 'package:firstapp/widgets/list_days.dart';
 import 'package:firstapp/widgets/done_button.dart';
 import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 
 class ProgramPage extends StatefulWidget {
 
@@ -52,11 +53,8 @@ class ProgramPage extends StatefulWidget {
 
 class ProgramPageState extends State<ProgramPage> {
   // This is required for snackbar undo delete to work even when user navigates away
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey();
 
   DateTime today = DateTime.now();
-
-  bool _isEditing = false;
 
   int? _exerciseID;
   int? _activeIndex;
@@ -81,15 +79,17 @@ class ProgramPageState extends State<ProgramPage> {
   }
 
   // Search mode callback - is choosing exercise or not
-  void _updateSearchMode(bool isEditing) {
-    setState(() {
-      _isEditing = isEditing;
-    });
+  void _updateSearchMode(bool isEditing, BuildContext context) {
+    final uiState = context.watch<UiStateProvider>();
+    uiState.isEditing = isEditing;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
-     ThemeData theme = Theme.of(context);
+    final uiState = context.watch<UiStateProvider>();
+    ThemeData theme = Theme.of(context);
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -102,93 +102,16 @@ class ProgramPageState extends State<ProgramPage> {
         Provider.of<Profile>(context, listen: false).changeDone(false);
       },
 
-      child: Scaffold(
-        // required for snackbars to work after navigating away
-        key: scaffoldMessengerKey, 
-
-        resizeToAvoidBottomInset: true,
-
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            context.watch<Profile>().currentProgram.programTitle,
-          ),
-
-          // Open Drawer to see/select/edit programs
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-        ),
-
-        actions: [
-          // More Actions - currently implementing multi-phase programs
-          // PopupMenuButton<String>(            
-          //   icon: const Icon(Icons.more_horiz, size: 28),
-          //   itemBuilder: (context) => [
-          //     const PopupMenuItem(
-          //       value: 'phaseAdder',
-          //       child: ListTile(
-          //         leading: Icon(Icons.add),
-          //         title: Text('Make Multi-Phase'),
-          //       ),
-          //     ),
-          //   ],
-          //   onSelected: (value) {
-          //     if (value == 'phaseAdder'){
-          //       (value);
-          //       // set program to multiphase
-          //       // we will have to change the DB schema for this
-          //       // whole lotta changes... 
-          //     }
-          //   },
-          // ),
-
-          // Takes to settings page
-          Showcase(
-            key: AppTutorialKeys.settingsButton,
-            
-            description: "If you want to change any settings in the future, you can find them here.",
-            child: Builder(
-              builder: (context) {
-                return IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SettingsPage()),
-                    );
-                  },
-                );
-              }
-            ),
-          ),
-        ],
-      ),
-
-      // Program edit/select side drawer
-      drawer: ProgramsDrawer(
-        currentProgramId: context.read<Profile>().currentProgram.programID,
-        onProgramSelected: (selectedProgram) {
-          context.read<Profile>().updateProgram(selectedProgram);
-        },
-
-        theme: theme,
-      ),
-      
-      // Bottom Calendar Sheet
-      bottomSheet: buildBottomSheet(),
-      
-      // List of day cards
-      body: _isEditing ? Stack(
+      child: uiState.isEditing ? Stack(
           children: [
             ExerciseSearchWidget(
               theme: theme,
               onExerciseSelected: (exercise) {
                 _handleExerciseSelected(context, exercise, _activeIndex!);
               },
-              onSearchModeChanged: _updateSearchMode,
+              onSearchModeChanged: (isEditing){
+                return _updateSearchMode(isEditing, context);
+              },
             ),
           ]
         ): Column(
@@ -205,7 +128,7 @@ class ProgramPageState extends State<ProgramPage> {
                   onExerciseAdded: (index) {
                     setState(() {
                       _activeIndex = index;
-                      _isEditing = true;
+                      uiState.isEditing = true;
                     });
                   },
                 
@@ -216,27 +139,9 @@ class ProgramPageState extends State<ProgramPage> {
           ],
         ),
         
-      ),
+      
     );
   }
 
-  Widget? buildBottomSheet(){
 
-    ThemeData theme = Theme.of(context);
-    // If we should be displaying done button for numeric keyboard, then create.
-    // Else display calendar
-    if (_isEditing) return null;
-
-    if (context.read<Profile>().done){ 
-      return DoneButtonBottom(
-        context: context,
-        theme: theme,
-      );
-    }else{
-      return CalendarBottomSheet(
-        today: today,
-        theme: theme
-      );
-    }
-  }  
 }

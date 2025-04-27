@@ -90,7 +90,7 @@ class DatabaseHelper {
         colour_blind_mode BOOLEAN DEFAULT 0,
         enable_notifications BOOLEAN DEFAULT 1,
         time_reminder INTEGER DEFAULT 30,
-        is_first_time BOOLEAN DEFAULT 1,
+        is_first_time BOOLEAN DEFAULT 0,
         
         FOREIGN KEY (current_program_id) REFERENCES programs(id),
         FOREIGN KEY (last_workout_id) REFERENCES days(id)

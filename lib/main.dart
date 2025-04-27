@@ -24,6 +24,12 @@ import 'package:firstapp/app_tutorial/tutorial_welcome_page.dart'; // Import wel
 import 'package:firstapp/workout_page/workout_selection_page.dart'; // Import workout page state for key
 import 'package:showcaseview/showcaseview.dart'; // Import showcase
 import 'package:firstapp/app_tutorial/tutorial_settings_page.dart';
+import 'package:firstapp/widgets/programs_drawer.dart';
+import 'package:firstapp/providers_and_settings/settings_page.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
+
+import 'package:firstapp/widgets/done_button.dart';
+import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -113,6 +119,9 @@ class _MainPage extends State<GymApp> {
           },
         ),
 
+        ChangeNotifierProvider(create: (_) => UiStateProvider()),
+
+
         // ChangeNotifierProvider(
         //   create: (_) => TutorialManager(
         //     mainScaffoldKey: 
@@ -187,38 +196,41 @@ class MainScaffold extends StatefulWidget {
 }
 
 class MainScaffoldState extends State<MainScaffold> {
-  int currentPageIndex = 2;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
 
   //for testing notifications
   // String notifications = "";
 
+  void openProgramDrawer() {
+    // Use the context from the State object which is a descendant of the Scaffold
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   @override
   void initState() {
     super.initState();
-    // Start the tutorial sequence after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-       // Access TutorialManager and start the sequence using the correct context
-       Provider.of<TutorialManager>(context, listen: false)
-            .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
-    });
-  }
+    final settings = Provider.of<SettingsModel>(context, listen: false);
 
-  // For automatic page switching - used in tutorial
-  void changePage(int index) {
-     if (mounted && index != currentPageIndex) { // Check if mounted
-        setState(() {
-          currentPageIndex = index;
-        });
-     }
+    // Only start the tutorial sequence if it's the first time
+    if (settings.isFirstTime) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+         // Access TutorialManager and start the sequence using the correct context
+         Provider.of<TutorialManager>(context, listen: false)
+              .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final uiState = context.watch<UiStateProvider>();
 
 
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
+      appBar: _buildAppBar(context),
       // floatingActionButton: TextButton(
       //   onPressed: () async {
       //     notifications = await notiService.debugPrintScheduledNotifications();
@@ -226,10 +238,19 @@ class MainScaffoldState extends State<MainScaffold> {
       //   child: const Text("see notifs")
       // ),
 
+      drawer: ProgramsDrawer(
+        currentProgramId: context.read<Profile>().currentProgram.programID,
+        onProgramSelected: (selectedProgram) {
+          context.read<Profile>().updateProgram(selectedProgram);
+        },
+
+        theme: theme,
+      ),
+
 
       resizeToAvoidBottomInset: true,
       bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) => changePage(index),
+        onDestinationSelected: (int index) => uiState.currentPageIndex = index,
         indicatorColor: theme.colorScheme.primary,
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
@@ -237,7 +258,7 @@ class MainScaffoldState extends State<MainScaffold> {
           ),
         ),
 
-        selectedIndex: currentPageIndex,
+        selectedIndex: uiState.currentPageIndex,
         //different pages that can be navigated to
         destinations: const <Widget>[
           NavigationDestination(
@@ -276,7 +297,7 @@ class MainScaffoldState extends State<MainScaffold> {
         ProgramPage(),
       
         AnalyticsPage(theme: theme),
-      ][currentPageIndex],
+      ][uiState.currentPageIndex],
 
       // Positioned(
       //   bottom: 100,
@@ -295,20 +316,101 @@ class MainScaffoldState extends State<MainScaffold> {
       
 
 
-      bottomSheet: Consumer<ActiveWorkoutProvider>(
-      builder: (context, activeWorkout, child) {
-        if (activeWorkout.activeDay != null){
-          return WorkoutControlBar(theme: theme);
-        } else{
-          return const SizedBox.shrink();
-        }
-      },
-      // Pass the potentially expensive body (page switcher) as the child
-      // child: IndexedStack(...) or YourPageSwitcherWidget(),
-      // --> Or keep the simple page list if performance is okay there:
-      // child: <Widget>[ ... AnalyticsPage ... ][currentPageIndex],
-    ),
+      bottomSheet: _buildBottomSheet(),
 //      bottomSheet: (context.watch<ActiveWorkoutProvider>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
     );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    final uiState = context.watch<UiStateProvider>();
+
+    // Default
+    String title = "Workout";
+
+    if (uiState.customAppBarTitle != null){
+      title = uiState.customAppBarTitle!;
+    } else if (uiState.isAddingGoal){
+      title = "Select Exercise For Goal";
+    } else if (uiState.currentPageIndex == 1){
+      title = "Schedule";
+    } else if (uiState.currentPageIndex == 2){
+      title = context.watch<Profile>().currentProgram.programTitle;
+    } else if (uiState.currentPageIndex == 3){
+      title = "Analytics";
+    }
+
+    Widget? leading = Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+    );
+    
+    return AppBar(
+        centerTitle: true,
+        title: Text(
+          title
+        ),
+
+        // Open Drawer to see/select/edit programs if on program page
+        leading: leading,
+
+      actions: [
+        // Takes to settings page
+        Showcase(
+          key: AppTutorialKeys.settingsButton,
+
+          description: "If you want to change any settings in the future, you can find them here.",
+          child: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsPage()),
+                  );
+                },
+              );
+            }
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget? _buildBottomSheet(){
+    final uiState = context.watch<UiStateProvider>();
+    ThemeData theme = Theme.of(context);
+
+    // The bottom sheet should be a done button if the user is using a numeric keyboard
+    // then, if on program page we should display calendar
+    // then, if active workout then we display workoutstopwatch
+    // otherwise display nothing 
+
+    if (uiState.isEditing) return null;
+
+    if (context.read<Profile>().done){ 
+      return DoneButtonBottom(
+        context: context,
+        theme: theme,
+      );
+    }else{
+      return Consumer<ActiveWorkoutProvider>(
+
+        builder: (context, activeWorkout, child) {
+          if (uiState.currentPageIndex == 2){
+            return CalendarBottomSheet(
+              today: DateTime.now(),
+              theme: theme
+            );
+          } else if (activeWorkout.activeDay != null){
+            return WorkoutControlBar(theme: theme);
+          } else{
+            return const SizedBox.shrink();
+          }
+        }
+      );
+    }  
   }
 }

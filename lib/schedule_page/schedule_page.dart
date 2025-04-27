@@ -15,6 +15,7 @@ import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/events.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 
 class SchedulePage extends StatefulWidget {
 
@@ -182,31 +183,7 @@ class _MyScheduleState extends State<SchedulePage> {
     
     startDay = context.watch<Profile>().origin;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
-        centerTitle: true,
-        title: const Text(
-          "Planner",
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
-              );
-            },
-          ),
-        ]
-      ),
- 
-      body: SingleChildScrollView(
+    return SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
         
@@ -220,10 +197,12 @@ class _MyScheduleState extends State<SchedulePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            EditSchedule(
-                              theme: theme
-                            ),
+                        builder: (context) {
+                          //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
+                          return EditSchedule(
+                            theme: theme
+                          );
+                        }
                       )
                     );
                   }, 
@@ -441,9 +420,7 @@ class _MyScheduleState extends State<SchedulePage> {
               }
             )
           ],
-        ),),
-
-      
+        ),
     );
   }
 }

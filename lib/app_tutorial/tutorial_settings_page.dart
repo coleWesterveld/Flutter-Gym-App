@@ -15,73 +15,70 @@ class TutorialSettingsPage extends StatelessWidget {
     // Access SettingsModel if you want to show initial settings here
     // final settings = Provider.of<SettingsModel>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Initial Setup'),
-         automaticallyImplyLeading: false, // No back button
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text("Set up your initial preferences (optional):"),
-            const SizedBox(height: 20),
-            // --- Add Initial Settings Widgets Here (e.g., Units) ---
-            // Example:
-            // ListTile(
-            //   title: const Text('Measurement Units'),
-            //   trailing: DropdownButton<bool>(...)
-            // ),
-            // const Divider(),
-            // --- End Initial Settings Widgets ---
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const Text("Set up your initial preferences (optional):"),
+          const SizedBox(height: 20),
+          // --- Add Initial Settings Widgets Here (e.g., Units) ---
+          // Example:
+          // ListTile(
+          //   title: const Text('Measurement Units'),
+          //   trailing: DropdownButton<bool>(...)
+          // ),
+          // const Divider(),
+          // --- End Initial Settings Widgets ---
 
-            const Spacer(), // Pushes button to the bottom
+          const Spacer(), // Pushes button to the bottom
 
-                 ElevatedButton(
-              key: AppTutorialKeys.tutorialStartButton,
-              child: const Text('Start App Tutorial'),
-              onPressed: () {
-                // Navigate to the main app, PASSING A FLAG to start the tutorial
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    // Pass 'startTutorial: true' as an argument
-                    settings: const RouteSettings(arguments: {'startTutorial': true}),
-                    builder: (context) => ShowCaseWidget( // Keep ShowCaseWidget here
-                      builder: (context) => MainScaffoldWrapper(),
-                      
-                      onFinish: () {
-                        // Mark tutorial as complete when the whole sequence finishes
-                        // Use Provider safely here if needed, but check context
-                        try {
-                          Provider.of<SettingsModel>(context, listen: false)
-                              .completeTutorial();
-                          print("Tutorial Finished and Marked as Complete!");
-                        } catch (e) {
-                          print("Error accessing SettingsModel onFinish: $e");
-                          // Handle potential context issue if SettingsModel isn't universally available
-                        }
-                      },
-                    ),
+                ElevatedButton(
+            key: AppTutorialKeys.tutorialStartButton,
+            child: const Text('Start App Tutorial'),
+            onPressed: () {
+              // Navigate to the main app, PASSING A FLAG to start the tutorial
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  // Pass 'startTutorial: true' as an argument
+                  settings: const RouteSettings(arguments: {'startTutorial': true}),
+                  builder: (context) => ShowCaseWidget( // Keep ShowCaseWidget here
+                    builder: (context) => MainScaffoldWrapper(),
+                    
+                    onFinish: () {
+                      // Mark tutorial as complete when the whole sequence finishes
+                      // Use Provider safely here if needed, but check context
+                      try {
+                        Provider.of<SettingsModel>(context, listen: false)
+                            .completeTutorial();
+                        print("Tutorial Finished and Marked as Complete!");
+                      } catch (e) {
+                        print("Error accessing SettingsModel onFinish: $e");
+                        // Handle potential context issue if SettingsModel isn't universally available
+                      }
+                    },
+
+                    
                   ),
-                );
-
-                // REMOVED: Do NOT try to start the tutorial from this context
-                // WidgetsBinding.instance.addPostFrameCallback((_) {
-                //    Provider.of<TutorialManager>(context, listen: false) // << ERROR HAPPENS HERE
-                //        .startTutorialSequence(context);
-                //  });
-              },
-              style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18),
                 ),
-            ),
-            const SizedBox(height: 20), // Spacing at the bottom
-          ],
-        ),
+              );
+
+              // REMOVED: Do NOT try to start the tutorial from this context
+              // WidgetsBinding.instance.addPostFrameCallback((_) {
+              //    Provider.of<TutorialManager>(context, listen: false) // << ERROR HAPPENS HERE
+              //        .startTutorialSequence(context);
+              //  });
+            },
+            style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                textStyle: const TextStyle(fontSize: 18),
+              ),
+          ),
+          const SizedBox(height: 20), // Spacing at the bottom
+        ],
       ),
     );
+    
   }
 }
 

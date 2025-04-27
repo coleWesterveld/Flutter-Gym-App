@@ -23,6 +23,8 @@ import '../database/profile.dart';
 //
 
 class Profile extends ChangeNotifier {
+
+  // these should move to theme or smthn
   static const List<Color> colors = [
     Colors.indigo,
     Colors.red,

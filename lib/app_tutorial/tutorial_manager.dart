@@ -3,6 +3,8 @@ import 'package:showcaseview/showcaseview.dart';
 import 'app_tutorial_keys.dart';
 import '../main.dart'; // Access MainScaffoldState
 import '../workout_page/workout_selection_page.dart'; // Access WorkoutSelectionPageState
+import 'package:provider/provider.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 class TutorialManager extends ChangeNotifier {
   final GlobalKey<MainScaffoldState> mainScaffoldKey;
@@ -35,7 +37,7 @@ class TutorialManager extends ChangeNotifier {
       // Sequence finished, ShowCaseWidget's onFinish will handle completion
       print("Tutorial sequence complete.");
       // Optionally call completeTutorial here if onFinish isn't reliable
-      // Provider.of<SettingsModel>(context, listen: false).completeTutorial();
+      //Provider.of<SettingsModel>(showCaseContext, listen: false).completeTutorial();
       return;
     }
 
@@ -88,10 +90,32 @@ class TutorialManager extends ChangeNotifier {
     }
     // Add more pages as needed
 
-    if (targetPageIndex != -1 && mainScaffoldKey.currentState?.currentPageIndex != targetPageIndex) {
-      mainScaffoldKey.currentState?.changePage(targetPageIndex);
-      // Wait for navigation animation (adjust duration if needed)
-      await Future.delayed(const Duration(milliseconds: 400));
+    // if (targetPageIndex != -1 && mainScaffoldKey.currentState?.currentPageIndex != targetPageIndex) {
+    //   mainScaffoldKey.currentState?.changePage(targetPageIndex);
+    //   // Wait for navigation animation (adjust duration if needed)
+    //   await Future.delayed(const Duration(milliseconds: 400));
+    // }
+
+    if (key == AppTutorialKeys.addProgram) {
+      debugPrint("we are on step to show add program button");
+        // Ensure the Program Page is active before trying to open the drawer
+        // if (mainScaffoldKey.currentState?.currentPageIndex == 2) { // 2 is Program Page index
+        //      try {
+        //             debugPrint("boom");
+
+        //         // *** CALL THE METHOD ON MainScaffoldState ***
+        //         mainScaffoldKey.currentState?.openProgramDrawer();
+
+        //         print("Attempting to open drawer for Add Program tutorial step.");
+        //         // Wait for the drawer animation to complete and content to render
+        //         await Future.delayed(const Duration(milliseconds: 800)); // Adjust delay as needed
+        //         print("Drawer likely open.");
+
+        //      } catch (e) {
+        //         print("Error calling openProgramDrawer: $e");
+        //         // This catch might be less likely now, as Scaffold.of is in MainScaffoldState
+        //      }
+        // }
     }
 
     // --- Expansion Logic ---
