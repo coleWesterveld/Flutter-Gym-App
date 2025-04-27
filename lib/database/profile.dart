@@ -28,6 +28,7 @@ class UserSettings {
   final bool autoRestTimer;
   final bool colourBlindMode;
   final bool enableNotifications;
+  final bool isFirstTime;
 
   // How long before a workout to remind user, if notifications are enabled
   final int timeReminder;
@@ -49,6 +50,7 @@ class UserSettings {
     this.colourBlindMode = false,
     this.enableNotifications = true,
     this.timeReminder = 30,
+    this.isFirstTime = true,
   });
 
   // convert to map for database operations, and remove null vals
@@ -69,7 +71,8 @@ class UserSettings {
       'auto_rest_timer': autoRestTimer ? 1 : 0,
       'colour_blind_mode': colourBlindMode ? 1 : 0,
       'enable_notifications': enableNotifications ? 1 : 0,
-      'time_reminder': timeReminder
+      'time_reminder': timeReminder,
+      'is_first_time' : isFirstTime ? 1 : 0,
     };
     
     // Remove null values
@@ -101,6 +104,7 @@ class UserSettings {
       colourBlindMode: (map['colourBlindMode'] as int? ?? 0) == 1,
       enableNotifications: (map['enable_notifications'] as int? ?? 0) == 1,
       timeReminder: map['time_reminder'] as int? ?? 30,
+      isFirstTime:(map['is_first_time'] as int? ?? 0) == 1,
     );
   }
 
@@ -120,7 +124,8 @@ class UserSettings {
     bool? autoRestTimer,
     bool? colourBlindMode,
     bool? enableNotifications,
-    int? timeReminder
+    int? timeReminder,
+    bool? isFirstTime
   }) {
     return UserSettings(
       id: id ?? this.id,
@@ -138,7 +143,8 @@ class UserSettings {
       autoRestTimer: autoRestTimer ?? this.autoRestTimer,
       colourBlindMode: colourBlindMode ?? this.colourBlindMode,
       enableNotifications: enableNotifications ?? this.enableNotifications,
-      timeReminder: timeReminder ?? this.timeReminder
+      timeReminder: timeReminder ?? this.timeReminder,
+      isFirstTime: isFirstTime ?? this.isFirstTime
     );
   }
 

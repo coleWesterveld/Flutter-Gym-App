@@ -54,6 +54,8 @@ dependencies:
   flutter_local_notifications: ^19.1.0
   timezone: ^0.10.0
   flutter_timezone: ^4.1.0
+  flutter_native_splash: ^2.4.6
+  showcaseview: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -111,3 +113,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_native_splash:
+  color: "#121212"  # Dark background color
+  image: android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+  # dark_mode:  # Optional dark mode configuration
+  #   color: "#121212"  # Same dark color
+  #   image: assets/images/your_logo.png  # Could use a different logo for dark mode

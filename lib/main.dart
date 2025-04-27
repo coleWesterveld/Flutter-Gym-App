@@ -1,3 +1,4 @@
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,8 +15,15 @@ import 'package:firstapp/widgets/workout_stopwatch.dart';                 // Act
 import 'package:firstapp/providers_and_settings/program_provider.dart';   // Program Management
 import 'package:firstapp/providers_and_settings/settings_provider.dart';  // Settings
 import 'package:firstapp/theme/app_theme.dart';                           // Theme
-import 'package:firstapp/notifications/notification_service.dart';
+import 'package:firstapp/notifications/notification_service.dart';        // Notifications
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:showcaseview/showcaseview.dart';        // Splash Screen
 
+import 'package:firstapp/app_tutorial/tutorial_manager.dart'; // Import manager
+import 'package:firstapp/app_tutorial/tutorial_welcome_page.dart'; // Import welcome page
+import 'package:firstapp/workout_page/workout_selection_page.dart'; // Import workout page state for key
+import 'package:showcaseview/showcaseview.dart'; // Import showcase
+import 'package:firstapp/app_tutorial/tutorial_settings_page.dart';
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -33,7 +41,10 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 
 // ENTRYPOINT OF APP HERE
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
 
   runApp(const GymApp());
 
@@ -50,6 +61,9 @@ class _MainPage extends State<GymApp> {
   @override
   void initState() {
     super.initState();
+    //Future.delayed(const Duration(seconds: 1), () {
+      FlutterNativeSplash.remove();
+    //});
   }
 
   final dbHelper = DatabaseHelper.instance;
@@ -67,8 +81,6 @@ class _MainPage extends State<GymApp> {
             return settings;
           }
         ),
-
-        
 
 
         ChangeNotifierProvider(
@@ -100,16 +112,48 @@ class _MainPage extends State<GymApp> {
                 dbHelper: dbHelper, programProvider: programProvider);
           },
         ),
+
+        // ChangeNotifierProvider(
+        //   create: (_) => TutorialManager(
+        //     mainScaffoldKey: 
+        //   )
+        // ), // If wrapping higher up
       ],
       child: Consumer<SettingsModel>(
         builder: (context, settings, child) {
+          if (!context.watch<Profile>().isInitialized) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (!settings.isFirstTime && context.watch<Profile>().isInitialized) {
+            final notiService = NotiService();
+            notiService.scheduleWorkoutNotifications(
+              profile: context.read<Profile>(),
+              settings: context.read<SettingsModel>(),
+            );
+          }
+
+          Widget initialHome;
+          if (settings.isFirstTime) {
+            initialHome = const TutorialWelcomePage();
+          } else {
+            // If not first time, wrap MainScaffold in ShowCaseWidget
+            // only if you want to allow replaying the tutorial later.
+            // Otherwise, just show MainScaffoldWrapper directly.
+             initialHome = MainScaffoldWrapper(); // Use the wrapper directly
+            // initialHome = ShowCaseWidget(
+            //    builder: Builder(builder: (context) => MainScaffoldWrapper()),
+            // );
+          }
+
           return MaterialApp(
+            //showSemanticsDebugger: true,
             title: 'TempTitle',
             debugShowCheckedModeBanner: false,
             themeMode: _getThemeMode(settings.themeMode),
             darkTheme: AppTheme.darkTheme,
             theme: AppTheme.lightTheme,
-            home: MainScaffold(dbHelper: dbHelper),
+            home: initialHome
           );
         },
       ),
@@ -131,34 +175,48 @@ class _MainPage extends State<GymApp> {
 
 class MainScaffold extends StatefulWidget {
   //Function updater;
-  final DatabaseHelper dbHelper;
-  const  MainScaffold({super.key, required this.dbHelper,});
+  final DatabaseHelper dbHelper = DatabaseHelper.instance;
+  final GlobalKey<WorkoutSelectionPageState>? workoutPageKey; // Accept the key
+  final BuildContext showcaseContext; // Receive the showcase context
+
+
+  MainScaffold({super.key, this.workoutPageKey, required this.showcaseContext});
 
   @override
   MainScaffoldState createState() => MainScaffoldState();
 }
 
 class MainScaffoldState extends State<MainScaffold> {
-  int currentPageIndex = 0;
+  int currentPageIndex = 2;
 
   //for testing notifications
   // String notifications = "";
 
   @override
+  void initState() {
+    super.initState();
+    // Start the tutorial sequence after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       // Access TutorialManager and start the sequence using the correct context
+       Provider.of<TutorialManager>(context, listen: false)
+            .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
+    });
+  }
+
+  // For automatic page switching - used in tutorial
+  void changePage(int index) {
+     if (mounted && index != currentPageIndex) { // Check if mounted
+        setState(() {
+          currentPageIndex = index;
+        });
+     }
+  }
+
+  @override
   Widget build(BuildContext context) {
 
-    if (!context.watch<Profile>().isInitialized) {
-      return const Center(child: CircularProgressIndicator());
-    }
 
     final ThemeData theme = Theme.of(context);
-
-    final notiService = NotiService();
-    notiService.scheduleWorkoutNotifications(
-      profile: context.read<Profile>(),
-      settings: context.read<SettingsModel>(),
-    );
-
 
     return Scaffold(
       // floatingActionButton: TextButton(
@@ -171,12 +229,7 @@ class MainScaffoldState extends State<MainScaffold> {
 
       resizeToAvoidBottomInset: true,
       bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-
+        onDestinationSelected: (int index) => changePage(index),
         indicatorColor: theme.colorScheme.primary,
         indicatorShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
@@ -216,14 +269,11 @@ class MainScaffoldState extends State<MainScaffold> {
           
       <Widget>[
 
-        WorkoutSelectionPage(theme: theme),
+        WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
       
-        SchedulePage(theme: theme),
+        const SchedulePage(),
       
-        ProgramPage(
-          dbHelper: widget.dbHelper,
-          theme: theme
-        ),
+        ProgramPage(),
       
         AnalyticsPage(theme: theme),
       ][currentPageIndex],

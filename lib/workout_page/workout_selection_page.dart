@@ -19,10 +19,10 @@ class WorkoutSelectionPage extends StatefulWidget {
   });
 
   @override
-  State<WorkoutSelectionPage> createState() => _WorkoutSelectionPageState();
+  State<WorkoutSelectionPage> createState() => WorkoutSelectionPageState();
 }
 
-class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
+class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   with SingleTickerProviderStateMixin {
 
   late AnimationController _pulseController;
@@ -31,9 +31,31 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   // States tracked separately to maintain collapse/open state across rebuilds and profile.split size changes
   List<bool> _expansionStates = [];
 
-  bool _isInitialized = false; // Add this flag
 
-
+    // Method for TutorialManager to expand a tile
+  void expandTile(int index) {
+    if (mounted && index >= 0 && index < _expansionControllers.length) {
+        // Collapse others if needed (optional, depends on desired tutorial behavior)
+        // for (int i = 0; i < _expansionControllers.length; i++) {
+        //   if (i != index && _expansionControllers[i].isExpanded) {
+        //     _expansionControllers[i].collapse();
+        //   }
+        // }
+        if (!_expansionControllers[index].isExpanded) {
+             print("Expanding tile programmatically: $index");
+            _expansionControllers[index].expand();
+            // Update internal state if you rely on _expansionStates
+             if (index < _expansionStates.length) {
+                 _expansionStates[index] = true;
+             }
+             setState(() {}); // Trigger rebuild if needed
+        } else {
+           print("Tile already expanded: $index");
+        }
+    } else {
+       print("Error expanding tile: index $index out of bounds or not mounted.");
+    }
+  }
 
 
   @override
@@ -44,7 +66,6 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage>
     if (_expansionControllers.length != profile.split.length) {
       _initializeControllersAndStates();
     }
-    _isInitialized = true;
 
   }
 

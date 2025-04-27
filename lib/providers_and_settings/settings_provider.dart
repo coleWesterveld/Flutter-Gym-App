@@ -16,6 +16,7 @@ class SettingsModel extends ChangeNotifier {
     colourBlindMode: false,
     enableNotifications: true,
     timeReminder: 30,
+    isFirstTime: true,
   );
 
   // Getters
@@ -27,6 +28,7 @@ class SettingsModel extends ChangeNotifier {
   bool get hapticsEnabled => _settings.enableHaptics;
   bool get notificationsEnabled => _settings.enableNotifications;
   int get timeReminder => _settings.timeReminder;
+  bool get isFirstTime => _settings.isFirstTime;
 
 
 
@@ -38,6 +40,14 @@ class SettingsModel extends ChangeNotifier {
       notifyListeners();
     }
 
+  }
+
+  Future<void> completeTutorial() async {
+    _settings = _settings.copyWith(
+      isFirstTime: false,
+    );
+    await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
   }
 
   // Toggle methods

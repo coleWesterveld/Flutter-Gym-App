@@ -1,8 +1,10 @@
 // Side drawer to edit, select and add programs
 
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/database/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class ProgramsDrawer extends StatelessWidget {
   final int currentProgramId;
@@ -104,20 +106,25 @@ class ProgramsDrawer extends StatelessWidget {
 
               Divider(color: theme.colorScheme.outline),
 
-              ListTile(
-                leading: Icon(
-                  Icons.add, 
-                  color: theme.colorScheme.onSurface
+              Showcase(
+                key: AppTutorialKeys.addProgram,
+                description: "make a new program",
+                child: ListTile(
+                  
+                  leading: Icon(
+                    Icons.add, 
+                    color: theme.colorScheme.onSurface
+                  ),
+                
+                  title: Text(
+                    'Create New Program',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
+                
+                  onTap: () {
+                    _showCreateProgramDialog(context);
+                  },
                 ),
-
-                title: Text(
-                  'Create New Program',
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                ),
-
-                onTap: () {
-                  _showCreateProgramDialog(context);
-                },
               ),
             ],
           );

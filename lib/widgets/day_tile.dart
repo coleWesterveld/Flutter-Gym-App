@@ -1,5 +1,7 @@
 // A single day in the program page
 
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -7,6 +9,7 @@ import 'package:firstapp/providers_and_settings/program_provider.dart';  // Acce
 
 import 'package:firstapp/widgets/list_exercises.dart';
 import 'package:firstapp/widgets/popup_day_editor.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class DayTile extends StatefulWidget {
   const DayTile({
@@ -30,7 +33,7 @@ class _DayTileState extends State<DayTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Container(  
       decoration: BoxDecoration(
         border: Border.all(color: widget.theme.colorScheme.outline),
 
@@ -162,7 +165,9 @@ class _DayTileState extends State<DayTile> {
                   ),
                 ),
 
-                child: ListExercises(
+                child: (context.read<SettingsModel>().isFirstTime && widget.index ==0) 
+                ? ListExercises(
+
                   context: context, 
                   index: widget.index,
                   theme: widget.theme,
@@ -171,7 +176,22 @@ class _DayTileState extends State<DayTile> {
                     widget.onExerciseAdded();
                   },
 
-                ),
+                )
+                : Showcase(
+                  key: AppTutorialKeys.addExerciseToProgram, 
+                  description: "these are exercises", 
+                  child: ListExercises(
+
+                    context: context, 
+                    index: widget.index,
+                    theme: widget.theme,
+
+                    onExerciseAdded: () async {
+                      widget.onExerciseAdded();
+                    },
+
+                  )
+                )
               ),
             ]
           ),

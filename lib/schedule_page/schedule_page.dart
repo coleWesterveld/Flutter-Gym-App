@@ -17,11 +17,9 @@ import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/events.dart';
 
 class SchedulePage extends StatefulWidget {
-  final ThemeData theme;
 
   const SchedulePage({
     Key? mykey,
-    required this.theme,
   }) : super(key: mykey);
   @override
   _MyScheduleState createState() => _MyScheduleState();
@@ -84,6 +82,8 @@ class _MyScheduleState extends State<SchedulePage> {
   }
 
   List<Widget> legendLabels(){
+     
+
     List<Widget> labels = [];
     for (Day day in context.watch<Profile>().split){
       labels.add(
@@ -119,11 +119,13 @@ class _MyScheduleState extends State<SchedulePage> {
     super.dispose();
   }
 
-  BoxDecoration _buildToday(){
+  BoxDecoration _buildToday(BuildContext context){
+    final theme = Theme.of(context);
+
     final events = getEventsForDay(day: today, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
-        border: Border.all(color: widget.theme.colorScheme.onSurface, width: 3),
+        border: Border.all(color: theme.colorScheme.onSurface, width: 3),
         borderRadius: const BorderRadius.all(Radius.circular(14)),
         color: darken(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
         shape: BoxShape.rectangle, 
@@ -132,7 +134,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
     return  BoxDecoration(
         color:  darken(const Color(0xFF1e2025), 20),
-        border: Border.all(color: widget.theme.colorScheme.onSurface, width: 3),
+        border: Border.all(color: theme.colorScheme.onSurface, width: 3),
         borderRadius:  const BorderRadius.all(Radius.circular(14)),
         shape: BoxShape.rectangle, 
       );
@@ -140,11 +142,14 @@ class _MyScheduleState extends State<SchedulePage> {
     
   }
 
-  BoxDecoration _buildSelected(){
+  BoxDecoration _buildSelected(BuildContext context){
+    final theme = Theme.of(context);
+
+    
     final events = getEventsForDay(day: _selectedDay!, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
-        border: Border.all(color: widget.theme.colorScheme.surface, width: 3),
+        border: Border.all(color: theme.colorScheme.surface, width: 3),
         borderRadius: const BorderRadius.all(Radius.circular(14)),
         color: lighten(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
         shape: BoxShape.rectangle, 
@@ -152,8 +157,8 @@ class _MyScheduleState extends State<SchedulePage> {
     }
 
     return  BoxDecoration(
-        color:  widget.theme.colorScheme.outline,
-        border: Border.all(color: widget.theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        color:  theme.colorScheme.outline,
+        border: Border.all(color: theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
         shape: BoxShape.rectangle, 
       );
     
@@ -169,6 +174,7 @@ class _MyScheduleState extends State<SchedulePage> {
   
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -178,7 +184,7 @@ class _MyScheduleState extends State<SchedulePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: widget.theme.colorScheme.surface,
+        backgroundColor: theme.colorScheme.surface,
         centerTitle: true,
         title: const Text(
           "Planner",
@@ -216,7 +222,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       MaterialPageRoute(
                         builder: (context) =>
                             EditSchedule(
-                              theme: widget.theme
+                              theme: theme
                             ),
                       )
                     );
@@ -231,7 +237,7 @@ class _MyScheduleState extends State<SchedulePage> {
                 
                 decoration: BoxDecoration(
                   
-                  color: widget.theme.colorScheme.surface,
+                  color: theme.colorScheme.surface,
                   //border: Border
                   borderRadius: BorderRadius.circular(12),
 
@@ -240,7 +246,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       blurRadius: 5,
                       offset: const Offset(0, 0),
                       spreadRadius: 2,
-                      color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                      color: theme.colorScheme.shadow.withAlpha((0.3*255).round())
 
                     )
                   ]
@@ -301,7 +307,7 @@ class _MyScheduleState extends State<SchedulePage> {
                                   child: Center(
                                     child: Text(
                                       '${day.day}',
-                                      style: TextStyle(color: widget.theme.colorScheme.onSurface),
+                                      style: TextStyle(color: theme.colorScheme.onSurface),
                                     ),
                                   ),
                                 ),
@@ -336,7 +342,7 @@ class _MyScheduleState extends State<SchedulePage> {
                                   child: Center(
                                     child: Text(
                                       '${day.day}',
-                                      style: TextStyle(color: widget.theme.colorScheme.onPrimary),
+                                      style: TextStyle(color: theme.colorScheme.onPrimary),
                                     ),
                                   ),
                                 ),
@@ -359,8 +365,8 @@ class _MyScheduleState extends State<SchedulePage> {
                             ),
                             
                             
-                            selectedDecoration: _buildSelected(),
-                            todayDecoration: _buildToday(),
+                            selectedDecoration: _buildSelected(context),
+                            todayDecoration: _buildToday(context),
 
                             // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
                             // idk a better way to do this, but this works, even if its maybe not elegant
@@ -381,7 +387,7 @@ class _MyScheduleState extends State<SchedulePage> {
                             ),
 
                             selectedTextStyle: TextStyle(
-                              color: widget.theme.colorScheme.onPrimary, 
+                              color: theme.colorScheme.onPrimary, 
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -409,14 +415,14 @@ class _MyScheduleState extends State<SchedulePage> {
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: widget.theme.colorScheme.surface,
+                          color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 5,
                               offset: const Offset(0, 0),
                               spreadRadius: 2,
-                              color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                              color: theme.colorScheme.shadow.withAlpha((0.3*255).round())
 
                             )
                           ]

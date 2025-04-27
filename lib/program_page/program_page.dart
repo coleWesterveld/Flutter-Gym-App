@@ -22,6 +22,7 @@ Still Todo on this page:
 // TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
 */
 
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,16 +37,14 @@ import 'package:firstapp/providers_and_settings/settings_page.dart';
 import 'package:firstapp/widgets/list_days.dart';
 import 'package:firstapp/widgets/done_button.dart';
 import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class ProgramPage extends StatefulWidget {
 
-  final DatabaseHelper dbHelper;
-  final ThemeData theme;
+  final DatabaseHelper dbHelper = DatabaseHelper.instance;
   
-  const ProgramPage({
+  ProgramPage({
     Key? programkey, 
-    required this.dbHelper,
-    required this.theme
     }) : super(key: programkey);
   @override
   ProgramPageState createState() => ProgramPageState();
@@ -90,6 +89,8 @@ class ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
+     ThemeData theme = Theme.of(context);
+
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -145,14 +146,23 @@ class ProgramPageState extends State<ProgramPage> {
           // ),
 
           // Takes to settings page
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
+          Showcase(
+            key: AppTutorialKeys.settingsButton,
+            
+            description: "If you want to change any settings in the future, you can find them here.",
+            child: Builder(
+              builder: (context) {
+                return IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsPage()),
+                    );
+                  },
+                );
+              }
+            ),
           ),
         ],
       ),
@@ -164,7 +174,7 @@ class ProgramPageState extends State<ProgramPage> {
           context.read<Profile>().updateProgram(selectedProgram);
         },
 
-        theme: widget.theme,
+        theme: theme,
       ),
       
       // Bottom Calendar Sheet
@@ -174,7 +184,7 @@ class ProgramPageState extends State<ProgramPage> {
       body: _isEditing ? Stack(
           children: [
             ExerciseSearchWidget(
-              theme: widget.theme,
+              theme: theme,
               onExerciseSelected: (exercise) {
                 _handleExerciseSelected(context, exercise, _activeIndex!);
               },
@@ -184,17 +194,22 @@ class ProgramPageState extends State<ProgramPage> {
         ): Column(
           children: [
             Expanded(
-              child: ListDays(
-                theme: widget.theme, 
-                context: context,
-
-                onExerciseAdded: (index) {
-                  setState(() {
-                    _activeIndex = index;
-                    _isEditing = true;
-                  });
-                },
-
+              child: Showcase(
+                key: AppTutorialKeys.addDayToProgram,
+                description: "This is days",
+                child: ListDays(
+                  
+                  theme: theme, 
+                  context: context,
+                
+                  onExerciseAdded: (index) {
+                    setState(() {
+                      _activeIndex = index;
+                      _isEditing = true;
+                    });
+                  },
+                
+                ),
               ),
             ),
             const SizedBox(height: 82),
@@ -206,6 +221,8 @@ class ProgramPageState extends State<ProgramPage> {
   }
 
   Widget? buildBottomSheet(){
+
+    ThemeData theme = Theme.of(context);
     // If we should be displaying done button for numeric keyboard, then create.
     // Else display calendar
     if (_isEditing) return null;
@@ -213,12 +230,12 @@ class ProgramPageState extends State<ProgramPage> {
     if (context.read<Profile>().done){ 
       return DoneButtonBottom(
         context: context,
-        theme: widget.theme,
+        theme: theme,
       );
     }else{
       return CalendarBottomSheet(
         today: today,
-        theme: widget.theme
+        theme: theme
       );
     }
   }  
