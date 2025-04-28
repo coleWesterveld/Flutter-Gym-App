@@ -29,10 +29,28 @@ class UiStateProvider extends ChangeNotifier {
   bool _isEditing = false;
   String? _customAppBarTitle;
   int? _expandProgramIndex;
+  bool _openProgramDrawerRequested = false;
+
 
   int get currentPageIndex => _currentPageIndex;
   int? get expandProgramIndex => _expandProgramIndex;
+  bool get openProgramDrawerRequested => _openProgramDrawerRequested;
 
+  void requestProgramDrawerOpen() {
+    _openProgramDrawerRequested = true;
+    // No need to notify listeners immediately,
+    // MainScaffold will check it.
+    // Or notify if MainScaffold needs to react instantly.
+     notifyListeners();
+  }
+
+  void consumeProgramDrawerRequest() {
+     if (_openProgramDrawerRequested) {
+        _openProgramDrawerRequested = false;
+        // Optionally notify if needed elsewhere, but maybe not.
+        // notifyListeners();
+     }
+  }
 
 
   // In Analytics

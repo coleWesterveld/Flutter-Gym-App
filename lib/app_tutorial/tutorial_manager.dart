@@ -44,7 +44,24 @@ class TutorialManager extends ChangeNotifier {
   void startTutorialSequence(BuildContext showCaseContext) {
     _ctx = showCaseContext;
     _currentStep = 0;
+    _setTutorialActive(true);
     _executeStep(showCaseContext);
+  }
+
+
+  // This will be used top disable user interaction with 
+  // anything but the next and skip buttons during the tutorial
+  bool _tutorialActive = false;
+
+   // Keep track of retries for waiting
+  int _waitRetries = 0;
+  final int _maxWaitRetries = 15; // Max frames to wait for widget
+
+  bool get tutorialActive => _tutorialActive;
+
+  void _setTutorialActive(bool value) {
+    _tutorialActive = value;
+    notifyListeners();
   }
 
 
@@ -62,6 +79,7 @@ class TutorialManager extends ChangeNotifier {
     final scState = ShowCaseWidget.of(_ctx);
     
     scState.dismiss();     // hides the current showcase bubble immediately
+    _setTutorialActive(false);
     showCompletionPrompt();
 
     // 3) Prevent any future steps from running
@@ -71,142 +89,147 @@ class TutorialManager extends ChangeNotifier {
 
   // Gets called for every showcase - defines flow for a single widget to showcase
   Future<void> _executeStep(BuildContext showCaseContext) async {
-    // If we have shown all the widgets, we are done
+    debugPrint("Executing Tutorial Step: $_currentStep");
     if (_currentStep >= _tutorialSequence.length) {
-        showCompletionPrompt();
-
-      // Sequence finished, ShowCaseWidget's onFinish will handle completion
-      print("Tutorial sequence complete.");
-      final scState = ShowCaseWidget.of(_ctx);
-      
-      scState.dismiss();     // hides the current showcase bubble immediately
-      
+      debugPrint("dpone");
+      _handleTutorialCompletion(showCaseContext);
       return;
     }
 
-    // set active widget's key
     final currentKey = _tutorialSequence[_currentStep];
+    _waitRetries = 0; // Reset retry counter for the new step
 
-    //Pre-Showcase required navigation or expansion or opening drawers to display a widget, etc.
-    await _prepareForStep(showCaseContext, currentKey);
+    // 1. Prepare the UI (Navigation, Expansion, etc.) - Await actions within prepare
+        bool didNavigate = await _prepareForStep(showCaseContext, currentKey);
 
-    // Now actually calls showcase on the current widget
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 2. *** ADD DELAY if navigation happened ***
+
+   
+    // 2. Wait for the target widget to be built and then showcase it
+    _waitForWidgetAndShowcase(showCaseContext, currentKey, didNavigate: didNavigate);
+  }
+
+  // Helper to wait for the widget associated with the key to be built
+  void _waitForWidgetAndShowcase(BuildContext showCaseContext, GlobalKey currentKey, {bool didNavigate = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async{
+      // Check if the widget context is available and showcase context exists
+      final targetContext = currentKey.currentContext;
+      final showCaseState = ShowCaseWidget.of(showCaseContext);
+
+      if (targetContext != null && showCaseState != null) {
+        // Widget is ready! Showcase it.
+        debugPrint("Widget for key $currentKey found. Starting showcase.");
+
+        if (didNavigate) await Future.delayed(const Duration(milliseconds: 500)); // Added delay
         try {
-             // Find the ShowCaseWidget context
-            ShowCaseWidgetState? showCaseState = ShowCaseWidget.of(showCaseContext);
-            if (showCaseState != null) {
-                 showCaseState.startShowCase([currentKey]);
-                 // Setup listener for when this step is dismissed
-                 // Unfortunately, showcaseview doesn't have a direct per-step callback.
-                 // We might need to rely on timing or user interaction to advance.
-                 // A common workaround is to advance in the 'onToolTipClick' or add delays.
-                 // For simplicity here, we'll advance after ax delay, assuming the user reads it.
-                 // A better approach involves custom tooltips with a "Next" button.
-
-                //  Future.delayed(const Duration(seconds: 3), () { // Adjust delay as needed
-                                     // _currentStep++;
-
-                //      _executeStep(showCaseContext); // Move to the next step
-                //  });
-            } else {
-                 print("Error: ShowCaseWidget context not found!");
-                 // Handle error - maybe skip step or stop tutorial
-            }
-
+          showCaseState.startShowCase([currentKey]);
         } catch (e) {
-            print("Error starting showcase for key: $e");
-            // Handle error - maybe skip step or stop tutorial
-             _currentStep++;
-             _executeStep(showCaseContext); // Try next step even if current one failed
+          print("Error starting showcase for key $currentKey after finding context: $e");
+          _handleStepError(showCaseContext); // Decide how to handle showcase error
         }
+      } else {
+        // Widget not ready yet, retry next frame (up to a limit)
+        _waitRetries++;
+        if (_waitRetries <= _maxWaitRetries) {
+          debugPrint("Widget for key $currentKey not ready yet. Retrying frame ($_waitRetries/$_maxWaitRetries)...");
+          // Schedule the check again for the next frame
+          _waitForWidgetAndShowcase(showCaseContext, currentKey);
+        } else {
+          // Max retries reached, widget likely never appeared
+          print("Error: Widget for key $currentKey did not become available after $_maxWaitRetries frames.");
+          _handleStepError(showCaseContext); // Skip step or stop tutorial
+        }
+      }
     });
   }
 
-  // Prepare the UI for the specific step
-  Future<void> _prepareForStep(BuildContext context, GlobalKey key) async {
+  // Consolidated error handling for a step
+  void _handleStepError(BuildContext showCaseContext) {
+     print("Error occurred during tutorial step $_currentStep. Skipping to next step.");
+     // Optionally dismiss any lingering showcase overlay if needed
+     // ShowCaseWidget.of(showCaseContext)?.dismiss();
+     advanceStep(); // Move to the next step
+  }
+
+   // Consolidated completion handling
+  void _handleTutorialCompletion(BuildContext showCaseContext) {
+    print("Tutorial sequence complete.");
+     _setTutorialActive(false);
+     // Dismiss any final showcase bubble if necessary
+     ShowCaseWidget.of(showCaseContext).dismiss();
+     showCompletionPrompt();
+  }
+
+  // Prepare the UI for the specific step (REVISED - NO ARTIFICIAL DELAYS FOR BUILDS)
+  Future<bool> _prepareForStep(BuildContext context, GlobalKey key) async {
     final uiState = context.read<UiStateProvider>();
-    // --- Navigation Logic ---
     int targetPageIndex = -1;
-    if (key == AppTutorialKeys.settingsButton || key == AppTutorialKeys.editPrograms /*|| key == AppTutorialKeys.programDayTile*/) {
-      targetPageIndex = 2; // Program Page index
-    // } else if (key == AppTutorialKeys.workoutDayTile || key == AppTutorialKeys.startWorkoutButton) {
-    //   targetPageIndex = 0; // Workout Page index
-    }
-    // Add more pages as needed
+    bool navigationOccurred = false; // Flag to return
 
+
+    // Determine target page index based on key
+    if (key == AppTutorialKeys.settingsButton || key == AppTutorialKeys.editPrograms || key == AppTutorialKeys.addDayToProgram || key == AppTutorialKeys.addExerciseToProgram) {
+      targetPageIndex = 2; // Program Page
+    } else if (key == AppTutorialKeys.editScheduleButton) {
+      targetPageIndex = 1; // Schedule Page
+    } else if (key == AppTutorialKeys.recentWorkouts || key == AppTutorialKeys.addGoals) {
+      targetPageIndex = 3; // Analytics Page
+    } else if (key == AppTutorialKeys.startWorkout) {
+      targetPageIndex = 0; // Workout Page
+    }
+
+    // --- Navigation ---
     if (targetPageIndex != -1 && uiState.currentPageIndex != targetPageIndex) {
+      debugPrint("Navigating from ${uiState.currentPageIndex} to $targetPageIndex for key $key");
       uiState.currentPageIndex = targetPageIndex;
-      // Wait for navigation animation (adjust duration if needed)
-      await Future.delayed(const Duration(milliseconds: 300));
+      navigationOccurred = true; // Set the flag
+
+      // IMPORTANT: We DON'T await a Future.delayed here anymore for build timing.
+      // The framework needs time to process the state change and rebuild.
+      // _waitForWidgetAndShowcase will handle waiting for the result.
+      // We might need a minimal yield just to let the event loop process the state change:
+      await Future.delayed(Duration.zero); // Yield execution briefly
     }
 
-    // if (key == AppTutorialKeys.editPrograms) {
-    //   //await Future.delayed(const Duration(milliseconds: 800)); // Adjust delay as needed
-
-    //   //debugPrint("we are on step to show add program button");
-    //     // Ensure the Program Page is active before trying to open the drawer
-    //     if (uiState.currentPageIndex == 2) { // 2 is Program Page index
-    //          try {
-    //                 //debugPrint("boom");
-
-    //             // *** CALL THE METHOD ON MainScaffoldState ***
-    //             mainScaffoldKey.currentState?.openProgramDrawer();
-
-    //             //print("Attempting to open drawer for Add Program tutorial step.");
-    //             // Wait for the drawer animation to complete and content to render
-    //             //await Future.delayed(const Duration(milliseconds: 300)); // Adjust delay as needed
-    //             //print("Drawer likely open.");
-
-    //          } catch (e) {
-    //             print("Error calling openProgramDrawer: $e");
-    //             // This catch might be less likely now, as Scaffold.of is in MainScaffoldState
-    //          }
-    //     }
-    // }
+    // --- Drawer Opening (Example - If needed for AppTutorialKeys.editPrograms) ---
+    //  if (key == AppTutorialKeys.editPrograms) {
+    //    // Ensure Program Page (index 2) is active
+    //    if (uiState.currentPageIndex == 2) {
+    //       debugPrint("Requesting program drawer open for editPrograms step");
+    //       // Use the robust method established earlier
+    //       WidgetsBinding.instance.addPostFrameCallback((_) {
+    //          // Check if main scaffold state is available before calling
+    //          mainScaffoldKey.currentState?.openProgramDrawer();
+    //          // Note: We might still need _waitForWidgetAndShowcase if the item *inside*
+    //          // the drawer needs time to build after the drawer animation.
+    //       });
+    //       // Give drawer animation some time if the target is *inside* it.
+    //       await Future.delayed(const Duration(milliseconds: 400)); // Adjust if needed for drawer animation
+    //    }
+    //  }
 
     // --- Expansion Logic ---
     if (key == AppTutorialKeys.addExerciseToProgram) {
-      // Find the index of the tile to expand (e.g., today's workout)
-      // This logic depends on how you identify "today's workout" in WorkoutSelectionPage
-      //int tileIndexToExpand = programPageKey.currentState?.toExpand() ?? -1; // Use your existing logic
-
-     // if (tileIndexToExpand != -1) {
-        //print("Attempting to expand tile at index: $tileIndexToExpand");
-        // Call the expand method on the WorkoutSelectionPage state
-
-        // TODO: maybe protect this? no guarantee its attached though it should be
+      if (uiState.currentPageIndex == 2) {
         exerciseDemoExpandController.expand();
-
+        // Expansion likely has its own animation, wait a reasonable time for it.
+        await Future.delayed(const Duration(milliseconds: 400));
+      }
+    } else if (key == AppTutorialKeys.startWorkout) {
+      if (uiState.currentPageIndex == 0) {
+        // Wait a frame to ensure workoutPageKey state might be ready after nav
+         await Future.delayed(Duration.zero);
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+            workoutPageKey.currentState?.expandTile();
+         });
         // Wait for expansion animation
-        await Future.delayed(const Duration(milliseconds: 500));
-        debugPrint("Start next ");
-         //print("Expansion likely complete for index: $tileIndexToExpand");
-      // } else {
-      //    print("Warning: Could not determine which workout tile to expand for tutorial.");
-      // }
-    }
-    if (key == AppTutorialKeys.editScheduleButton){
-       uiState.currentPageIndex = 1;
-      // Wait for navigation animation (adjust duration if needed)
-      await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 400));
+      }
     }
 
-    if (key == AppTutorialKeys.startWorkout){
-      uiState.currentPageIndex = 0;
-      workoutPageKey.currentState?.expandTile(0);
-      // Wait for navigation animation (adjust duration if needed)
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+        return navigationOccurred; // Return the flag
 
-    if (key == AppTutorialKeys.recentWorkouts || key == AppTutorialKeys.addGoals){
-      uiState.currentPageIndex = 3;
-      // Wait for navigation animation (adjust duration if needed)
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
-    // Add more preparation logic (scrolling, etc.) if needed
-  }
+  } // End of _prepareForStep
 
   void showCompletionPrompt() {
     final uiState = _ctx.read<UiStateProvider>();
@@ -237,17 +260,17 @@ class TutorialManager extends ChangeNotifier {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-            onPressed: ()async {
+            onPressed: () async {
             uiState.currentPageIndex = 2;
             Navigator.pop(context);
-            await Future.delayed(Duration(milliseconds: 500));
+            context.read<UiStateProvider>().requestProgramDrawerOpen();
 
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              debugPrint("📢 postFrameCallback fired");
-              final msState = mainScaffoldKey.currentState;
-              debugPrint("🔑 mainScaffoldKey.currentState = $msState");
-              msState?.openProgramDrawer();
-            });
+            // WidgetsBinding.instance.addPostFrameCallback((_) {
+            //   debugPrint("📢 postFrameCallback fired");
+            //   final msState = mainScaffoldKey.currentState;
+            //   debugPrint("🔑 mainScaffoldKey.currentState = $msState");
+            //   msState?.openProgramDrawer();
+            // });
           },
 
             child: const Text("Create First Program"),

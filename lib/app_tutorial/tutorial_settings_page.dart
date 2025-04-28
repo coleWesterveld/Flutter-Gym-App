@@ -88,7 +88,12 @@ class MainScaffoldWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShowCaseWidget(
-      autoPlay: false,
+      //autoPlay: true,
+      
+
+      // pretty long - I expect people to press skip or next, but if they dont this will move them along
+      //ZRautoPlayDelay: Duration(seconds: 10),
+
       disableBarrierInteraction: true,
       builder: (_) =>Builder( // Use Builder here to get a context descendant of ShowCaseWidget
         builder: (showcaseContext) { // Use this context for ShowCaseWidget.of()
@@ -98,6 +103,7 @@ class MainScaffoldWrapper extends StatelessWidget {
                 workoutPageKey: workoutPageKey,
                 programPageKey: programPageKey
               ),
+              // Dont allow interaction during tutorial
               child: MainScaffold(
                 key: mainScaffoldKey,
                 workoutPageKey: workoutPageKey,
@@ -107,6 +113,8 @@ class MainScaffoldWrapper extends StatelessWidget {
             );
         },
       ),
+      //enableAutoPlayLock: true,
+      
        onFinish: () {
           try {
             // This onFinish will be called when the entire ShowCase sequence is done

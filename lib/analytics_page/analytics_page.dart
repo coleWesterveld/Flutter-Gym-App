@@ -484,6 +484,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         child: Column(
           children: [  
             Showcase(
+              disableDefaultTargetGestures: true,
               key: AppTutorialKeys.recentWorkouts,
               description: "See your progress from the past week. Tap on an exercise to see an extended history.",
               tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
@@ -562,6 +563,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Showcase(
+                disableDefaultTargetGestures: true,
                 key: AppTutorialKeys.addGoals,
                 description: "Add a target weight for an exercise, and watch your predicted one-rep max improve.",
                 tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
@@ -574,13 +576,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   TooltipActionButton(
                     type: TooltipDefaultActionType.skip,
                     onTap: () => manager.skipTutorial(),
+                    name: "Finish"
 
                     
                   ),
-                  TooltipActionButton(
-                    type: TooltipDefaultActionType.next,
-                    onTap: () => manager.advanceStep()
-                  )
                 ],
                 child: Container(
                   width: double.infinity,

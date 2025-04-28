@@ -197,6 +197,7 @@ class _MyScheduleState extends State<SchedulePage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14.0),
                 child: Showcase(
+                  disableDefaultTargetGestures: true,
                   key: AppTutorialKeys.editScheduleButton,
                   description: "Here you can edit your program schedule and workout times for pre-workout equipment reminders.",
                   tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,

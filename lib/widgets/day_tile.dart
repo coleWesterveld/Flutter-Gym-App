@@ -178,6 +178,7 @@ class _DayTileState extends State<DayTile> {
 
                 child: (context.read<SettingsModel>().isFirstTime && widget.index == 0) 
                 ? Showcase(
+                  disableDefaultTargetGestures: true,
                   key: AppTutorialKeys.addExerciseToProgram, 
                   tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
                   descTextStyle: TextStyle(

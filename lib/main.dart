@@ -74,6 +74,7 @@ class _MainPage extends State<GymApp> {
     //});
   }
 
+
   final dbHelper = DatabaseHelper.instance;
 
 
@@ -209,6 +210,32 @@ class MainScaffoldState extends State<MainScaffold> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 
+  @override
+  void didChangeDependencies() {
+    
+    super.didChangeDependencies();
+
+    _checkAndOpenDrawer();
+
+  }
+  void _checkAndOpenDrawer() {
+  final uiState = context.read<UiStateProvider>(); // Use read if not watching in build
+
+  if (uiState.currentPageIndex == 2 && uiState.openProgramDrawerRequested) {
+    // Consume the request so it doesn't happen again on rebuild
+    uiState.consumeProgramDrawerRequest();
+
+    // Important: Ensure this runs *after* the build phase is complete
+    // if called during build or initState/didChangeDependencies.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) { // Check if the state is still mounted
+          debugPrint("🏠 Opening drawer from MainScaffoldState due to request");
+          _scaffoldKey.currentState?.openDrawer();
+      }
+    });
+  }
+}
+
   //for testing notifications
   // String notifications = "";
 
@@ -233,107 +260,114 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
+    
     final uiState = context.watch<UiStateProvider>();
+    final manager = context.watch<TutorialManager>();
+    debugPrint("${manager.tutorialActive}");
 
 
     final ThemeData theme = Theme.of(context);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: _buildAppBar(context),
-      // floatingActionButton: TextButton(
-      //   onPressed: () async {
-      //     notifications = await notiService.debugPrintScheduledNotifications();
-      //   }, 
-      //   child: const Text("see notifs")
-      // ),
-
-      drawer: ProgramsDrawer(
-        currentProgramId: context.read<Profile>().currentProgram.programID,
-        onProgramSelected: (selectedProgram) {
-          context.read<Profile>().updateProgram(selectedProgram);
-        },
-
-        theme: theme,
-      ),
-
-
-      resizeToAvoidBottomInset: true,
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) => uiState.currentPageIndex = index,
-        indicatorColor: theme.colorScheme.primary,
-        indicatorShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(12),
-          ),
+    // Ignore interaction during tutorial
+    return IgnorePointer(
+      ignoring: manager.tutorialActive,
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: _buildAppBar(context),
+        // floatingActionButton: TextButton(
+        //   onPressed: () async {
+        //     notifications = await notiService.debugPrintScheduledNotifications();
+        //   }, 
+        //   child: const Text("see notifs")
+        // ),
+      
+        drawer: ProgramsDrawer(
+          currentProgramId: context.read<Profile>().currentProgram.programID,
+          onProgramSelected: (selectedProgram) {
+            context.read<Profile>().updateProgram(selectedProgram);
+          },
+      
+          theme: theme,
         ),
-
-        selectedIndex: uiState.currentPageIndex,
-        //different pages that can be navigated to
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.fitness_center),
-            icon: Icon(Icons.fitness_center_outlined),
-            label: 'Workout',
+      
+      
+        resizeToAvoidBottomInset: true,
+        bottomNavigationBar: NavigationBar(
+          onDestinationSelected: (int index) => uiState.currentPageIndex = index,
+          indicatorColor: theme.colorScheme.primary,
+          indicatorShape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(12),
+            ),
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.calendar_month),
-            icon: Icon(Icons.calendar_month_outlined),
-            label: 'Schedule',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.now_widgets_outlined),
-            selectedIcon: Icon(Icons.now_widgets),
-            label: 'Program',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics),
-            label: 'Analytics',
-          ),
-        ],
+      
+          selectedIndex: uiState.currentPageIndex,
+          //different pages that can be navigated to
+          destinations: const <Widget>[
+            NavigationDestination(
+              selectedIcon: Icon(Icons.fitness_center),
+              icon: Icon(Icons.fitness_center_outlined),
+              label: 'Workout',
+            ),
+            NavigationDestination(
+              selectedIcon: Icon(Icons.calendar_month),
+              icon: Icon(Icons.calendar_month_outlined),
+              label: 'Schedule',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.now_widgets_outlined),
+              selectedIcon: Icon(Icons.now_widgets),
+              label: 'Program',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.analytics_outlined),
+              selectedIcon: Icon(Icons.analytics),
+              label: 'Analytics',
+            ),
+          ],
+        ),
+      
+        //what opens for each page
+        body: //Stack(
+          //children: [
+            
+        <Widget>[
+      
+          WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
+        
+          const SchedulePage(),
+        
+          ProgramPage(programkey: widget.programPageKey),
+        
+          AnalyticsPage(theme: theme),
+        ][uiState.currentPageIndex],
+      
+        // Positioned(
+        //   bottom: 100,
+        //   child: Container(height: 500,
+        //   color: Colors.red,
+        //         child: Text(
+        //           notifications,
+        //           softWrap: true,
+        //           maxLines: 100
+                 
+        //           )
+        //       ),
+        // ),
+        //   ],
+        //),
+        
+      
+      
+        bottomSheet: _buildBottomSheet(),
+      //      bottomSheet: (context.watch<ActiveWorkoutProvider>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
       ),
-
-      //what opens for each page
-      body: //Stack(
-        //children: [
-          
-      <Widget>[
-
-        WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
-      
-        const SchedulePage(),
-      
-        ProgramPage(programkey: widget.programPageKey),
-      
-        AnalyticsPage(theme: theme),
-      ][uiState.currentPageIndex],
-
-      // Positioned(
-      //   bottom: 100,
-      //   child: Container(height: 500,
-      //   color: Colors.red,
-      //         child: Text(
-      //           notifications,
-      //           softWrap: true,
-      //           maxLines: 100
-               
-      //           )
-      //       ),
-      // ),
-      //   ],
-      //),
-      
-
-
-      bottomSheet: _buildBottomSheet(),
-//      bottomSheet: (context.watch<ActiveWorkoutProvider>().activeDay != null) ? WorkoutControlBar(theme: theme) : null,
     );
   }
 
   AppBar _buildAppBar(BuildContext context) {
     final uiState = context.watch<UiStateProvider>();
-    final manager = context.read<TutorialManager>();
+    final manager = context.watch<TutorialManager>();
     final theme = Theme.of(context);
 
     // Default
@@ -352,6 +386,7 @@ void initState() {
     }
 
     Widget? leading = Showcase(
+      disableDefaultTargetGestures: true,
       key: AppTutorialKeys.editPrograms,
       description: "Create and manage programs from here.",
       tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
@@ -392,6 +427,7 @@ void initState() {
       actions: [
         // Takes to settings page
         Showcase(
+          disableDefaultTargetGestures: true,
           description: "If you want to change any settings in the future, you can find them here.",
           //disableDefaultTargetGestures: true,
           key: AppTutorialKeys.settingsButton,

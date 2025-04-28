@@ -37,7 +37,17 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
 
     // Method for TutorialManager to expand a tile
-  void expandTile(int index) {
+  void expandTile({int? index}) {
+
+    if (index == null){
+      final expand = toExpand();
+      if (expand == -1){
+        index = 0;
+      } else{
+        index = expand;
+      }
+    }
+
     if (mounted && index >= 0 && index < _expansionControllers.length) {
         // Collapse others if needed (optional, depends on desired tutorial behavior)
         // for (int i = 0; i < _expansionControllers.length; i++) {
@@ -121,11 +131,12 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   int toExpand() {
     DateTime origin = DateTime(2024, 1, 7);
     int index =
-        daysBetween(origin, today) % context.watch<Profile>().splitLength;
+        daysBetween(origin, today) % context.read<Profile>().splitLength;
 
-    if (index < context.watch<Profile>().split.length) {
+    if (index < context.read<Profile>().split.length) {
       return index;
     }
+
     return -1;
   }
 
@@ -191,6 +202,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
       if (settings.isFirstTime && index == 0){
 
       return Showcase(
+        disableDefaultTargetGestures: true,
         key: AppTutorialKeys.startWorkout,
         description: "Start a workout to begin logging. Includes notes, stopwatches, targets, and recent history, for reference.",
         tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,

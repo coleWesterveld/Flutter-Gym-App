@@ -38,6 +38,7 @@ class _ListDaysState extends State<ListDays> {
     final manager = context.watch<TutorialManager>();
 
     return Showcase(
+      disableDefaultTargetGestures: true,
       key: AppTutorialKeys.addDayToProgram,
       description: "Manage the days of a program. Swipe left on a day to delete it.",
 
