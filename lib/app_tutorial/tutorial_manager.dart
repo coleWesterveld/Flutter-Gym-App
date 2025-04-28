@@ -89,9 +89,9 @@ class TutorialManager extends ChangeNotifier {
 
   // Gets called for every showcase - defines flow for a single widget to showcase
   Future<void> _executeStep(BuildContext showCaseContext) async {
-    debugPrint("Executing Tutorial Step: $_currentStep");
+    //debugPrint("Executing Tutorial Step: $_currentStep");
     if (_currentStep >= _tutorialSequence.length) {
-      debugPrint("dpone");
+      //debugPrint("dpone");
       _handleTutorialCompletion(showCaseContext);
       return;
     }
@@ -116,9 +116,9 @@ class TutorialManager extends ChangeNotifier {
       final targetContext = currentKey.currentContext;
       final showCaseState = ShowCaseWidget.of(showCaseContext);
 
-      if (targetContext != null && showCaseState != null) {
+      if (targetContext != null) {
         // Widget is ready! Showcase it.
-        debugPrint("Widget for key $currentKey found. Starting showcase.");
+        //debugPrint("Widget for key $currentKey found. Starting showcase.");
 
         if (didNavigate) await Future.delayed(const Duration(milliseconds: 500)); // Added delay
         try {
@@ -131,7 +131,7 @@ class TutorialManager extends ChangeNotifier {
         // Widget not ready yet, retry next frame (up to a limit)
         _waitRetries++;
         if (_waitRetries <= _maxWaitRetries) {
-          debugPrint("Widget for key $currentKey not ready yet. Retrying frame ($_waitRetries/$_maxWaitRetries)...");
+          //debugPrint("Widget for key $currentKey not ready yet. Retrying frame ($_waitRetries/$_maxWaitRetries)...");
           // Schedule the check again for the next frame
           _waitForWidgetAndShowcase(showCaseContext, currentKey);
         } else {
@@ -180,7 +180,7 @@ class TutorialManager extends ChangeNotifier {
 
     // --- Navigation ---
     if (targetPageIndex != -1 && uiState.currentPageIndex != targetPageIndex) {
-      debugPrint("Navigating from ${uiState.currentPageIndex} to $targetPageIndex for key $key");
+      //debugPrint("Navigating from ${uiState.currentPageIndex} to $targetPageIndex for key $key");
       uiState.currentPageIndex = targetPageIndex;
       navigationOccurred = true; // Set the flag
 
@@ -233,62 +233,91 @@ class TutorialManager extends ChangeNotifier {
 
   void showCompletionPrompt() {
     final uiState = _ctx.read<UiStateProvider>();
-  showModalBottomSheet(
-    context: _ctx,
-    isDismissible: false,
-    enableDrag: false,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "You're all set!",
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "Would you like to create your very first program now, or explore the app on your own?",
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-            onPressed: () async {
-            uiState.currentPageIndex = 2;
-            Navigator.pop(context);
-            context.read<UiStateProvider>().requestProgramDrawerOpen();
+    // Get the current theme
+    final theme = Theme.of(_ctx); // Use _ctx here as it's the context available in this method
 
-            // WidgetsBinding.instance.addPostFrameCallback((_) {
-            //   debugPrint("📢 postFrameCallback fired");
-            //   final msState = mainScaffoldKey.currentState;
-            //   debugPrint("🔑 mainScaffoldKey.currentState = $msState");
-            //   msState?.openProgramDrawer();
-            // });
-          },
+    showModalBottomSheet(
+      context: _ctx,
+      isDismissible: false,
+      enableDrag: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Ensure buttons are full width
+            children: [
+              Center(
+                child: Text(
+                  "You're all set!",
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Would you like to create your very first program now, or explore the app on your own?",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () async {
+                  uiState.currentPageIndex = 2;
+                  Navigator.pop(context);
+                  context.read<UiStateProvider>().requestProgramDrawerOpen();
+                },
+                // Style for the primary button
+                style: TextButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary, // Background color
+                  foregroundColor: theme.colorScheme.onPrimary, // Text color
+                  padding: const EdgeInsets.symmetric(vertical: 16), // Adjust padding
+                  shape: RoundedRectangleBorder( // Optional: add rounded corners
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  "Create First Program",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  )
+                ),
+              ),
 
-            child: const Text("Create First Program"),
+              const SizedBox(height: 8), // Spacing between buttons
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // close sheet
+                  // nothing else, let them explore
+                },
+                // Style for the outlined button
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary, // Text color (same as outline)
+                   side: BorderSide(color: theme.colorScheme.primary, width: 2), // Outline border
+                   padding: const EdgeInsets.symmetric(vertical: 16), // Adjust padding
+                    shape: RoundedRectangleBorder( // Optional: add rounded corners
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                ),
+                child: const Text(
+                  "Explore on Your Own",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  )
+                  ),
+              ),
+            ],
           ),
-
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);           // close sheet
-                // nothing else, let them explore
-              },
-              child: const Text("Explore on Your Own"),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
 }

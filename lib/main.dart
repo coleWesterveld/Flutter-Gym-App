@@ -229,7 +229,7 @@ class MainScaffoldState extends State<MainScaffold> {
     // if called during build or initState/didChangeDependencies.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) { // Check if the state is still mounted
-          debugPrint("🏠 Opening drawer from MainScaffoldState due to request");
+          //debugPrint("🏠 Opening drawer from MainScaffoldState due to request");
           _scaffoldKey.currentState?.openDrawer();
       }
     });
@@ -240,7 +240,7 @@ class MainScaffoldState extends State<MainScaffold> {
   // String notifications = "";
 
   void openProgramDrawer() {
-      debugPrint("🏠 openProgramDrawer() called");
+      //debugPrint("🏠 openProgramDrawer() called");
 
     // Use the context from the State object which is a descendant of the Scaffold
     _scaffoldKey.currentState?.openDrawer();
@@ -263,7 +263,7 @@ void initState() {
     
     final uiState = context.watch<UiStateProvider>();
     final manager = context.watch<TutorialManager>();
-    debugPrint("${manager.tutorialActive}");
+    //debugPrint("${manager.tutorialActive}");
 
 
     final ThemeData theme = Theme.of(context);
@@ -399,12 +399,26 @@ void initState() {
         TooltipActionButton(
           type: TooltipDefaultActionType.skip,
           onTap: () => manager.skipTutorial(),
+          backgroundColor: theme.colorScheme.surface,
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
 
           
         ),
         TooltipActionButton(
           type: TooltipDefaultActionType.next,
-          onTap: () => manager.advanceStep()
+          onTap: () => manager.advanceStep(),
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          backgroundColor: theme.colorScheme.surface,
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
         )
       ],
       child: Builder(
@@ -438,17 +452,31 @@ void initState() {
           ),
 
           tooltipActions: [
-            TooltipActionButton(
-              type: TooltipDefaultActionType.skip,
-              onTap: () => manager.skipTutorial(),
+        TooltipActionButton(
+          type: TooltipDefaultActionType.skip,
+          onTap: () => manager.skipTutorial(),
+          backgroundColor: theme.colorScheme.surface,
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
 
-              
-            ),
-            TooltipActionButton(
-              type: TooltipDefaultActionType.next,
-              onTap: () => manager.advanceStep()
-            )
-          ],
+          
+        ),
+        TooltipActionButton(
+          type: TooltipDefaultActionType.next,
+          onTap: () => manager.advanceStep(),
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          backgroundColor: theme.colorScheme.surface,
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
+        )
+      ],
 
           child: Builder(
             builder: (context) {

@@ -30,19 +30,6 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-            // Color Blind Mode -- Yet to Be implemented
-            ListTile(
-              title: const Text('Color Blind Mode'),
-              subtitle: const Text('Adds shapes to color-coded elements'),
-              trailing: Switch.adaptive(
-                value: settings.colorBlindMode,
-                onChanged: (_) => settings.toggleColorBlindMode(),
-              ),
-            ),
-            const Divider(
-              thickness: 0.5,
-            ),
-        
             // Units (kg/lbs)
             ListTile(
               title: const Text('Measurement Units'),
@@ -71,7 +58,7 @@ class SettingsPage extends StatelessWidget {
             ),        
             // Dark Theme
             ListTile(
-              title: const Text('Dark Theme'),
+              title: const Text('Theme'),
               trailing: DropdownButton<String>(
                 value: settings.themeMode,
                 onChanged: (String? newValue) {
@@ -210,7 +197,20 @@ class SettingsPage extends StatelessWidget {
                     )
                   ]
                 ),
-              )
+              ),
+              const Divider(
+              thickness: 0.5,
+            ),
+              // Color Blind Mode -- Yet to Be implemented
+            ListTile(
+              title: const Text('Color Blind Mode'),
+              subtitle: const Text('Adds shapes to color-coded elements'),
+              trailing: Switch.adaptive(
+                value: settings.colorBlindMode,
+                onChanged: (_) => settings.toggleColorBlindMode(),
+              ),
+            ),
+            
           ],
         ),
       ),

@@ -287,7 +287,7 @@ class DatabaseHelper {
     // insert default settings
     batch.insert('user_settings', {
       'current_program_id': 1, // default to first program
-      'theme_mode': 'dark', // for now, always only dark mode
+      'theme_mode': 'system',
       'program_duration_days': 7,
       'use_metric': 0,
       'rest_timer_seconds': 90,

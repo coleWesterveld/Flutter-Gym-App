@@ -215,12 +215,26 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         TooltipActionButton(
           type: TooltipDefaultActionType.skip,
           onTap: () => manager.skipTutorial(),
+          backgroundColor: theme.colorScheme.surface,
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
 
           
         ),
         TooltipActionButton(
           type: TooltipDefaultActionType.next,
-          onTap: () => manager.advanceStep()
+          onTap: () => manager.advanceStep(),
+          border: Border.all(
+            color: theme.colorScheme.onSurface
+          ),
+          backgroundColor: theme.colorScheme.surface,
+          textStyle: TextStyle(
+            color: theme.colorScheme.onSurface
+          )
         )
       ],
         
