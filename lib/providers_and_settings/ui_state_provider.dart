@@ -28,8 +28,12 @@ class UiStateProvider extends ChangeNotifier {
   bool _isDisplayingChart = false;
   bool _isEditing = false;
   String? _customAppBarTitle;
+  int? _expandProgramIndex;
 
   int get currentPageIndex => _currentPageIndex;
+  int? get expandProgramIndex => _expandProgramIndex;
+
+
 
   // In Analytics
   bool get isAddingGoal => _isAddingGoal;
@@ -61,6 +65,11 @@ class UiStateProvider extends ChangeNotifier {
 
   set isEditing(bool isEditing){
     _isEditing = isEditing;
+    notifyListeners();
+  }
+
+  set expandProgramIndex (int? newIndex){
+    _expandProgramIndex = newIndex;
     notifyListeners();
   }
 }

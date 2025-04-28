@@ -27,9 +27,11 @@ import 'package:firstapp/app_tutorial/tutorial_settings_page.dart';
 import 'package:firstapp/widgets/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
+import 'widgets/calendar_bottom_sheet.dart';
 
 import 'package:firstapp/widgets/done_button.dart';
-import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
+import 'package:firstapp/app_tutorial/tutorial_widget.dart';
+import 'package:firstapp/app_tutorial/tutorial_widget.dart';
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -186,10 +188,18 @@ class MainScaffold extends StatefulWidget {
   //Function updater;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
   final GlobalKey<WorkoutSelectionPageState>? workoutPageKey; // Accept the key
+  final GlobalKey<ProgramPageState>? programPageKey; // Accept the key
+
   final BuildContext showcaseContext; // Receive the showcase context
 
 
-  MainScaffold({super.key, this.workoutPageKey, required this.showcaseContext});
+  MainScaffold({
+    super.key, 
+    this.workoutPageKey, 
+    required this.showcaseContext,
+    required this.programPageKey,
+
+  });
 
   @override
   MainScaffoldState createState() => MainScaffoldState();
@@ -203,24 +213,23 @@ class MainScaffoldState extends State<MainScaffold> {
   // String notifications = "";
 
   void openProgramDrawer() {
+      debugPrint("🏠 openProgramDrawer() called");
+
     // Use the context from the State object which is a descendant of the Scaffold
     _scaffoldKey.currentState?.openDrawer();
   }
 
-  @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     final settings = Provider.of<SettingsModel>(context, listen: false);
-
-    // Only start the tutorial sequence if it's the first time
     if (settings.isFirstTime) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-         // Access TutorialManager and start the sequence using the correct context
-         Provider.of<TutorialManager>(context, listen: false)
-              .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
-      });
+      Provider.of<TutorialManager>(context, listen: false)
+          .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
     }
-  }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -230,6 +239,7 @@ class MainScaffoldState extends State<MainScaffold> {
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: _buildAppBar(context),
       // floatingActionButton: TextButton(
       //   onPressed: () async {
@@ -294,7 +304,7 @@ class MainScaffoldState extends State<MainScaffold> {
       
         const SchedulePage(),
       
-        ProgramPage(),
+        ProgramPage(programkey: widget.programPageKey),
       
         AnalyticsPage(theme: theme),
       ][uiState.currentPageIndex],
@@ -323,6 +333,8 @@ class MainScaffoldState extends State<MainScaffold> {
 
   AppBar _buildAppBar(BuildContext context) {
     final uiState = context.watch<UiStateProvider>();
+    final manager = context.read<TutorialManager>();
+    final theme = Theme.of(context);
 
     // Default
     String title = "Workout";
@@ -339,11 +351,33 @@ class MainScaffoldState extends State<MainScaffold> {
       title = "Analytics";
     }
 
-    Widget? leading = Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => Scaffold.of(context).openDrawer(),
+    Widget? leading = Showcase(
+      key: AppTutorialKeys.editPrograms,
+      description: "Create and manage programs from here.",
+      tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+      descTextStyle: TextStyle(
+        color: theme.colorScheme.onSurface,
+        fontSize: 16,
+      ),
+
+      tooltipActions: [
+        TooltipActionButton(
+          type: TooltipDefaultActionType.skip,
+          onTap: () => manager.skipTutorial(),
+
+          
         ),
+        TooltipActionButton(
+          type: TooltipDefaultActionType.next,
+          onTap: () => manager.advanceStep()
+        )
+      ],
+      child: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+      ),
     );
     
     return AppBar(
@@ -358,9 +392,28 @@ class MainScaffoldState extends State<MainScaffold> {
       actions: [
         // Takes to settings page
         Showcase(
-          key: AppTutorialKeys.settingsButton,
-
           description: "If you want to change any settings in the future, you can find them here.",
+          //disableDefaultTargetGestures: true,
+          key: AppTutorialKeys.settingsButton,
+          tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+          descTextStyle: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontSize: 16,
+          ),
+
+          tooltipActions: [
+            TooltipActionButton(
+              type: TooltipDefaultActionType.skip,
+              onTap: () => manager.skipTutorial(),
+
+              
+            ),
+            TooltipActionButton(
+              type: TooltipDefaultActionType.next,
+              onTap: () => manager.advanceStep()
+            )
+          ],
+
           child: Builder(
             builder: (context) {
               return IconButton(

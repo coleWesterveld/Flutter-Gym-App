@@ -5,6 +5,8 @@
 // TODO: these indicators are not very clear, i need to make the design more intuitive
 // ie. what days have passed, what indicates today vs. indicates selected day
 
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,7 @@ import '../other_utilities/lightness.dart';
 import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/events.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class SchedulePage extends StatefulWidget {
 
@@ -176,6 +179,7 @@ class _MyScheduleState extends State<SchedulePage> {
   // main scaffold, putting it all together
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final manager = context.watch<TutorialManager>();
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -192,21 +196,43 @@ class _MyScheduleState extends State<SchedulePage> {
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                child: TextButton(
-                  onPressed: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
-                          return EditSchedule(
-                            theme: theme
-                          );
-                        }
-                      )
-                    );
-                  }, 
-                  child: const Text("Edit Schedule")),
+                child: Showcase(
+                  key: AppTutorialKeys.editScheduleButton,
+                  description: "Here you can edit your program schedule and workout times for pre-workout equipment reminders.",
+                  tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                  descTextStyle: TextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: 16,
+                  ),
+
+                  tooltipActions: [
+                    TooltipActionButton(
+                      type: TooltipDefaultActionType.skip,
+                      onTap: () => manager.skipTutorial(),
+
+                      
+                    ),
+                    TooltipActionButton(
+                      type: TooltipDefaultActionType.next,
+                      onTap: () => manager.advanceStep()
+                    )
+                  ],
+                  child: TextButton(
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
+                            return EditSchedule(
+                              theme: theme
+                            );
+                          }
+                        )
+                      );
+                    }, 
+                    child: const Text("Edit Schedule")),
+                ),
               ),
             ),
 

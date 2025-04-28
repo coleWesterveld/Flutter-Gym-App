@@ -46,7 +46,7 @@ class SettingsModel extends ChangeNotifier {
     _settings = _settings.copyWith(
       isFirstTime: false,
     );
-    await dbHelper.updateUserSettings(_settings);
+    //await dbHelper.updateUserSettings(_settings);
     notifyListeners();
   }
 

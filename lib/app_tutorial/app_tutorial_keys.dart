@@ -11,7 +11,7 @@ class AppTutorialKeys {
   static final GlobalKey settingsButton = GlobalKey();       // On program page
 
   // 2nd - Program Page
-  static final GlobalKey addProgram = GlobalKey();           // On program page - in drawer
+  static final GlobalKey editPrograms = GlobalKey();           // On program page - in drawer
   static final GlobalKey addDayToProgram = GlobalKey();      // On program page
   static final GlobalKey addExerciseToProgram = GlobalKey(); // On program page - under expansion tile
   static final GlobalKey addSetsToExercise = GlobalKey();    // Same as ^
@@ -33,14 +33,13 @@ class AppTutorialKeys {
   
   static List<GlobalKey> getAllKeys() => [
     settingsButton,
-    addProgram,
-    //addDayToProgram,
-    //addExerciseToProgram,
-    // addSetsToExercise,
-    // schedule,
-    // editScheduleButton,
+    editPrograms,
+    addDayToProgram,
+    addExerciseToProgram,
+    //schedule,
+    editScheduleButton,
     // editScheduleDragNDrop,
-    // startWorkout,
+    startWorkout,
     // logASet,
     // seeHistory,
     // searchAnalytics,

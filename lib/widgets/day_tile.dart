@@ -1,7 +1,9 @@
 // A single day in the program page
 
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -33,6 +35,12 @@ class _DayTileState extends State<DayTile> {
 
   @override
   Widget build(BuildContext context) {
+    final manager = context.watch<TutorialManager>();
+    final theme = Theme.of(context);
+    final uiState = context.watch<UiStateProvider>();
+    //final shouldExpand = uiState.expandProgramIndex == widget.index;
+
+
     return Container(  
       decoration: BoxDecoration(
         border: Border.all(color: widget.theme.colorScheme.outline),
@@ -54,6 +62,9 @@ class _DayTileState extends State<DayTile> {
                   
           // Expandable to see exercises and sets for that day
           child: ExpansionTile(
+            controller: (context.read<SettingsModel>().isFirstTime && widget.index == 0) ?manager.exerciseDemoExpandController : null,
+            
+
             collapsedShape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12)
             ),
@@ -165,21 +176,29 @@ class _DayTileState extends State<DayTile> {
                   ),
                 ),
 
-                child: (context.read<SettingsModel>().isFirstTime && widget.index ==0) 
-                ? ListExercises(
-
-                  context: context, 
-                  index: widget.index,
-                  theme: widget.theme,
-
-                  onExerciseAdded: () async {
-                    widget.onExerciseAdded();
-                  },
-
-                )
-                : Showcase(
+                child: (context.read<SettingsModel>().isFirstTime && widget.index == 0) 
+                ? Showcase(
                   key: AppTutorialKeys.addExerciseToProgram, 
-                  description: "these are exercises", 
+                  tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                  descTextStyle: TextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: 16,
+                  ),
+                  targetBorderRadius: BorderRadius.circular(12),
+
+                  tooltipActions: [
+                    TooltipActionButton(
+                      type: TooltipDefaultActionType.skip,
+                      onTap: () => manager.skipTutorial(),
+
+                      
+                    ),
+                    TooltipActionButton(
+                      type: TooltipDefaultActionType.next,
+                      onTap: () => manager.advanceStep()
+                    )
+                  ],
+                  description: "Manage exercises for each day. Tap a set to edit it.", 
                   child: ListExercises(
 
                     context: context, 
@@ -191,6 +210,17 @@ class _DayTileState extends State<DayTile> {
                     },
 
                   )
+                )
+                : ListExercises(
+
+                  context: context, 
+                  index: widget.index,
+                  theme: widget.theme,
+
+                  onExerciseAdded: () async {
+                    widget.onExerciseAdded();
+                  },
+
                 )
               ),
             ]

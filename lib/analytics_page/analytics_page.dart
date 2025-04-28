@@ -41,10 +41,13 @@ Add a "Random Stat of the Day" widget that shows:
 
 // TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
+import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/widgets/history_session_view.dart';
 import 'package:firstapp/widgets/target_weight_dialog.dart';
 import 'package:firstapp/widgets/weekly_progress.dart';
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
 import '../database/database_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import "../providers_and_settings/program_provider.dart";
@@ -471,162 +474,208 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Build the original analytics content.
   SingleChildScrollView _buildAnalyticsContent() {
+    final manager = context.watch<TutorialManager>();
     final uiState = context.watch<UiStateProvider>();
+    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [  
-            Container(
-              height: 325,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: widget.theme.colorScheme.surface,  
+            Showcase(
+              key: AppTutorialKeys.recentWorkouts,
+              description: "See your progress from the past week. Tap on an exercise to see an extended history.",
+              tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+      descTextStyle: TextStyle(
+        color: theme.colorScheme.onSurface,
+        fontSize: 16,
+      ),
 
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 5,
-                    offset: const Offset(0, 0),
-                    spreadRadius: 2,
-                    color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+      tooltipActions: [
+        TooltipActionButton(
+          type: TooltipDefaultActionType.skip,
+          onTap: () => manager.skipTutorial(),
 
-                  )
-                ]
-              ),
-      
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  children: [
-                    const Align(
-                      alignment: Alignment.topCenter,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                            "Last 7 Days",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      // Displays progress on exercises during past week workout
-                      child: PageViewWithIndicator(
-                        theme: widget.theme,
-                        onSelected: (exercise){
-                          setState(() {
-                            _exercise = exercise.toMap();
-                            _displayChart = true;
-                          });
-
-                          _exerciseHistory = _handleExerciseSelected(exercise.toMap());
-                        }
-                     )
-                    ),
-                  ],
-                )
-              )
-            ),
-      
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
+          
+        ),
+        TooltipActionButton(
+          type: TooltipDefaultActionType.next,
+          onTap: () => manager.advanceStep()
+        )
+      ],
               child: Container(
+                height: 325,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color: widget.theme.colorScheme.surface,  
-
+              
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 5,
                       offset: const Offset(0, 0),
                       spreadRadius: 2,
                       color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
-
+              
                     )
                   ]
                 ),
-                      
+                    
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: Column(
                     children: [
-                      Align(
-                        alignment: Alignment.topLeft,
+                      const Align(
+                        alignment: Alignment.topCenter,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "Goals",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 20,
-                                    ),
-                                  ),
-
-                                  InfoPopupWidget(
-                                    popupContent: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text('Your \'Actual\' weight is your calculated approximate n rep max using the Epley formula:'),
-                                        Center(child: Text(" \n 1 Rep Max = Weight • (1 + reps / 30)")),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: ButtonTheme(
-                                  minWidth: 100,
-                                  child: TextButton.icon(
-                                    onPressed: () {
-                                      setState(() => uiState.isAddingGoal = true,);
-                                    },
-                                  
-                                    style: ButtonStyle(
-                                      shape: WidgetStateProperty.all(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12))),
-                                          backgroundColor: WidgetStateProperty.all(widget.theme.colorScheme.primary,), 
-                                    ),
-                                    
-                                    label: Text(
-                                      "Add Goal",
-                                      style: TextStyle(
-                                        color: widget.theme.colorScheme.onPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                              "Last 7 Days",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
                           ),
                         ),
                       ),
-
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: _isLoadingGoals 
-                        ? const Center(child: CircularProgressIndicator())
-                        : Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.end,
-                          children: _buildGoalList(),
-                        ),
+                      Expanded(
+                        // Displays progress on exercises during past week workout
+                        child: PageViewWithIndicator(
+                          theme: widget.theme,
+                          onSelected: (exercise){
+                            setState(() {
+                              _exercise = exercise.toMap();
+                              _displayChart = true;
+                            });
+              
+                            _exerciseHistory = _handleExerciseSelected(exercise.toMap());
+                          }
+                       )
                       ),
                     ],
                   )
                 )
+              ),
+            ),
+      
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Showcase(
+                key: AppTutorialKeys.addGoals,
+                description: "Add a target weight for an exercise, and watch your predicted one-rep max improve.",
+                tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                descTextStyle: TextStyle(
+                  color: theme.colorScheme.onSurface,
+                  fontSize: 16,
+                ),
+
+                tooltipActions: [
+                  TooltipActionButton(
+                    type: TooltipDefaultActionType.skip,
+                    onTap: () => manager.skipTutorial(),
+
+                    
+                  ),
+                  TooltipActionButton(
+                    type: TooltipDefaultActionType.next,
+                    onTap: () => manager.advanceStep()
+                  )
+                ],
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: widget.theme.colorScheme.surface,  
+                
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 5,
+                        offset: const Offset(0, 0),
+                        spreadRadius: 2,
+                        color: widget.theme.colorScheme.shadow.withAlpha((0.3*255).round())
+                
+                      )
+                    ]
+                  ),
+                        
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Goals",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                
+                                    InfoPopupWidget(
+                                      popupContent: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text('Your \'Actual\' weight is your calculated approximate n rep max using the Epley formula:'),
+                                          Center(child: Text(" \n 1 Rep Max = Weight • (1 + reps / 30)")),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ButtonTheme(
+                                    minWidth: 100,
+                                    child: TextButton.icon(
+                                      onPressed: () {
+                                        setState(() => uiState.isAddingGoal = true,);
+                                      },
+                                    
+                                      style: ButtonStyle(
+                                        shape: WidgetStateProperty.all(
+                                          RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12))),
+                                            backgroundColor: WidgetStateProperty.all(widget.theme.colorScheme.primary,), 
+                                      ),
+                                      
+                                      label: Text(
+                                        "Add Goal",
+                                        style: TextStyle(
+                                          color: widget.theme.colorScheme.onPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: _isLoadingGoals 
+                          ? const Center(child: CircularProgressIndicator())
+                          : Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.end,
+                            children: _buildGoalList(),
+                          ),
+                        ),
+                      ],
+                    )
+                  )
+                ),
               ),
             ),
           ],
@@ -669,7 +718,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               const SizedBox(width: 8),
 
               Text(
-                "Search exercise",
+                "Search exercise to view history...",
                 style: TextStyle(color: widget.theme.colorScheme.onSurface),
               ),
             ],

@@ -90,7 +90,7 @@ class DatabaseHelper {
         colour_blind_mode BOOLEAN DEFAULT 0,
         enable_notifications BOOLEAN DEFAULT 1,
         time_reminder INTEGER DEFAULT 30,
-        is_first_time BOOLEAN DEFAULT 0,
+        is_first_time BOOLEAN DEFAULT 1,
         
         FOREIGN KEY (current_program_id) REFERENCES programs(id),
         FOREIGN KEY (last_workout_id) REFERENCES days(id)
@@ -376,7 +376,7 @@ class DatabaseHelper {
     List<List<Exercise>> exerciseList = [];
 
     // Fetch days from the database
-    List<Map<String, dynamic>> days = await fetchDays(programID);//socks
+    List<Map<String, dynamic>> days = await fetchDays(programID);
 
     for (var day in days){
       // for each day, fetch its corresponding exercises

@@ -26,90 +26,88 @@ class ProgramsDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: theme.colorScheme.surface,
-      child: FutureBuilder<List<Program>>(
-        future: _fetchPrograms(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading programs'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No programs found'));
-          }
-
-          final programs = snapshot.data!;
-          
-          return Column(
-            children: [
-               DrawerHeader(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                ),
-
-                child: Center(
-                  child: Text(
-                    'Your Programs',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+    return SafeArea(
+      child: Drawer(
+        backgroundColor: theme.colorScheme.surface,
+        child: FutureBuilder<List<Program>>(
+          future: _fetchPrograms(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return const Center(child: Text('Error loading programs'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No programs found'));
+            }
+      
+            final programs = snapshot.data!;
+            
+            return Column(
+              children: [
+                 DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                  ),
+      
+                  child: Center(
+                    child: Text(
+                      'Your Programs',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              Expanded(
-                child: ListView.builder(
-                  itemCount: programs.length,
-                  itemBuilder: (context, index) {
-                    final program = programs[index];
-                    return ListTile(
-                      leading: Icon(
-                        Icons.fitness_center, 
-                        color: theme.colorScheme.onSurface,
-                      ),
-
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              program.programTitle,
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface
+      
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: programs.length,
+                    itemBuilder: (context, index) {
+                      final program = programs[index];
+                      return ListTile(
+                        leading: Icon(
+                          Icons.fitness_center, 
+                          color: theme.colorScheme.onSurface,
+                        ),
+      
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                program.programTitle,
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface
+                                ),
                               ),
                             ),
-                          ),
-                          if (program.programID == currentProgramId) 
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit, 
-                                color: theme.colorScheme.onSurface, 
-                                size: 20
+                            if (program.programID == currentProgramId) 
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit, 
+                                  color: theme.colorScheme.onSurface, 
+                                  size: 20
+                                ),
+      
+                                onPressed: () => _showEditProgramDialog(context, program),
                               ),
-
-                              onPressed: () => _showEditProgramDialog(context, program),
-                            ),
-                        ],
-                      ),
-                      selected: program.programID == currentProgramId,
-                      selectedTileColor: theme.colorScheme.outline,
-                      onTap: () {
-                        onProgramSelected(program);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
+                          ],
+                        ),
+                        selected: program.programID == currentProgramId,
+                        selectedTileColor: theme.colorScheme.outline,
+                        onTap: () {
+                          onProgramSelected(program);
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-
-              Divider(color: theme.colorScheme.outline),
-
-              Showcase(
-                key: AppTutorialKeys.addProgram,
-                description: "make a new program",
-                child: ListTile(
+      
+                Divider(color: theme.colorScheme.outline),
+      
+                ListTile(
                   
                   leading: Icon(
                     Icons.add, 
@@ -125,10 +123,10 @@ class ProgramsDrawer extends StatelessWidget {
                     _showCreateProgramDialog(context);
                   },
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

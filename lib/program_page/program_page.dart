@@ -23,6 +23,7 @@ Still Todo on this page:
 */
 
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -90,6 +91,7 @@ class ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     final uiState = context.watch<UiStateProvider>();
     ThemeData theme = Theme.of(context);
+    final manager = context.watch<TutorialManager>();
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
@@ -117,10 +119,7 @@ class ProgramPageState extends State<ProgramPage> {
         ): Column(
           children: [
             Expanded(
-              child: Showcase(
-                key: AppTutorialKeys.addDayToProgram,
-                description: "This is days",
-                child: ListDays(
+              child: ListDays(
                   
                   theme: theme, 
                   context: context,
@@ -133,8 +132,8 @@ class ProgramPageState extends State<ProgramPage> {
                   },
                 
                 ),
-              ),
             ),
+            
             const SizedBox(height: 82),
           ],
         ),
