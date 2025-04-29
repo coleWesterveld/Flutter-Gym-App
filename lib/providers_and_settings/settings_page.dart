@@ -237,6 +237,7 @@ class SettingsPage extends StatelessWidget {
 
                           TextButton(
                             onPressed: () async {
+                              settings.startTutorial(dbWrite: false);
                               // 1. Set the flag in UiStateProvider
                               context.read<UiStateProvider>().requestTutorialReplay();
 

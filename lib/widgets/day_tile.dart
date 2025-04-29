@@ -38,6 +38,7 @@ class _DayTileState extends State<DayTile> {
     final manager = context.watch<TutorialManager>();
     final theme = Theme.of(context);
     final uiState = context.watch<UiStateProvider>();
+    //debugPrint("${context.read<SettingsModel>().isFirstTime}");
     //final shouldExpand = uiState.expandProgramIndex == widget.index;
 
 
@@ -62,7 +63,7 @@ class _DayTileState extends State<DayTile> {
                   
           // Expandable to see exercises and sets for that day
           child: ExpansionTile(
-            controller: (context.read<SettingsModel>().isFirstTime && widget.index == 0) ?manager.exerciseDemoExpandController : null,
+            controller: (widget.index == 0) ? manager.exerciseDemoExpandController : null,
             
 
             collapsedShape: RoundedRectangleBorder(
@@ -176,7 +177,7 @@ class _DayTileState extends State<DayTile> {
                   ),
                 ),
 
-                child: (context.read<SettingsModel>().isFirstTime && widget.index == 0) 
+                child: (widget.index == 0) 
                 ? Showcase(
                   disableDefaultTargetGestures: true,
                   key: AppTutorialKeys.addExerciseToProgram, 

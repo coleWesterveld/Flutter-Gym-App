@@ -41,37 +41,74 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
     // Method for TutorialManager to expand a tile
   void expandTile({int? index}) {
+    
+    if (!mounted) {
+       print("Error expanding tile: WorkoutSelectionPageState not mounted.");
+       return;
+    }
 
-    if (index == null){
-      final expand = toExpand();
-      if (expand == -1){
-        index = 0;
-      } else{
-        index = expand;
+    // Determine the target index if not provided
+    int targetIndex;
+    if (index == null) {
+      final expand = toExpand(); // Assumes toExpand() gets the correct index
+      // Handle the case where toExpand might return an invalid index or -1
+      if (expand < 0 || expand >= _expansionControllers.length) {
+          print("Warning: toExpand() returned invalid index $expand. Defaulting to 0.");
+          targetIndex = 0; // Default to the first tile if calculation fails
+      } else {
+          targetIndex = expand;
       }
+    } else {
+      targetIndex = index;
     }
 
-    if (mounted && index >= 0 && index < _expansionControllers.length) {
-        // Collapse others if needed (optional, depends on desired tutorial behavior)
-        // for (int i = 0; i < _expansionControllers.length; i++) {
-        //   if (i != index && _expansionControllers[i].isExpanded) {
-        //     _expansionControllers[i].collapse();
-        //   }
-        // }
-        if (!_expansionControllers[index].isExpanded) {
-             //print("Expanding tile programmatically: $index");
-            _expansionControllers[index].expand();
-            // Update internal state if you rely on _expansionStates
-             if (index < _expansionStates.length) {
-                 _expansionStates[index] = true;
-             }
-             setState(() {}); // Trigger rebuild if needed
-        } else {
-           //print("Tile already expanded: $index");
-        }
-    } else {
-       print("Error expanding tile: index $index out of bounds or not mounted.");
+    // Final check for index bounds *before* the callback
+    if (targetIndex < 0 || targetIndex >= _expansionControllers.length) {
+       print("Error expanding tile: targetIndex $targetIndex out of bounds (0-${_expansionControllers.length - 1}).");
+       return;
     }
+
+    // Use addPostFrameCallback to defer the expansion logic
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Re-check mounted status and index validity *inside* the callback,
+        // as the state could have changed between scheduling and execution.
+        if (mounted && targetIndex < _expansionControllers.length) {
+            final controller = _expansionControllers[targetIndex];
+
+            // Check if it needs expanding
+            if (!controller.isExpanded) {
+                try {
+                    print("Attempting to expand tile programmatically via postFrameCallback: $targetIndex");
+                    // Collapse others FIRST if that's the desired behavior
+                    // This ensures only one is expanded when the target one opens.
+                    for (int i = 0; i < _expansionControllers.length; i++) {
+                      if (i != targetIndex && _expansionControllers[i].isExpanded) {
+                        _expansionControllers[i].collapse();
+                         // Update state tracking if necessary
+                         if (i < _expansionStates.length) _expansionStates[i] = false;
+                      }
+                    }
+
+                    // Now expand the target tile
+                    controller.expand();
+
+                    // Update internal state tracking if used
+                    if (targetIndex < _expansionStates.length) {
+                        _expansionStates[targetIndex] = true;
+                    }
+                    // You might need setState(() {}); here if _expansionStates directly drives UI elements
+                    // that aren't automatically handled by the ExpansionTile itself.
+                 } catch (e) {
+                    // Catch potential errors during the actual expand call
+                    print("Error during controller.expand() for index $targetIndex inside callback: $e");
+                 }
+            } else {
+               print("Tile already expanded post-frame: $targetIndex");
+            }
+        } else {
+           print("Error expanding tile post-frame: targetIndex $targetIndex out of bounds or state not mounted.");
+        }
+    });
   }
 
 
@@ -202,7 +239,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         ),
       );
     } else {
-      if (settings.isFirstTime && index == 0){
+      if (index == 0){
 
       return Showcase(
         disableDefaultTargetGestures: true,

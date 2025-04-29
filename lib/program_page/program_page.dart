@@ -81,7 +81,7 @@ class ProgramPageState extends State<ProgramPage> {
 
   // Search mode callback - is choosing exercise or not
   void _updateSearchMode(bool isEditing, BuildContext context) {
-    final uiState = context.watch<UiStateProvider>();
+    final uiState = context.read<UiStateProvider>();
     uiState.isEditing = isEditing;
   }
 
@@ -89,9 +89,8 @@ class ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
-    final uiState = context.watch<UiStateProvider>();
+    final uiState = context.read<UiStateProvider>();
     ThemeData theme = Theme.of(context);
-    final manager = context.watch<TutorialManager>();
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
