@@ -1,3 +1,21 @@
+// Helper class to manage database
+
+// On startup (open app for first time):
+//  - creates tables
+//  - loads exercises from txt file into DB
+//  - inserts initial example program
+
+// On opening app everytime after first time:
+//  - Providers use fetch methods from this class to load data to memory
+
+// Also provides methods to perform CRUD operations on the DB during app session
+// Methods *may* not exhaust all possible CRUD operations - I tried to make methods for pretty much everything though
+// methods are fitted to what the app specifically needs
+
+// **NOTE some tables track weight. this defaults to POUNDS (LBS). 
+// If the user wants to use metric, a flag will be stored in user_settings
+// And values will be converted upon returning from fetch if indicated by useMetric function flag
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +27,8 @@ import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'dart:math'; // For random variations
 import '../other_utilities/day_of_week.dart';
 import 'package:firstapp/other_utilities/time_strings.dart';
+import 'package:firstapp/other_utilities/unit_conversions.dart';
+
 
 // you may notice that I have separate methods to insert exercises, lists of exercises, and same with sets, 
 // when I could just loop inserting a single exercise.
@@ -80,7 +100,7 @@ class DatabaseHelper {
         program_start_date TEXT, -- ISO8601 string (YYYY-MM-DD)
         program_duration_days INTEGER DEFAULT 28, -- Typical 4-week program
         is_mid_workout BOOLEAN DEFAULT 0, -- 0 = false, 1 = true
-        use_metric BOOLEAN DEFAULT 0,
+        use_metric BOOLEAN DEFAULT 0, -- Default to lbs but user can switch, data will always be stored as lbs but will be converted in UI to kgs
         last_workout_id INTEGER, -- For resume functionality
         last_workout_timestamp TEXT, -- When they paused
         rest_timer_seconds INTEGER DEFAULT 90, -- Common default rest time
@@ -88,7 +108,7 @@ class DatabaseHelper {
         enable_haptics BOOLEAN DEFAULT 1,
         auto_rest_timer BOOLEAN DEFAULT 0,
         colour_blind_mode BOOLEAN DEFAULT 0,
-        enable_notifications BOOLEAN DEFAULT 1,
+        enable_notifications BOOLEAN DEFAULT 0,
         time_reminder INTEGER DEFAULT 30,
         is_first_time BOOLEAN DEFAULT 1,
         
@@ -155,7 +175,7 @@ class DatabaseHelper {
         set_upper INTEGER NOT NULL,
         exercise_instance_id INTEGER NOT NULL,
         set_order INTEGER NOT NULL,
-        rpe INTEGER NOT NULL,
+        rpe REAL NOT NULL,
         FOREIGN KEY (exercise_instance_id) REFERENCES exercise_instances (id) ON DELETE CASCADE
       );
     '''
@@ -176,24 +196,34 @@ class DatabaseHelper {
         session_id TEXT NOT NULL,
         date TEXT NOT NULL,
         num_sets INTEGER NOT NULL,
-        reps INTEGER NOT NULL,
-        weight INTEGER NOT NULL,
-        rpe INTEGER NOT NULL,
+        reps REAL NOT NULL,
+        weight REAL NOT NULL,
+        rpe REAL NOT NULL,
         history_note TEXT NOT NULL,
         exercise_id INTEGER NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
 
-      CREATE INDEX idx_set_log_grouping ON set_log(exercise_id, reps, weight, rpe);
-      CREATE INDEX idx_set_log_dates ON set_log(date DESC); 
     '''
     );
+
+    // Commonly used filters when looking for history so I put indices on em
+    // These are the only two indices in the DB
+    await db.execute('''
+      CREATE INDEX idx_set_log_grouping
+        ON set_log(exercise_id, reps, weight, rpe);
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_set_log_dates
+        ON set_log(date DESC);
+    ''');
 
     await db.execute(
       '''
       CREATE TABLE goals(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        goal_weight INTEGER NOT NULL,
+        goal_weight REAL NOT NULL,
         exercise_id INTEGER NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
@@ -308,10 +338,10 @@ class DatabaseHelper {
       ];
       Random random = Random();
 
-      DateTime startDate = DateTime.now().subtract(const Duration(days: 30));
+      DateTime startDate = DateTime.now().subtract(const Duration(days: 500));
       double baseWeight = 180; // Start weight lower to simulate progression
 
-      for (int i = 1; i <= 30; i++) {
+      for (int i = 1; i <= 500; i++) {
         double weight = baseWeight + (i * 2) + random.nextInt(10) - 5; // Linear increase + noise
         int reps = 6 + random.nextInt(3) - 1; // Small variation in reps (5-7)
         int rpe = 7 + random.nextInt(3) - 1; // RPE fluctuates (6-8)
@@ -322,7 +352,7 @@ class DatabaseHelper {
           'date': startDate.add(Duration(days: i)).toIso8601String(), // Dates increase over time
           'num_sets': 1,
           'reps': reps,
-          'weight': weight.round(), // Round to nearest whole number
+          'weight': weight, // Round to nearest whole number
           'rpe': rpe,
           'history_note': "Feeling ${feelings[i % feelings.length]} today.",
           'exercise_id': 70 // Hardcoded to reference "bench press - medium grip"
@@ -347,10 +377,6 @@ class DatabaseHelper {
   // INITIAL LIST POPULATING
   // the following functions run every app opening, retrieve data from database and populates lists in memory
   Future<List<Day>> initializeSplitList(int programId) async {
-    
-    // TODO: allow more than one program
-    // Right now, we are just allowing 1 program, but in the future, 
-    // I want to expand to allow user to have multiple programs saved
 
     // Fetch days from the database
     final List<Map<String, dynamic>> daysData = await fetchDays(programId);
@@ -592,8 +618,6 @@ class DatabaseHelper {
     );
   }
 
-  // lowkey hardcoded everything as I was figuring out how stuff should look
-  // but I should adapt to use theme
   Future<String> getThemeMode() async {
     final settings = await fetchUserSettings();
     return settings?.themeMode ?? 'system';
@@ -610,13 +634,18 @@ class DatabaseHelper {
   // GOAL TABLE CRUD
 
   // Create a goal
-  Future<int> insertGoal(Goal goal) async {
+  Future<int> insertGoal(Goal goal, {useMetric = false}) async {
+    // If given as kg, convert to lbs then store
+    if (useMetric){
+      goal = goal.copyWith(targetWeight: kgToLb(kilograms: goal.targetWeight.toDouble()));
+    }
+
     final db = await database;
     return await db.insert('goals', goal.toMap());
   }
 
   // Get all goals with progress
-  Future<List<Goal>> fetchGoalsWithProgress() async {
+  Future<List<Goal>> fetchGoalsWithProgress({useMetric = false}) async {
     final db = await database;
     
     // Get goals with exercise titles
@@ -638,13 +667,15 @@ class DatabaseHelper {
       // Calculate 1RM
       final currentOneRm = recentSet != null 
           ? _calculateOneRm(recentSet['weight'], recentSet['reps'])
-          : 0;
+          : 0.0;
+
+      
       
       goals.add(Goal(
         id: goalData['id'] as int?,
         exerciseId: exerciseId,
         exerciseTitle: goalData['exercise_title'] as String,
-        targetWeight: goalData['goal_weight'] as int,
+        targetWeight: goalData['goal_weight'] as double,
         currentOneRm: currentOneRm,
       ));
     }
@@ -666,8 +697,8 @@ class DatabaseHelper {
   }
 
   // Calculate 1RM using Epley formula
-  int _calculateOneRm(int weight, int reps) {
-    return (weight * (1 + (reps / 30))).round();
+  double _calculateOneRm(double weight, double reps) {
+    return (weight * (1 + (reps / 30)));
   }
 
   // Update a goal
@@ -933,7 +964,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         FOREIGN KEY (exercise_instance_id) REFERENCES exercise_instances (id) ON DELETE CASCADE
       );
 */
-  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, int? rpe, int? id) async {
+  Future<int> insertPlannedSet(int exerciseId, int numSets, int setLower, int setUpper, int setOrder, double? rpe, int? id) async {
 
     final db = await DatabaseHelper.instance.database;
     return await db.insert('plannedSets', {
@@ -943,7 +974,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       'set_lower': setLower,
       'set_upper': setUpper,
       'set_order': setOrder,
-      'rpe': rpe ?? 0,
+      'rpe': rpe ?? 0.0,
     });
   }
 
@@ -998,9 +1029,11 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  Future<int> insertSetRecord(
-        SetRecord record) async {
+  Future<int> insertSetRecord(SetRecord record, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
+    if (useMetric){
+      record = record.copyWith(weight: kgToLb(kilograms: record.weight));
+    }
     return await db.insert(
       'set_log', 
       record.toMap(),
@@ -1019,7 +1052,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId) async {
+  Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
     
     // First get all sessions for this exercise ordered by date
@@ -1086,9 +1119,9 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       ''', [sessionId, sessionId, exerciseId, sessionId]);
 
       result.add(sets.map((r) => SetRecord(
-        reps: r['reps'] as int,
-        weight: r['weight'] as int,
-        rpe: r['rpe'] as int,
+        reps: r['reps'] as double,
+        weight: useMetric ? lbToKg(pounds: r['weight'] as double): r['weight'] as double,
+        rpe: r['rpe'] as double,
         numSets: r['num_sets'] as int,
         sessionID: r['session_id'] as String,
         exerciseID: r['exercise_id'] as int,
@@ -1102,7 +1135,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   }
 
   // this is the same as above, but is used for only one session past history for during workout quick check.
-  Future<List<SetRecord>> getPreviousSessionSets(int exerciseId, String currentSessionID) async {
+  Future<List<SetRecord>> getPreviousSessionSets(int exerciseId, String currentSessionID, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
 
     final results = await db.rawQuery('''
@@ -1158,9 +1191,9 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     ''', [currentSessionID, exerciseId, exerciseId]);
 
     return results.map((r) => SetRecord(
-      reps: r['reps'] as int,
-      weight: r['weight'] as int,
-      rpe: r['rpe'] as int,
+      reps: r['reps'] as double,
+      weight: useMetric ? lbToKg(pounds: r['weight'] as double): r['weight'] as double,
+      rpe: r['rpe'] as double,
       numSets: r['num_sets'] as int,
       sessionID: r['session_id'] as String,
       exerciseID: r['exercise_id'] as int,

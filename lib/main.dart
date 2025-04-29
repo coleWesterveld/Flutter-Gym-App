@@ -30,8 +30,6 @@ import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'widgets/calendar_bottom_sheet.dart';
 
 import 'package:firstapp/widgets/done_button.dart';
-import 'package:firstapp/app_tutorial/tutorial_widget.dart';
-import 'package:firstapp/app_tutorial/tutorial_widget.dart';
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:

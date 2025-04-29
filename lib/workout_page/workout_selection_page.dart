@@ -1,5 +1,8 @@
-// workout page
-//not updated
+// lowk gettin expansiontile errors </3
+// gotta change how I manage em
+
+// workout selection page
+
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
@@ -56,7 +59,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         //   }
         // }
         if (!_expansionControllers[index].isExpanded) {
-             print("Expanding tile programmatically: $index");
+             //print("Expanding tile programmatically: $index");
             _expansionControllers[index].expand();
             // Update internal state if you rely on _expansionStates
              if (index < _expansionStates.length) {
@@ -64,7 +67,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
              }
              setState(() {}); // Trigger rebuild if needed
         } else {
-           print("Tile already expanded: $index");
+           //print("Tile already expanded: $index");
         }
     } else {
        print("Error expanding tile: index $index out of bounds or not mounted.");

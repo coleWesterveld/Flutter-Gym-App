@@ -75,7 +75,7 @@ class _DisplaySetState extends State<DisplaySet> {
       index3: widget.setIndex,
       data: profile.sets[widget.index][widget.exerciseIndex][widget.setIndex].copyWith(
         newNumSets: int.tryParse(_setsController.text) ?? 0,
-        newRpe: int.tryParse(_rpeController.text) ?? 0,
+        newRpe: double.tryParse(_rpeController.text) ?? 0,
         newSetLower: int.tryParse(_repsLowerController.text) ?? 0,
         newSetUpper: int.tryParse(_repsUpperController.text) ?? 0,
       ),

@@ -62,8 +62,8 @@ class Profile extends ChangeNotifier {
 
   DatabaseHelper dbHelper;
 
-  void logSet(SetRecord record){
-    dbHelper.insertSetRecord(record);
+  void logSet(SetRecord record, {useMetric = false}){
+    dbHelper.insertSetRecord(record, useMetric: useMetric);
   }
 
   //defaults to monday of this week

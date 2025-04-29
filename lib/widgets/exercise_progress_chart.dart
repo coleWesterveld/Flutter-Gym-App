@@ -1,9 +1,12 @@
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
 import 'package:firstapp/other_utilities/timespan.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
+import 'package:provider/provider.dart';
+import 'package:firstapp/other_utilities/unit_conversions.dart';
 
 
 class ExerciseProgressChart extends StatefulWidget {
@@ -11,6 +14,7 @@ class ExerciseProgressChart extends StatefulWidget {
   final ThemeData theme;
   final Timespan selectedTimespan;
   final ValueChanged<Timespan>? onTimespanChanged;
+  final bool useMetric;
 
   // For long timespans we will drop some data to make the chart less busy
   // I wont do this by default but will give the option to
@@ -24,7 +28,8 @@ class ExerciseProgressChart extends StatefulWidget {
     required this.theme,
     required this.selectedTimespan,
     this.onTimespanChanged,
-    this.decimationFactor
+    this.decimationFactor,
+    this.useMetric = false
   });
 
   @override
@@ -78,12 +83,23 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
     for (int i = filteredSets.length - 1; i >= 0; i--) {
       final record = filteredSets[i];
       DateTime date = DateTime.parse(record['date']);
-      double weight = record['weight'].toDouble();
-      int reps = record['reps'] + (10-record['rpe']);
-      
-      // Epley formula for estimated 1RM
-      int e1RM = (weight * (1 + reps / 30)).round();
+      double weight = widget.useMetric ? lbToKg(pounds: record['weight'] as double) : record['weight'] as double;
 
+      // calculated maximum estimated reps to calculate 1RM
+      // ie. say record has 3 reps at RPE 8
+      // we assume RPE 8 ~ 2 RIR and so user could have done 3+2 reps
+      // so we use 5 reps in determining 1RM
+      double reps = (record['reps'] as double) + (10-(record['rpe'] as double));
+      double e1RM = 0;
+
+      if (reps == 1){
+        e1RM = weight;
+      } else{
+        // Epley formula for estimated 1RM - works for 2+ reps
+        // note that accuracy in the estimate for this method (and all methods, really) falls off after 10 reps
+        e1RM = (weight * (1 + reps / 30));
+      }
+      
       points.add(FlSpot((filteredSets.length - 1 - i).toDouble(), e1RM.toDouble()));
       dates.add(DateFormat('MMM d').format(date)); // Format date for X-axis
       years.add(DateFormat('yyyy').format(date)); // Store the year
@@ -127,6 +143,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
 
   @override
   Widget build(BuildContext context) {
+    //final settings = context.read<SettingsModel>();
     //debugPrint("datapoints.length: ${_dataPoints}");
     return _dataPoints.isEmpty
         ? const Center(child: Padding(
@@ -147,7 +164,11 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                 SizedBox(
                   height: 300,
                   child: LineChart(
+                  
+
                     LineChartData(
+
+
                       titlesData: FlTitlesData(
                         rightTitles: const AxisTitles(
                           
@@ -161,17 +182,17 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                           axisNameSize: 22, // Adjust spacing for clarity
                         ),
 
-                        leftTitles: const AxisTitles(
+                        leftTitles: AxisTitles(
                           
-                          sideTitles: SideTitles(
+                          sideTitles: const SideTitles(
                             minIncluded: false,
                             maxIncluded: false,
                             showTitles: true,
                             reservedSize: 40, // Space for label
                           ),
                           axisNameWidget: Text(
-                            'Predicted 1RM (lbs)',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            'Predicted 1RM ${widget.useMetric ? '(kg)' : '(lb)'}',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           axisNameSize: 22, // Adjust spacing for clarity
                         ),
@@ -206,6 +227,14 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
                             int index = value.toInt();
+                            // prevent divide by zero for less than 5 records
+                            if (_dataPoints.length < 5){
+                              return SideTitleWidget(
+                                meta: meta,
+                                child: Text(_dates[index], style: const TextStyle(fontSize: 14)),
+                              );
+                            }
+
                             if (index % ((_dataPoints.length / 5).floor()) == 0 && index >= 0 && index < _dates.length) { 
                                //debugPrint("Runnnnn");
                               return SideTitleWidget(
@@ -226,7 +255,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                               final index = spot.x.toInt();
                               if (index >= 0 && index < _dates.length) {
                                 return LineTooltipItem(
-                                  '${spot.y.toStringAsFixed(1)} lbs\n${(_dates[index])} ${_years[index]}',
+                                  '${spot.y.toStringAsFixed(1)} ${widget.useMetric ? 'kg' : 'lb'}\n${(_dates[index])} ${_years[index]}',
                                   const TextStyle(color: Colors.white),
                                 );
                               }
@@ -240,7 +269,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                       lineBarsData: [
                         LineChartBarData(
                           spots: _dataPoints,
-                          isCurved: true,
+                          isCurved: false,
                           color: Colors.blue,
                           barWidth: 4,
                           isStrokeCapRound: true,

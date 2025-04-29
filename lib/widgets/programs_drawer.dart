@@ -120,7 +120,7 @@ class ProgramsDrawer extends StatelessWidget {
                   ),
                 
                   onTap: () {
-                    _showCreateProgramDialog(context);
+                    showCreateProgramDialog(context);
                   },
                 ),
               ],
@@ -176,7 +176,7 @@ class ProgramsDrawer extends StatelessWidget {
     );
   }
 
-  void _showCreateProgramDialog(BuildContext context) {
+  void showCreateProgramDialog(BuildContext context) {
     final programNameController = TextEditingController();
     
     showDialog(
@@ -186,6 +186,7 @@ class ProgramsDrawer extends StatelessWidget {
 
         content: TextField(
           controller: programNameController,
+          autofocus: true,
           decoration: const InputDecoration(hintText: 'Enter program name'),
         ),
 

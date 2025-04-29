@@ -14,7 +14,7 @@ class SettingsModel extends ChangeNotifier {
     themeMode: 'system',
     useMetric: false,
     colourBlindMode: false,
-    enableNotifications: true,
+    enableNotifications: false,
     timeReminder: 30,
     isFirstTime: true,
   );

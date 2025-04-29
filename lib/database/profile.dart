@@ -9,6 +9,8 @@
 // at some point, should probably make  exercises -> many setClusterHistory -> many Individual sets
 // to group by date, session, and have one note to define everything
 
+// TODO: a lot of stuff should allow double, not just int.
+
 import 'package:flutter/material.dart';
 import 'package:firstapp/other_utilities/time_strings.dart';
 
@@ -336,7 +338,7 @@ class PlannedSet {
   final int numSets;
   final int setLower;
   final int? setUpper;
-  final int? rpe;
+  final double? rpe;
   final int setOrder;
   List<bool> hasBeenLogged;
 
@@ -388,7 +390,7 @@ class PlannedSet {
     int? newSetUpper, 
     int? newSetLower, 
     int? newSetOrder, 
-    int? newRpe,
+    double? newRpe,
     List<bool>? newHasBeenLogged,
   }) {
     return PlannedSet(
@@ -414,9 +416,9 @@ class SetRecord {
   final String date;
 
   final int numSets;
-  final int reps;
-  final int weight;
-  final int rpe;
+  final double reps;
+  final double weight;
+  final double rpe;
   final String? historyNote;
 
   SetRecord({
@@ -473,9 +475,9 @@ class SetRecord {
     required DateTime date,
 
     required int numSets,
-    required int reps,
-    required int weight,
-    required int rpe,
+    required double reps,
+    required double weight,
+    required double rpe,
     required String sessionID,
     String? historyNote,
   }) {
@@ -498,14 +500,39 @@ class SetRecord {
   String toString() {
     return 'HistorySet{date: $date, id: $recordID, numSets: $numSets, reps: $reps, rpe: $rpe, weight: $weight, note: $historyNote, excID: $exerciseID}';
   }
+
+    /// Returns a new [SetRecord] with any non-null fields replaced by the provided values.
+  SetRecord copyWith({
+    int? recordID,
+    int? exerciseID,
+    String? sessionID,
+    String? date,
+    int? numSets,
+    double? reps,
+    double? weight,
+    double? rpe,
+    String? historyNote,
+  }) {
+    return SetRecord(
+      recordID:    recordID    ?? this.recordID,
+      exerciseID:  exerciseID  ?? this.exerciseID,
+      sessionID:   sessionID   ?? this.sessionID,
+      date:        date        ?? this.date,
+      numSets:     numSets     ?? this.numSets,
+      reps:        reps        ?? this.reps,
+      weight:      weight      ?? this.weight,
+      rpe:         rpe         ?? this.rpe,
+      historyNote: historyNote ?? this.historyNote,
+    );
+  }
 }
 
 class Goal {
   final int? id; // Nullable for new goals not yet saved
   final int exerciseId;
   final String exerciseTitle;
-  final int targetWeight;
-  final int? currentOneRm; // Nullable (calculated when fetched)
+  final double targetWeight;
+  final double? currentOneRm; // Nullable (calculated when fetched)
 
   Goal({
     this.id,
@@ -546,8 +573,8 @@ class Goal {
     int? id,
     int? exerciseId,
     String? exerciseTitle,
-    int? targetWeight,
-    int? currentOneRm,
+    double? targetWeight,
+    double? currentOneRm,
   }) {
     return Goal(
       id: id ?? this.id,

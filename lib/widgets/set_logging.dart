@@ -150,11 +150,12 @@ class GymSetRowState extends State<GymSetRow> {
                             .exercises[context.read<ActiveWorkoutProvider>().activeDayIndex!][widget.exerciseIndex].exerciseID,
                           date: DateTime.now(),
                           numSets: 1,
-                          reps: int.parse(widget.repsController.text),
-                          weight: int.parse(widget.weightController.text),
-                          rpe: int.parse(widget.rpeController.text),
+                          reps: double.parse(widget.repsController.text),
+                          weight: double.parse(widget.weightController.text),
+                          rpe: double.parse(widget.rpeController.text),
                           historyNote: context.read<ActiveWorkoutProvider>().workoutNotesTEC[widget.exerciseIndex].text,
                         ),
+                        useMetric: context.read<SettingsModel>().useMetric,
                       );
                       context.read<ActiveWorkoutProvider>().restStopwatch.reset();
                     }

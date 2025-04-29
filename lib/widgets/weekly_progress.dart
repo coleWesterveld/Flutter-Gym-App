@@ -1,3 +1,6 @@
+import 'package:firstapp/other_utilities/format_reps.dart';
+import 'package:firstapp/other_utilities/unit_conversions.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -27,6 +30,7 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
   Widget build(BuildContext context) {
     // Assuming your Profile provider contains a split (list of Day) and a corresponding list of exercises per day.
     final profile = context.read<Profile>();
+    final settings = context.read<SettingsModel>();
     final days = profile.split;
     final exercisesPerDay = profile.exercises;
 
@@ -206,13 +210,13 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
   }
 
   /// Returns a widget representing the change as an arrow icon and text.
-  Widget buildTick(int diff, String unit) {
+  Widget buildTick(double diff, String unit) {
     if (diff > 0) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.arrow_drop_up, color: Colors.green),
-          Text("$diff $unit", style: const TextStyle(fontSize: 14)),
+          Text("${formatWeight(diff)} $unit", style: const TextStyle(fontSize: 14)),
         ],
       );
     } else if (diff < 0) {
@@ -220,7 +224,7 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.arrow_drop_down, color: Colors.red),
-          Text("${diff.abs()} $unit", style: const TextStyle(fontSize: 14)),
+          Text("${formatWeight(diff.abs())} $unit", style: const TextStyle(fontSize: 14)),
         ],
       );
     }
@@ -229,6 +233,7 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.read<SettingsModel>();
     return GestureDetector(
       onTap: (){
         widget.onSelected(widget.exercise);
@@ -253,21 +258,25 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
             final recent = snapshot.data!['recent'];
             final previous = snapshot.data!['previous'];
       
-            int recentWeight = recent['weight'];
-            int recentReps = recent['reps'];
+            double recentWeight = recent['weight'];
+            double recentReps = recent['reps'];
       
-            int diffWeight = 0;
-            int diffReps = 0;
+            double diffWeight = 0;
+            double diffReps = 0;
             if (previous != null) {
-              int previousWeight = previous['weight'];
-              int previousReps = previous['reps'];
+              double previousWeight = previous['weight'];
+              double previousReps = previous['reps'];
               diffWeight = recentWeight - previousWeight;
+              if (settings.useMetric){
+                diffWeight = lbToKg(pounds: diffWeight);
+              }
+
               diffReps = recentReps - previousReps;
             }
       
             List<Widget> changes = [];
             if (diffWeight != 0) {
-              changes.add(buildTick(diffWeight, "lbs"));
+              changes.add(buildTick(diffWeight, settings.useMetric ? 'kg' : 'lb'));
             }
             if (diffReps != 0) {
               changes.add(buildTick(diffReps, "rep"));

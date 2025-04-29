@@ -30,34 +30,8 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-            // Units (kg/lbs)
-            ListTile(
-              title: const Text('Measurement Units'),
-              trailing: DropdownButton<bool>(
-                value: settings.useMetric,
-                onChanged: (bool? newValue) {
-                  if (newValue != null && newValue != settings.useMetric) {
-                    settings.toggleUnits();
-                  }
-                },
-                items: const [
-                  DropdownMenuItem(
-                    value: false,
-                    child: Text("Pounds/Imperial (lb)"),
-                  ),
-                  DropdownMenuItem(
-                    value: true,
-                    child: Text("Kilograms/Metric (kg)"),
-                  )
-                ]
-              ),
-            ),
 
-            const Divider(
-              thickness: 0.5,
-            ),        
-            // Dark Theme
-            ListTile(
+             ListTile(
               title: const Text('Theme'),
               trailing: DropdownButton<String>(
                 value: settings.themeMode,
@@ -86,6 +60,34 @@ class SettingsPage extends StatelessWidget {
             const Divider(
               thickness: 0.5,
             ),
+            // Units (kg/lbs)
+            ListTile(
+              title: const Text('Measurement Units'),
+              trailing: DropdownButton<bool>(
+                value: settings.useMetric,
+                onChanged: (bool? newValue) {
+                  if (newValue != null && newValue != settings.useMetric) {
+                    settings.toggleUnits();
+                  }
+                },
+                items: const [
+                  DropdownMenuItem(
+                    value: false,
+                    child: Text("Pounds/Imperial (lb)"),
+                  ),
+                  DropdownMenuItem(
+                    value: true,
+                    child: Text("Kilograms/Metric (kg)"),
+                  )
+                ]
+              ),
+            ),
+
+            const Divider(
+              thickness: 0.5,
+            ),        
+            // Dark Theme
+           
         
             // // Sounds - Theres currently no sounds in the app
             // ListTile(

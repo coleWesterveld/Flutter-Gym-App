@@ -37,7 +37,7 @@ Add a "Random Stat of the Day" widget that shows:
 "Your total volume = 17 Toyota Corollas"
 */
 
-
+// TODO: allow back button in appbar when chart displaying 
 
 // TODO: bigger text maybe? or at least, option to scale it? I need old people for testing
 
@@ -66,6 +66,7 @@ import 'package:firstapp/widgets/circular_progress.dart';
 import 'package:firstapp/widgets/goal_progress.dart';
 import 'package:firstapp/other_utilities/timespan.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -120,11 +121,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // Load existing goals from the database
-  Future<void> _fetchGoals() async {
+  Future<void> _fetchGoals({useMetric = false}) async {
     setState(() => _isLoadingGoals = true);
 
     final dbHelper = DatabaseHelper.instance;
-    _goals = await dbHelper.fetchGoalsWithProgress();
+    _goals = await dbHelper.fetchGoalsWithProgress(useMetric: useMetric);
 
     setState(() => _isLoadingGoals = false);
     
@@ -192,11 +193,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     final dbHelper = DatabaseHelper.instance;
     final exerciseName = exercise['exercise_title'];
 
-    final weight = await showDialog<int>(
+    final weight = await showDialog<double>(
       context: context,
       builder: (context) => TargetWeightDialog(
         exerciseName: exerciseName,
         theme: widget.theme,
+
       ),
     );
 
@@ -224,7 +226,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // calculates one rep max based off of last logged set from the database
-  Future<int> _calculateCurrentOneRm(int exerciseId) async {
+  Future<double> _calculateCurrentOneRm(int exerciseId) async {
 
     final db = await DatabaseHelper.instance.database;
     final recentSet = await db.query(
@@ -238,11 +240,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     if (recentSet.isEmpty) return 0;
     
     
-    final weight = recentSet.first['weight'] as int;
-    final reps = (recentSet.first['reps'] as int);
+    final weight = recentSet.first['weight'] as double;
+    final reps = (recentSet.first['reps'] as double);
 
     // Formula to estimate 1 rep max
-    return (weight * (1 + reps / 30)).round();
+    return (weight * (1 + reps / 30));
   }
 
   // Build the exercise history view.
@@ -272,6 +274,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   exercise: _exercise!,
                   theme: widget.theme,
                   selectedTimespan: _selectedTimespan,
+                  useMetric: context.read<SettingsModel>().useMetric,
 
                   // auto calculate based on number of records
                   decimationFactor: -1,
@@ -400,7 +403,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     final dbHelper = DatabaseHelper.instance;
     final weightController = TextEditingController(text: goal.targetWeight.toString());
 
-    final newWeight = await showDialog<int>(
+    final newWeight = await showDialog<double>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Edit Target for ${goal.exerciseTitle}'),
@@ -421,7 +424,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           TextButton(
             onPressed: () {
               if (weightController.text.isNotEmpty) {
-                Navigator.pop(context, int.parse(weightController.text));
+                Navigator.pop(context, double.parse(weightController.text));
               }
             },
             child: const Text('Save'),
@@ -431,9 +434,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
 
     if (newWeight != null) {
+      
       final updatedGoal = goal.copyWith(targetWeight: newWeight);
       await dbHelper.updateGoal(updatedGoal);
-      await _fetchGoals();
+      if (mounted){
+        await _fetchGoals(useMetric: context.read<SettingsModel>().useMetric);
+      }
     }
   }
 
