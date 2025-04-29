@@ -1,3 +1,4 @@
+import 'package:firstapp/other_utilities/decimal_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -123,7 +124,7 @@ class GymSetRowState extends State<GymSetRow> {
                   style: TextStyle(fontSize: 16),
                 ),
               ),
-              _buildTextField(widget.rpeController, rpeFocus, "", 30, _rpeError),
+              _buildTextField(widget.rpeController, rpeFocus, "", 35, _rpeError),
               _buildTextField(widget.weightController, weightFocus, "", 50, _weightError),
               _buildTextField(widget.repsController, repsFocus, "", 40, _repsError),
               Padding(
@@ -202,7 +203,10 @@ class GymSetRowState extends State<GymSetRow> {
         controller: controller,
         focusNode: focusNode,
         keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        inputFormatters: [
+          // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
+          TwoDecimalTextInputFormatter()
+        ],
         decoration: InputDecoration(
           filled: true,
           fillColor: hasError ? Colors.red.withAlpha(64) : null,

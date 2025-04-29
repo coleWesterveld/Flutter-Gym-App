@@ -1,4 +1,5 @@
 import 'package:firstapp/notifications/notification_service.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -212,6 +213,49 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (_) => settings.toggleColorBlindMode(),
               ),
             ),
+
+            const Divider(
+              thickness: 0.5,
+            ),
+              // Color Blind Mode -- Yet to Be implemented
+            ElevatedButton(
+              onPressed: (){
+                showDialog(
+                  context: context, 
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text("Do an App Walkthrough?", textAlign: TextAlign.center,),
+                      content: const Text(
+                        "This is the same walkthrough you did when you first downloaded the app.",
+                        textAlign: TextAlign.center,
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () =>Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+
+                          TextButton(
+                            onPressed: () async {
+                              // 1. Set the flag in UiStateProvider
+                              context.read<UiStateProvider>().requestTutorialReplay();
+
+                              // 2. Pop the dialog
+                              Navigator.pop(context); // Close the AlertDialog
+
+                              // 3. Pop the SettingsPage to return to the previous screen (MainScaffold)
+                              Navigator.pop(context); // Close the SettingsPage
+                            },
+                            child: const Text('Continue'),
+                          ),
+                      ],
+                      //socks
+                    );
+                  },
+                );
+              }, 
+              child: const Text("App Walkthrough")
+            )
             
           ],
         ),

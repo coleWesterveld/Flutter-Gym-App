@@ -59,6 +59,20 @@ class UiStateProvider extends ChangeNotifier {
   bool get isEditing => _isEditing;
   String? get customAppBarTitle => _customAppBarTitle;
 
+  // In UiStateProvider class
+  bool _replayTutorialRequested = false;
+  bool get replayTutorialRequested => _replayTutorialRequested;
+
+  void requestTutorialReplay() {
+    _replayTutorialRequested = true;
+    notifyListeners();
+  }
+
+  void consumeTutorialReplayRequest() {
+    _replayTutorialRequested = false;
+    // Optionally notifyListeners(); if needed elsewhere
+  }
+
   set customAppBarTitle (String? customAppBarTitle){
     _customAppBarTitle = customAppBarTitle;
     notifyListeners();

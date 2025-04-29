@@ -215,6 +215,28 @@ class MainScaffoldState extends State<MainScaffold> {
 
     _checkAndOpenDrawer();
 
+    // the following logic allows user to redo walkthrough from settings
+    final uiState = context.watch<UiStateProvider>(); // Use watch or read as appropriate
+    if (uiState.replayTutorialRequested) {
+      // Use addPostFrameCallback to ensure the build is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { // Ensure the widget is still in the tree
+          try {
+            // Get the TutorialManager
+            final manager = context.read<TutorialManager>();
+            // Start the tutorial sequence using the showcaseContext passed to MainScaffold
+            manager.startTutorialSequence(widget.showcaseContext);
+            // Reset the flag in UiStateProvider
+            context.read<UiStateProvider>().consumeTutorialReplayRequest();
+          } catch (e) {
+            print("Error restarting tutorial: $e");
+            // Optionally reset the flag even if there's an error
+            context.read<UiStateProvider>().consumeTutorialReplayRequest();
+          }
+        }
+      });
+    }
+
   }
   void _checkAndOpenDrawer() {
   final uiState = context.read<UiStateProvider>(); // Use read if not watching in build

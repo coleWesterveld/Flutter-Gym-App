@@ -50,6 +50,14 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> startTutorial({dbWrite = true}) async {
+    _settings = _settings.copyWith(
+      isFirstTime: false,
+    );
+    if (dbWrite) await dbHelper.updateUserSettings(_settings);
+    notifyListeners();
+  }
+
   // Toggle methods
   Future<void> toggleColorBlindMode() async {
     _settings = _settings.copyWith(
