@@ -72,9 +72,10 @@ class _MainPage extends State<GymApp> {
     //});
   }
 
-
   final dbHelper = DatabaseHelper.instance;
-
+  final GlobalKey<MainScaffoldState> mainScaffoldKey = GlobalKey<MainScaffoldState>();
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State
+  final GlobalKey<ProgramPageState> programPageKey = GlobalKey<ProgramPageState>(); // Key for Workout Page State
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +94,14 @@ class _MainPage extends State<GymApp> {
         ChangeNotifierProvider(
           create: (context) => Profile(
             dbHelper: dbHelper,
+          ),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => TutorialManager(
+            mainScaffoldKey: mainScaffoldKey,
+            workoutPageKey: workoutPageKey,
+            programPageKey: programPageKey,
           ),
         ),
 
@@ -145,12 +154,20 @@ class _MainPage extends State<GymApp> {
 
           Widget initialHome;
           if (settings.isFirstTime) {
-            initialHome = const TutorialWelcomePage();
+            initialHome = TutorialWelcomePage(
+              mainScaffoldKey: mainScaffoldKey,
+              workoutPageKey: workoutPageKey,
+              programPageKey: programPageKey,
+            );
           } else {
             // If not first time, wrap MainScaffold in ShowCaseWidget
             // only if you want to allow replaying the tutorial later.
             // Otherwise, just show MainScaffoldWrapper directly.
-             initialHome = MainScaffoldWrapper(); // Use the wrapper directly
+             initialHome = MainScaffoldWrapper(
+              mainScaffoldKey: mainScaffoldKey,
+              workoutPageKey: workoutPageKey,
+              programPageKey: programPageKey,
+             ); // Use the wrapper directly
             // initialHome = ShowCaseWidget(
             //    builder: Builder(builder: (context) => MainScaffoldWrapper()),
             // );
@@ -186,15 +203,15 @@ class _MainPage extends State<GymApp> {
 class MainScaffold extends StatefulWidget {
   //Function updater;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
-  final GlobalKey<WorkoutSelectionPageState>? workoutPageKey; // Accept the key
-  final GlobalKey<ProgramPageState>? programPageKey; // Accept the key
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey; // Accept the key
+  final GlobalKey<ProgramPageState> programPageKey; // Accept the key
 
   final BuildContext showcaseContext; // Receive the showcase context
 
 
   MainScaffold({
     super.key, 
-    this.workoutPageKey, 
+    required this.workoutPageKey, 
     required this.showcaseContext,
     required this.programPageKey,
 

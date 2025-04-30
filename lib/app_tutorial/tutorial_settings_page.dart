@@ -11,7 +11,17 @@ import 'package:firstapp/notifications/notification_service.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';
 
 class TutorialSettingsPage extends StatelessWidget {
-  const TutorialSettingsPage({super.key});
+  
+  final GlobalKey<MainScaffoldState> mainScaffoldKey;
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey;
+  final GlobalKey<ProgramPageState> programPageKey;
+  
+  const TutorialSettingsPage({
+    super.key,
+    required this.mainScaffoldKey,
+    required this.programPageKey,
+    required this.workoutPageKey,
+  });
 
 
   @override
@@ -252,7 +262,11 @@ class TutorialSettingsPage extends StatelessWidget {
                       MaterialPageRoute(
                         // Pass 'startTutorial: true' as an argument
                         settings: const RouteSettings(arguments: {'startTutorial': true}),
-                        builder: (context) => MainScaffoldWrapper(),
+                        builder: (context) => MainScaffoldWrapper(
+                          mainScaffoldKey: mainScaffoldKey,
+                          workoutPageKey: workoutPageKey,
+                          programPageKey: programPageKey,
+                        ),
                             
                       ),
                                       );
@@ -286,12 +300,16 @@ class TutorialSettingsPage extends StatelessWidget {
 
 // Helper Wrapper to provide TutorialManager
 class MainScaffoldWrapper extends StatelessWidget {
-  final GlobalKey<MainScaffoldState> mainScaffoldKey = GlobalKey<MainScaffoldState>();
-  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State
-  final GlobalKey<ProgramPageState> programPageKey = GlobalKey<ProgramPageState>(); // Key for Workout Page State
+  final GlobalKey<MainScaffoldState> mainScaffoldKey;
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey; // Key to access workout page state
+  final GlobalKey<ProgramPageState> programPageKey; // Key to access workout page state
 
-
-  MainScaffoldWrapper({super.key});
+  const MainScaffoldWrapper({
+    super.key,
+    required this.mainScaffoldKey,
+    required this.workoutPageKey, // Key to access workout page state
+    required this.programPageKey, // Key to access workout page state
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -305,20 +323,12 @@ class MainScaffoldWrapper extends StatelessWidget {
       disableBarrierInteraction: true,
       builder: (_) =>Builder( // Use Builder here to get a context descendant of ShowCaseWidget
         builder: (showcaseContext) { // Use this context for ShowCaseWidget.of()
-           return ChangeNotifierProvider(
-              create: (_) => TutorialManager(
-                mainScaffoldKey: mainScaffoldKey,
-                workoutPageKey: workoutPageKey,
-                programPageKey: programPageKey
-              ),
-              // Dont allow interaction during tutorial
-              child: MainScaffold(
-                key: mainScaffoldKey,
-                workoutPageKey: workoutPageKey,
-                programPageKey: programPageKey,
-                showcaseContext: showcaseContext, // Pass the showcase context
-              ),
-            );
+           return MainScaffold(
+             key: mainScaffoldKey,
+             workoutPageKey: workoutPageKey,
+             programPageKey: programPageKey,
+             showcaseContext: showcaseContext, // Pass the showcase context
+           );
         },
       ),
       //enableAutoPlayLock: true,

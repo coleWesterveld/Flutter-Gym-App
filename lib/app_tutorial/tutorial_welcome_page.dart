@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'tutorial_settings_page.dart'; // Import the next tutorial page
+import 'package:firstapp/main.dart';
+import 'package:firstapp/workout_page/workout_selection_page.dart';
+import 'package:firstapp/program_page/program_page.dart';
 // Assuming app_tutorial_keys.dart is still needed for other parts, keep import if necessary
 
 class TutorialWelcomePage extends StatefulWidget {
-  const TutorialWelcomePage({super.key});
+  final GlobalKey<MainScaffoldState> mainScaffoldKey;
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey;
+  final GlobalKey<ProgramPageState> programPageKey;
+
+
+  const TutorialWelcomePage({
+    super.key,
+    required this.mainScaffoldKey,
+    required this.programPageKey,
+    required this.workoutPageKey,
+  });
 
   @override
   _TutorialWelcomePageState createState() => _TutorialWelcomePageState();
@@ -91,7 +104,11 @@ class _TutorialWelcomePageState extends State<TutorialWelcomePage> with SingleTi
                     onPressed: () {
                       Navigator.pushReplacement( // Replace so user can't go back
                         context,
-                        MaterialPageRoute(builder: (context) => const TutorialSettingsPage()),
+                        MaterialPageRoute(builder: (context) => TutorialSettingsPage(
+                          mainScaffoldKey: widget.mainScaffoldKey,
+                          programPageKey: widget.programPageKey,
+                          workoutPageKey: widget.workoutPageKey,
+                        )),
                       );
                     },
                     style: ElevatedButton.styleFrom(

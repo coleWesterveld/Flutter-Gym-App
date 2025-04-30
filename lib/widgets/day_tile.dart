@@ -36,6 +36,7 @@ class _DayTileState extends State<DayTile> {
   @override
   Widget build(BuildContext context) {
     final manager = context.watch<TutorialManager>();
+    final settings = context.watch<SettingsModel>();
     final theme = Theme.of(context);
     final uiState = context.watch<UiStateProvider>();
     //debugPrint("${context.read<SettingsModel>().isFirstTime}");
@@ -63,7 +64,7 @@ class _DayTileState extends State<DayTile> {
                   
           // Expandable to see exercises and sets for that day
           child: ExpansionTile(
-            controller: (widget.index == 0) ? manager.exerciseDemoExpandController : null,
+            controller: (widget.index == 0 && settings.isFirstTime) ? manager.exerciseDemoExpandController : null,
             
 
             collapsedShape: RoundedRectangleBorder(
