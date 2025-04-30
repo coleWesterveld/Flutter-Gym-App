@@ -23,7 +23,7 @@ import 'package:firstapp/providers_and_settings/program_provider.dart';
 class ActiveWorkoutProvider extends ChangeNotifier {
 
   // We need ActiveWorkoutProvider to have access to program providers members
-  final Profile programProvider;
+  Profile programProvider;
 
   // I am trying to also make TEC's for the workout page
   List<List<List<TextEditingController>>> workoutRpeTEC;
@@ -69,6 +69,61 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     workoutRpeTEC.clear();
     workoutWeightTEC.clear();
     notifyListeners();
+  }
+
+  // Call this from `update:` or a listener:
+  void syncControllersForDay(int dayIndex) {
+    final exercisesForDay = programProvider.exercises[dayIndex];
+    final plannedSetsForDay = programProvider.sets[dayIndex];
+    final int numExercises = exercisesForDay.length;
+
+    // 1) Outer-list: one sublist per exercise
+    _ensureLength(workoutRpeTEC,    numExercises, () => <List<TextEditingController>>[]);
+    _ensureLength(workoutWeightTEC, numExercises, () => <List<TextEditingController>>[]);
+    _ensureLength(workoutRepsTEC,   numExercises, () => <List<TextEditingController>>[]);
+    _ensureLength(workoutExpansionControllers, numExercises, () => ExpansionTileController());
+    //_ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
+
+
+    // 2) Middle-list: one sublist per PlannedSet in each exercise
+    for (int i = 0; i < numExercises; i++) {
+      final setsForExercise = plannedSetsForDay[i];
+      final int numSetEntries = setsForExercise.length;
+
+      _ensureLength(workoutRpeTEC[i],    numSetEntries, () => <TextEditingController>[]);
+      _ensureLength(workoutWeightTEC[i], numSetEntries, () => <TextEditingController>[]);
+      _ensureLength(workoutRepsTEC[i],   numSetEntries, () => <TextEditingController>[]);
+    }
+
+    // 3) Inner-list: one controller _per_ plannedSet.numSets
+    for (int i = 0; i < numExercises; i++) {
+      for (int j = 0; j < plannedSetsForDay[i].length; j++) {
+        final int slots = plannedSetsForDay[i][j].numSets;
+
+        _ensureLength(workoutRpeTEC[i][j],    slots, () => TextEditingController());
+        _ensureLength(workoutWeightTEC[i][j], slots, () => TextEditingController());
+        _ensureLength(workoutRepsTEC[i][j],   slots, () => TextEditingController());
+      }
+    }
+
+    // 4) Notes and expansion controllers—one per exercise
+    _ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
+  }
+
+  // Utility to grow/shrink a List<T>, disposing controllers if needed
+  void _ensureLength<T>(List<T> list, int targetLen, T Function() make) {
+    // grow
+    while (list.length < targetLen) {
+      list.add(make());
+    }
+    // shrink
+    while (list.length > targetLen) {
+      final removed = list.removeLast();
+      if (removed is TextEditingController)    removed.dispose();
+      //if (removed is ExpansionTileController)  removed.dispose();
+      // if it’s a List<…> you’ll eventually hit inner controllers which
+      // will be disposed by their own ensureLength calls
+    }
   }
 
   void togglePause() {

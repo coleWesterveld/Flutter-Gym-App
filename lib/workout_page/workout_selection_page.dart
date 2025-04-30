@@ -1,7 +1,8 @@
-// lowk gettin expansiontile errors </3
-// gotta change how I manage em
-
 // workout selection page
+
+// TODO: allow user to adjust program from within workout - just once or permanently
+// Im thinkin we add them to the program just as we normally would, but we give em a flag 'temporairy' and then after finish is pressed we delete any temp.
+// also if theyre temporary we prolly dont want to display them on the program page since theyre not so official ykyk
 
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
@@ -17,6 +18,7 @@ import 'workout_page.dart';
 import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
 import '../providers_and_settings/settings_page.dart';
+import 'package:firstapp/other_utilities/events.dart';
 
 class WorkoutSelectionPage extends StatefulWidget {
   final ThemeData theme;
@@ -169,15 +171,14 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   DateTime startDay = DateTime(2024, 8, 10);
 
   int toExpand() {
-    DateTime origin = DateTime(2024, 1, 7);
-    int index =
-        daysBetween(origin, today) % context.read<Profile>().splitLength;
 
-    if (index < context.read<Profile>().split.length) {
-      return index;
+    final workout = getEventsForDay(day: today, context: context);
+
+    if (workout.isEmpty){
+      return -1;
+    } else{
+      return workout[0].index;
     }
-
-    return -1;
   }
 
   @override

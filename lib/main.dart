@@ -119,15 +119,16 @@ class _MainPage extends State<GymApp> {
           ),
 
           update: (context, programProvider, previousActiveWorkoutProvider) {
-            // In this simple case, we might not need to do much in update,
-            // as ActiveWorkoutProvider reads programProvider directly when needed.
-            // If ActiveWorkoutProvider held copies of program data that needed
-            // syncing, you'd do it here.
-             // Ensure dbHelper is passed along if needed (though create handles it)
+            if (previousActiveWorkoutProvider?.activeDayIndex != null){
+            previousActiveWorkoutProvider!
+            ..programProvider = programProvider
+            ..syncControllersForDay(previousActiveWorkoutProvider.activeDayIndex!);
+            }
+
             return previousActiveWorkoutProvider ?? ActiveWorkoutProvider(
                 dbHelper: dbHelper, programProvider: programProvider);
-          },
-        ),
+          }
+          ),
 
         ChangeNotifierProvider(create: (_) => UiStateProvider()),
 

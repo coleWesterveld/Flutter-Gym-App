@@ -3,7 +3,6 @@
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
-import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -38,7 +37,7 @@ class _DayTileState extends State<DayTile> {
     final manager = context.watch<TutorialManager>();
     final settings = context.watch<SettingsModel>();
     final theme = Theme.of(context);
-    final uiState = context.watch<UiStateProvider>();
+    //final uiState = context.watch<UiStateProvider>();
     //debugPrint("${context.read<SettingsModel>().isFirstTime}");
     //final shouldExpand = uiState.expandProgramIndex == widget.index;
 
