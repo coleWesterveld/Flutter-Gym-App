@@ -1,5 +1,7 @@
 // View analytics, this weeks progress, goals, and history
 
+// scrolling is whack
+
 // maybe cool idea: allow easy export as CSV
 // goal is to have analytics on a few things, namely: 
 // DOTS or other powerlifting scoring scores based off of SBD and bodyweight

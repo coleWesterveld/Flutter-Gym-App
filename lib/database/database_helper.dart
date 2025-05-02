@@ -338,10 +338,10 @@ class DatabaseHelper {
       ];
       Random random = Random();
 
-      DateTime startDate = DateTime.now().subtract(const Duration(days: 15));
+      DateTime startDate = DateTime.now().subtract(const Duration(days: 500));
       double baseWeight = 180; // Start weight lower to simulate progression
 
-      for (int i = 1; i <= 15; i++) {
+      for (int i = 1; i <= 500; i++) {
         double weight = baseWeight + (i * 2) + random.nextInt(10) - 5; // Linear increase + noise
         int reps = 6 + random.nextInt(3) - 1; // Small variation in reps (5-7)
         int rpe = 7 + random.nextInt(3) - 1; // RPE fluctuates (6-8)
@@ -1041,15 +1041,45 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchSetRecords({required int exerciseId, int? lim}) async {
+  Future<List<Map<String, dynamic>>> fetchAllSetRecords({required int exerciseId, int? lim}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
       'set_log',
+
       where: 'exercise_id = ?',
       whereArgs: [exerciseId],
       orderBy: 'datetime(date) DESC', // Order by date in descending order
       limit: lim, // number of records returned
     );
+  }
+
+  // This is an optimized method for fetching data to be graphed in analytics
+  // - only gets required columns
+  // - filters and only gets graph timespan
+  // - fetches the maximum estimated 1RM for each session within a given time range
+  // - for a specific exercise.
+  // - results are ordered chronologically.
+  Future<List<Map<String, dynamic>>> fetchSessionMaxE1RM({
+    required int exerciseId,
+    required DateTime startDate,
+  }) async {
+    //debugPrint(startDate.toIso8601String());
+
+    final db = await instance.database;
+    // The query calculates the estimated 1RM for each set,
+    // then groups by session_id and date to find the maximum e1RM within each session.
+    // It filters by exercise ID and date range.
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT
+        date,
+        MAX(weight * (1.0 + (reps + (10.0 - rpe)) / 30.0)) AS max_e1rm_pounds -- Calculate max e1rm using the Epley formula
+      FROM set_log
+      WHERE exercise_id = ? AND datetime(date) >= datetime(?)
+      GROUP BY session_id -- Group by session to get one data point per session
+      ORDER BY datetime(date) ASC; -- Order sessions chronologically
+    ''', [exerciseId, startDate.toIso8601String()]); // Use ISO8601 string for datetime comparison
+
+    return result;
   }
 
   Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId, {useMetric = false}) async {

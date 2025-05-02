@@ -1,13 +1,13 @@
 // For defining timespan when viewing history
-enum Timespan { allTime, thisMonth, sixMonths, oneYear }
+enum Timespan { allTime, oneMonth, sixMonths, oneYear }
 
 extension TimespanExtension on Timespan {
   String get displayName {
     switch (this) {
       case Timespan.allTime:
         return 'All Time';
-      case Timespan.thisMonth:
-        return 'This Month';
+      case Timespan.oneMonth:
+        return 'Last 30 Days';
       case Timespan.sixMonths:
         return '6 Months';
       case Timespan.oneYear:
@@ -19,8 +19,8 @@ extension TimespanExtension on Timespan {
   DateTime getStartDateForTimespan(Timespan timespan) {
     final now = DateTime.now();
     switch (timespan) {
-      case Timespan.thisMonth:
-        return DateTime(now.year, now.month, 1);
+      case Timespan.oneMonth:
+        return now.subtract(const Duration(days: 30));
       case Timespan.sixMonths:
         return DateTime(now.year, now.month - 6, now.day);
       case Timespan.oneYear:

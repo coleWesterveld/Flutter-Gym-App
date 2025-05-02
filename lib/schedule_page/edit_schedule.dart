@@ -16,13 +16,13 @@ import 'package:firstapp/schedule_page/rest_day.dart';
 import 'package:firstapp/schedule_page/draggable_day.dart';
 
 // this page whats left: 
+// TODO: currently, I think dragging is a lil cumbersome. find out what a good length is fro long press draggable, and maybe bigger drag handle?
 // TODO: make pretty - notably, when a day hovers another day, preview changes
 // TODO: make repeat every and start day functional
-// reflect changes on this page back in schedule 
 // done button to repeat every 
 // better dropdown - match OS?
 // undo button on drag and drop, in case of accidental drag when trying to scroll
-// find out what a good length is fro long press draggable
+
 // could add a save and cancel button, so that user can easily undo any reordering that they did if they dont like
 
 // TODO: on reorder, we need to actually update the dayOrder
@@ -32,10 +32,9 @@ import 'package:firstapp/schedule_page/draggable_day.dart';
 // then we max out when days are stacked as much as they can and the list would just be too small.
 // splitLength auto resets when we add days on split, we should fix how that works
 
-// basically, atp the UI is mostly done, business logic is only probably 1/3 done
 
-// This page mostly works IN ISOLATION, but not fully with everything
-// i am not saving origin 
+
+//
 
 class EditSchedule extends StatefulWidget {
   const EditSchedule({

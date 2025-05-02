@@ -56,63 +56,59 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
     }
   }
 
-  Future<void> _fetchData() async {
+    Future<void> _fetchData() async {
     final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.fetchSetRecords(exerciseId: widget.exercise['exercise_id']);
     
+    // 1. Get the start date for the selected timespan
+    final startDate = getStartDateForTimespan(widget.selectedTimespan);
+
+    // 2. Fetch the data using the new query
+    // The query already filters by date and groups by session to get the max e1RM
+    final sessionData = await dbHelper.fetchSessionMaxE1RM(
+      exerciseId: widget.exercise['exercise_id'],
+      startDate: startDate,
+    );
+
     List<FlSpot> points = [];
     List<String> dates = [];
-    // years for top labels
     List<String> years = [];
 
-    if (records.isEmpty) {
+    if (sessionData.isEmpty) {
       setState(() {
-        points = [];
+        _dataPoints = [];
+        _dates = [];
+        _years = [];
       });
       return;
     }
 
-    final startDate = getStartDateForTimespan(widget.selectedTimespan);
-
-    final filteredSets = records.where((set) {
-      final setDate = DateTime.tryParse(set['date']);
-      return setDate != null && setDate.isAfter(startDate);
-    }).toList();
-
-    // Reverse the order to make the oldest record the first X value
-    for (int i = filteredSets.length - 1; i >= 0; i--) {
-      final record = filteredSets[i];
+    // 3. Process the results from the query
+    // sessionData now contains one entry per session, ordered chronologically
+    for (int i = 0; i < sessionData.length; i++) {
+      final record = sessionData[i];
       DateTime date = DateTime.parse(record['date']);
-      double weight = widget.useMetric ? lbToKg(pounds: record['weight'] as double) : record['weight'] as double;
+      double e1RM_pounds = record['max_e1rm_pounds'] as double;
 
-      // calculated maximum estimated reps to calculate 1RM
-      // ie. say record has 3 reps at RPE 8
-      // we assume RPE 8 ~ 2 RIR and so user could have done 3+2 reps
-      // so we use 5 reps in determining 1RM
-      double reps = (record['reps'] as double) + (10-(record['rpe'] as double));
-      double e1RM = 0;
+      // Convert e1RM to kilograms if metric is used for display
+      double displayE1RM = widget.useMetric ? lbToKg(pounds: e1RM_pounds) : e1RM_pounds;
 
-      if (reps == 1){
-        e1RM = weight;
-      } else{
-        // Epley formula for estimated 1RM - works for 2+ reps
-        // note that accuracy in the estimate for this method (and all methods, really) falls off after 10 reps
-        e1RM = (weight * (1 + reps / 30));
-      }
-      
-      points.add(FlSpot((filteredSets.length - 1 - i).toDouble(), e1RM.toDouble()));
-      dates.add(DateFormat('MMM d').format(date)); // Format date for X-axis
-      years.add(DateFormat('yyyy').format(date)); // Store the year
+      // Add the data point. X value is simply the index since data is chronological.
+      points.add(FlSpot(i.toDouble(), displayE1RM));
+
+      // Format date and year for labels
+      dates.add(DateFormat('MMM d').format(date));
+      years.add(DateFormat('yyyy').format(date));
     }
 
-    // option to decimate - skip every few, meant for long timespans
+    // 4. Apply decimation logic if needed (this part remains similar)
     if (widget.decimationFactor != null) {
       int factor = widget.decimationFactor!;
       if (widget.decimationFactor == -1) {
+        // Adjust auto-decimation factor based on the number of sessions
         if (points.length <= 50) {
-          factor = 1;
+          factor = 1; // No decimation needed for 50 or fewer points
         } else {
-          factor = points.length ~/ 50;
+          factor = points.length ~/ 50; // Aim for roughly 50 points
         }
       }
 
@@ -123,7 +119,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
       // Reindex the x values to be continuous after decimation
       int newIndex = 0;
       for (int i = 0; i < points.length; i += factor) {
-        newPoints.add(FlSpot(newIndex.toDouble(), points[i].y)); // Use newIndex instead of original x
+        newPoints.add(FlSpot(newIndex.toDouble(), points[i].y)); // Use newIndex as the new x
         newDates.add(dates[i]);
         newYears.add(years[i]);
         newIndex++;
@@ -134,6 +130,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
       years = newYears;
     }
 
+    // 5. Update the state
     setState(() {
       _dataPoints = points;
       _dates = dates;
@@ -164,7 +161,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                 SizedBox(
                   height: 300,
                   child: LineChart(
-                  
+                    //duration: Duration.zero,
 
                     LineChartData(
 
