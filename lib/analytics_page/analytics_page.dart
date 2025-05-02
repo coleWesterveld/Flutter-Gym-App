@@ -87,7 +87,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   bool _isSearching = false;
   bool _displayChart = false;
 
-  Future<List<List<SetRecord>>>? _exerciseHistory;
+  //Future<List<List<SetRecord>>>? _exerciseHistory;
 
   List<Goal> _goals = [];
   String? tempGoalTitle;
@@ -99,28 +99,129 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   final scrollControl = ScrollController();
   bool showBackToTop = false;
 
+  // Pagination state variables for exercise history
+  List<List<SetRecord>> _allLoadedSessions = []; // Store all sessions loaded so far
+  int _sessionsPerPage = 20; // Number of sessions to load per page
+  int _currentPage = 0; // Current page index (0-based)
+  bool _isLoadingMore = false; // Flag to prevent multiple simultaneous fetches
+  bool _hasMoreData = true; // Flag to indicate if more data is available
+
   @override
   void initState() {
-    scrollControl.addListener(() {
-    // Determine the desired state based on scroll offset
-    final bool shouldShow = scrollControl.offset > 100;
-    // Only call setState if the state needs to change
-      if (shouldShow != showBackToTop) {
-        setState(() {
-          showBackToTop = shouldShow;
-        });
-      }
-    });
+    scrollControl.addListener(_scrollListener);
     super.initState();
     _fetchGoals();
     
   }
+  void _scrollListener() {
+    // determine whether or not to show the "back to top" button
+    final bool shouldShow = scrollControl.offset > 100;
+    // Only call setState if the state needs to change
+    if (shouldShow != showBackToTop) {
+      setState(() {
+        showBackToTop = shouldShow;
+      });
+    }
+
+    // loading depending on scroll position for pagination - 300 pixels in advance
+    if (_exercise != null 
+        && scrollControl.position.pixels >= scrollControl.position.maxScrollExtent - 300 
+        && !_isLoadingMore 
+        && _hasMoreData) {
+
+      _fetchMoreHistory();
+    }
+  }
 
   @override
   void dispose(){
-    super.dispose();
+    scrollControl.removeListener(_scrollListener);
     scrollControl.dispose();
+    super.dispose();
+
   }
+
+   // Define a function to handle the logic when a *new* exercise is selected
+  void _loadExerciseHistory(Map<String, dynamic> exercise) {
+     // Reset pagination state for the new exercise
+     _allLoadedSessions = [];
+     _currentPage = 0;
+     _hasMoreData = true; // Assume more data for a new exercise
+     _isLoadingMore = false; // Reset loading state
+
+     // Update the selected exercise and display state
+     _exercise = exercise;
+     _displayChart = true;
+
+     // Trigger the fetch for the first page of history for the new exercise
+     // Don't await here, let it run in the background
+     _fetchMoreHistory();
+  }
+
+  // Method to fetch the next page of history
+  Future<void> _fetchMoreHistory() async {
+    // Add extra check for _exercise being null just in case
+    if (_isLoadingMore || !_hasMoreData || _exercise == null) {
+      return; // Don't fetch if already loading, no more data, or exercise is null
+    }
+
+    // No need to setState here before the async call
+    // setState(() {
+    //   _isLoadingMore = true; // Setting it *after* the await is fine too, but here is okay
+    // });
+     // Setting loading state *before* the async call so UI updates immediately
+     if (!_isLoadingMore) { // Prevent unnecessary setState if called multiple times quickly
+         setState(() {
+           _isLoadingMore = true;
+         });
+     }
+
+
+    // Calculate offset
+    final offset = _currentPage * _sessionsPerPage;
+
+    // Fetch the next page of sessions
+    final nextPageSessions = await DatabaseHelper.instance.fetchSessionsPage(
+      exerciseId: _exercise!['exercise_id'], // Use exercise ID
+      limit: _sessionsPerPage,
+      offset: offset,
+      useMetric: context.read<SettingsModel>().useMetric, // Pass unit preference
+    );
+
+    // ### FIX 2: Process fetched data and update state correctly ###
+    // Only update state AFTER the fetch is complete
+
+    // Create a list to hold the new sessions to add
+    final List<List<SetRecord>> sessionsToAdd = [];
+    bool moreDataAvailable = false;
+
+    if (nextPageSessions != null && nextPageSessions.isNotEmpty) {
+       sessionsToAdd.addAll(nextPageSessions);
+
+       // Check if the number of sessions returned is equal to the limit,
+       // suggesting there might be more data on the next page.
+       if (nextPageSessions.length == _sessionsPerPage) {
+         moreDataAvailable = true;
+       } else {
+         moreDataAvailable = false; // Returned less than a full page
+       }
+
+    } else {
+      // If fetchSessionsPage returns null or empty, it means no more data
+       moreDataAvailable = false;
+    }
+
+    // ### FIX 3: Update state exactly once after processing ###
+    setState(() {
+      _allLoadedSessions.addAll(sessionsToAdd); // Add the fetched sessions
+      _currentPage++; // Increment page count regardless of whether data was found (it's the next page index)
+      _hasMoreData = moreDataAvailable; // Update hasMoreData flag
+      _isLoadingMore = false; // Set loading state to false
+    });
+  }
+
+
+  
 
   // Load existing goals from the database
   Future<void> _fetchGoals({useMetric = false}) async {
@@ -183,10 +284,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // Callback when an exercise is selected - get history from the database
-  Future<List<List<SetRecord>>> _handleExerciseSelected(Map<String, dynamic> exercise) async {
-    final dbHelper = DatabaseHelper.instance;
-    final records = await dbHelper.getExerciseHistoryGroupedBySession(exercise['exercise_id']);
-    return records;
+  void _handleExerciseSelected(Map<String, dynamic> exercise) async {
+    debugPrint("ran");
+    _loadExerciseHistory(exercise);
   }
 
   // When a goal is being added and the user selected the exercise for the goal to be for
@@ -251,66 +351,63 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
+    if (_allLoadedSessions.isEmpty && _isLoadingMore && _currentPage == 0) { // Added _currentPage == 0 check
+         return const Center(child: CircularProgressIndicator());
+    }
 
-    return FutureBuilder(
-      future: _exerciseHistory,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Error loading History. Sorry :/'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No History Found'));
-        }
+    // Show "No History Found" if list is empty AND we are NOT currently loading more data
+    if (_allLoadedSessions.isEmpty && !_isLoadingMore) { // Removed _currentPage == 0 check here
+        return const Center(child: Text('No History Found'));
+    }
 
-        final exerciseHistory = snapshot.data!;
-          
-        return Scrollbar(
-          controller: scrollControl,
-          child: SingleChildScrollView(
-            controller: scrollControl,
-            
-            child: Column(
-              children: [
-                ExerciseProgressChart(
-                  exercise: _exercise!,
-                  theme: widget.theme,
-                  selectedTimespan: _selectedTimespan,
-                  useMetric: context.read<SettingsModel>().useMetric,
+    return Scrollbar(
+      controller: scrollControl,
+      child: SingleChildScrollView(
+        controller: scrollControl,
+        
+        child: Column(
+          children: [
+            ExerciseProgressChart(
+              exercise: _exercise!,
+              theme: widget.theme,
+              selectedTimespan: _selectedTimespan,
+              useMetric: context.read<SettingsModel>().useMetric,
 
-                  // auto calculate based on number of records
-                  decimationFactor: -1,
+              // auto calculate based on number of records
+              decimationFactor: -1,
 
-                  onTimespanChanged: (newTimespan) {
-                    setState(() {
-                      _selectedTimespan = newTimespan;
-                    });
-                  },
-                ),
-
-                Divider(
-                  color: widget.theme.colorScheme.outline,
-                  thickness: 2,
-                  endIndent: 40,
-                  indent: 40,
-                ),
-          
-                // for this I could implement a see more option maybe
-                // the listview.builder does only build the ones in view so its actually not bad performance-wise already
-                // performance testing shows this runs comfortably and not close to hitting memory ceiling on my mid-tier phone
-                // so its fine unless further testings shows an issue or I decide its best for UX
-                ExerciseHistoryList(
-                  exerciseHistory: exerciseHistory,
-                  theme: widget.theme,
-
-                  
-                ),
-              ],
+              onTimespanChanged: (newTimespan) {
+                setState(() {
+                  _selectedTimespan = newTimespan;
+                });
+              },
             ),
-          ),
-        );
-      }
+
+            Divider(
+              color: widget.theme.colorScheme.outline,
+              thickness: 2,
+              endIndent: 40,
+              indent: 40,
+            ),
+      
+            // for this I could implement a see more option maybe
+            // the listview.builder does only build the ones in view so its actually not bad performance-wise already
+            // performance testing shows this runs comfortably and not close to hitting memory ceiling on my mid-tier phone
+            // so its fine unless further testings shows an issue or I decide its best for UX
+            ExerciseHistoryList(
+              exerciseHistory: _allLoadedSessions,
+              theme: widget.theme,
+              isLoadingMore: _isLoadingMore, // Pass loading state to the list widget
+              hasMoreData: _hasMoreData, // Pass hasMoreData state
+
+              
+            ),
+          ],
+        ),
+      ),
     );
+      
+    
   }
 
   // List of Goal widgets, tappable to edit/delete
@@ -571,8 +668,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                               _exercise = exercise.toMap();
                               _displayChart = true;
                             });
+                            _handleExerciseSelected(exercise.toMap());
               
-                            _exerciseHistory = _handleExerciseSelected(exercise.toMap());
+                           // _exerciseHistory = _handleExerciseSelected(exercise.toMap());
                           }
                        )
                       ),
@@ -765,8 +863,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           _exercise = exercise;
           _displayChart = true;
         });
+        _handleExerciseSelected(exercise);
 
-        _exerciseHistory = _handleExerciseSelected(exercise);
+       // _exerciseHistory = _handleExerciseSelected(exercise);
       },
 
       onSearchModeChanged: (isSearching) {

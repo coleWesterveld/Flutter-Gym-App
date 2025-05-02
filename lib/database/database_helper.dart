@@ -1082,6 +1082,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     return result;
   }
 
+  // Get ALL history of an exercise, grouped by session.
+  /// See [DatabaseHelper.fetchSessionsPage] for this exact implementation but with pagination
   Future<List<List<SetRecord>>> getExerciseHistoryGroupedBySession(int exerciseId, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
     
@@ -1146,6 +1148,92 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         WHERE exercise_id = ? AND session_id = ?
         GROUP BY reps, weight, rpe
         ORDER BY datetime(date) DESC
+      ''', [sessionId, sessionId, exerciseId, sessionId]);
+
+      result.add(sets.map((r) => SetRecord(
+        reps: r['reps'] as double,
+        weight: useMetric ? lbToKg(pounds: r['weight'] as double): r['weight'] as double,
+        rpe: r['rpe'] as double,
+        numSets: r['num_sets'] as int,
+        sessionID: r['session_id'] as String,
+        exerciseID: r['exercise_id'] as int,
+        date: r['date'] as String,
+        historyNote: r['history_note'] as String? ?? '',
+        recordID: r['record_id'] as int,
+      )).toList());
+    }
+
+    return result;
+  }
+
+  /// Fetches a single page of sessions for a specific exercise, ordered by date descending.
+  /// For each session in the page, it also fetches the consolidated sets.
+  /// Returns null if no sessions are found for the given limit/offset.
+  Future<List<List<SetRecord>>?> fetchSessionsPage({
+    required int exerciseId,
+    required int limit,
+    required int offset,
+    bool useMetric = false,
+  }) async {
+    final db = await instance.database;
+
+    // First, get a page of sessions for this exercise ordered by date
+    final sessionsPage = await db.rawQuery('''
+      SELECT DISTINCT session_id, MAX(datetime(date)) as session_date
+      FROM set_log
+      WHERE exercise_id = ?
+      GROUP BY session_id
+      ORDER BY session_date DESC
+      LIMIT ? OFFSET ?
+    ''', [exerciseId, limit, offset]);
+
+    if (sessionsPage.isEmpty) {
+      return null; // No more sessions to load
+    }
+
+    // Then process each session in the page to get consolidated sets
+    final List<List<SetRecord>> result = [];
+
+    for (final session in sessionsPage) {
+      final sessionId = session['session_id'] as String;
+
+      // Query to get consolidated sets for a specific session
+      final sets = await db.rawQuery('''
+        SELECT
+          reps,
+          weight,
+          rpe,
+          COUNT(*) as num_sets,
+          exercise_id,
+          session_id,
+          MAX(datetime(date)) as date, -- Use MAX date for the consolidated set entry
+          (
+            SELECT history_note
+            FROM set_log AS s2
+            WHERE s2.reps = set_log.reps
+              AND s2.weight = set_log.weight
+              AND s2.rpe = set_log.rpe
+              AND s2.exercise_id = set_log.exercise_id
+              AND s2.session_id = ?
+            ORDER BY datetime(date) DESC
+            LIMIT 1
+          ) as history_note,
+          (
+            SELECT id
+            FROM set_log AS s3
+            WHERE s3.reps = set_log.reps
+              AND s3.weight = set_log.weight
+              AND s3.rpe = set_log.rpe
+              AND s3.exercise_id = set_log.exercise_id
+              AND s3.session_id = ?
+            ORDER BY datetime(date) DESC
+            LIMIT 1
+          ) as record_id -- ID of the most recent set in this consolidated group
+        FROM set_log
+        WHERE exercise_id = ? AND session_id = ?
+        GROUP BY reps, weight, rpe
+        ORDER BY datetime(date) DESC -- Order sets within the session? Or by weight/reps? Let's keep date desc consistent with session order.
+                                     -- Note: GROUP BY means the order might not be perfectly predictable without an outer order on reps/weight/rpe, but MAX(date) helps.
       ''', [sessionId, sessionId, exerciseId, sessionId]);
 
       result.add(sets.map((r) => SetRecord(
