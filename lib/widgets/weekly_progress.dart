@@ -14,10 +14,10 @@ class PageViewWithIndicator extends StatefulWidget {
   final ThemeData theme;
 
   const PageViewWithIndicator({
-    Key? key,
+    super.key,
     required this.onSelected,
     required this.theme,
-  }) : super(key: key);
+  });
 
   @override
   _PageViewWithIndicatorState createState() => _PageViewWithIndicatorState();
@@ -285,7 +285,7 @@ class _ExerciseProgressRowState extends State<ExerciseProgressRow> {
             if (changes.isEmpty) {
               progressIndicator = const Text(
                 "- same",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 14),
               );
             } else {
               progressIndicator = Row(

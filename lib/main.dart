@@ -423,7 +423,14 @@ void initState() {
       title = "Analytics";
     }
 
-    Widget? leading = Showcase(
+    Widget? leading = uiState.showAppBarBackButton ? 
+    IconButton(
+      icon: const Icon(Icons.arrow_back),
+      // ### Use the callback from the provider for the onPressed action ###
+      // Use ! because showAppBarBackButton being true implies onPressed is non-null
+      onPressed: uiState.onAppBarBackButtonPress!,
+    )
+    : Showcase(
       disableDefaultTargetGestures: true,
       key: AppTutorialKeys.editPrograms,
       description: "Create and manage programs from here.",

@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
 //import 'data_saving.dart';
-import '../database/database_helper.dart';
-import '../database/profile.dart';
-  // import 'dart:math';
-  import 'dart:async';
-  import '../../other_utilities/day_of_week.dart';
-  import 'package:firstapp/notifications/notification_service.dart';
-  import 'package:provider/provider.dart';
-  import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 //import 'dart:math';
 // split, sets, etc in provider
@@ -30,11 +22,34 @@ class UiStateProvider extends ChangeNotifier {
   String? _customAppBarTitle;
   int? _expandProgramIndex;
   bool _openProgramDrawerRequested = false;
+  bool _showAppBarBackButton = false;
+
 
 
   int get currentPageIndex => _currentPageIndex;
   int? get expandProgramIndex => _expandProgramIndex;
   bool get openProgramDrawerRequested => _openProgramDrawerRequested;
+  bool get showAppBarBackButton => _showAppBarBackButton;
+
+  // The action to perform when the back button is pressed
+  VoidCallback? _onAppBarBackButtonPress;
+  VoidCallback? get onAppBarBackButtonPress => _onAppBarBackButtonPress;
+
+   /// Sets the configuration for the AppBar's leading widget and title.
+  void setAppBarConfig({
+    bool showBackButton = false,
+    VoidCallback? onPressed,
+  }) {
+    _showAppBarBackButton = showBackButton;
+    _onAppBarBackButtonPress = onPressed;
+    notifyListeners(); // Notify widgets watching this provider
+  }
+
+  /// Resets the AppBar configuration to its default state (no back button, default title).
+  void resetAppBarConfig() {
+    setAppBarConfig(showBackButton: false, onPressed: null);
+  }
+
 
   void requestProgramDrawerOpen() {
     _openProgramDrawerRequested = true;
@@ -80,6 +95,7 @@ class UiStateProvider extends ChangeNotifier {
 
   set currentPageIndex(int newIndex){
     assert(currentPageIndex >= 0 && currentPageIndex <= 3, "current page index $newIndex is not an index of a page. please use index 0-4.");
+    resetAppBarConfig();
     _currentPageIndex = newIndex;
     
     notifyListeners();

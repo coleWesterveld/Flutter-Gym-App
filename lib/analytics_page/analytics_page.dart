@@ -138,7 +138,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     scrollControl.removeListener(_scrollListener);
     scrollControl.dispose();
     super.dispose();
-
   }
 
    // Define a function to handle the logic when a *new* exercise is selected
@@ -153,9 +152,37 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
      _exercise = exercise;
      _displayChart = true;
 
+     final uiState = context.read<UiStateProvider>(); // Get provider instance
+     uiState.setAppBarConfig(
+       showBackButton: true,
+       onPressed: _handleAppBarBackButtonPressed, // Provide the callback for the button press
+     );
+
      // Trigger the fetch for the first page of history for the new exercise
      // Don't await here, let it run in the background
      _fetchMoreHistory();
+  }
+
+  void _handleAppBarBackButtonPressed() {
+    // Get provider instance (can be before or after setState depending on logic needs)
+    final uiState = context.read<UiStateProvider>();
+
+    // ### Reset local state to exit chart view ###
+    setState(() {
+      _displayChart = false;
+      _exercise = null;
+      // Reset pagination state when leaving the chart view
+      _allLoadedSessions = [];
+      _currentPage = 0;
+      _hasMoreData = true;
+      _isLoadingMore = false;
+    });
+
+    // ### Tell Provider to reset AppBar config (hide back button, reset title) ###
+     uiState.resetAppBarConfig();
+
+     // Note: If you were navigating with Navigator.push, you would use Navigator.pop(context) here instead.
+     // Since you are just changing local state (_displayChart), this is correct.
   }
 
   // Method to fetch the next page of history
@@ -285,7 +312,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Callback when an exercise is selected - get history from the database
   void _handleExerciseSelected(Map<String, dynamic> exercise) async {
-    debugPrint("ran");
+    //debugPrint("ran");
     _loadExerciseHistory(exercise);
   }
 
@@ -351,6 +378,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Build the exercise history view.
   Widget _buildExerciseHistory() {
+
+    //context.read<UiStateProvider>().
+
     if (_allLoadedSessions.isEmpty && _isLoadingMore && _currentPage == 0) { // Added _currentPage == 0 check
          return const Center(child: CircularProgressIndicator());
     }
