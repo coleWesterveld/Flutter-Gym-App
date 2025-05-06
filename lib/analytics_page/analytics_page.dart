@@ -387,7 +387,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     // Show "No History Found" if list is empty AND we are NOT currently loading more data
     if (_allLoadedSessions.isEmpty && !_isLoadingMore) { // Removed _currentPage == 0 check here
-        return const Center(child: Text('No History Found'));
+        return Center(child: Text('No History Found For: ${_exercise?['exercise_title'] ?? "This exercise"}'));
     }
 
     return Scrollbar(

@@ -159,6 +159,8 @@ class GymSetRowState extends State<GymSetRow> {
                         useMetric: context.read<SettingsModel>().useMetric,
                       );
                       context.read<ActiveWorkoutProvider>().restStopwatch.reset();
+                    } else{
+                      // unlog this set
                     }
                   },
                   child: Container(

@@ -85,7 +85,6 @@ class _WorkoutState extends State<Workout> {
 
   @override
   void didChangeDependencies() {
-    //socks
     super.didChangeDependencies();
   }
 
@@ -387,6 +386,7 @@ class _WorkoutState extends State<Workout> {
                                     index1: primaryIndex,
                                     index2: index,
                                   );
+                              isExerciseComplete[index] = false;
                               setState(() {});
                             },
                             label: Row(
