@@ -9,8 +9,11 @@ import '../workout_page/workout_page.dart';
 import '../providers_and_settings/settings_provider.dart';
 
 
+
+
 class WorkoutControlBar extends StatelessWidget {
   final bool positionAtTop;
+
   // final Color backgroundColor;
   // final Color primaryColor;
 
@@ -87,14 +90,15 @@ class WorkoutControlBar extends StatelessWidget {
                   // Resume Button (only shown in bottom bar)
                   if (!positionAtTop) ...[
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (context.read<ActiveWorkoutProvider>().isPaused) context.read<ActiveWorkoutProvider>().togglePause();
-                        Navigator.push(
+                        Navigator.push<bool>(
                           context,
                           MaterialPageRoute(
                             builder: (context) => Workout(theme: theme),
                           ),
                         );
+                        
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
@@ -114,7 +118,7 @@ class WorkoutControlBar extends StatelessWidget {
                   ShakeWidget(
                     shake: context.watch<ActiveWorkoutProvider>().shakeFinish,
                     child: OutlinedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                         activeWorkout.workoutStopwatch.reset();
                         activeWorkout.restStopwatch.reset();
@@ -122,7 +126,6 @@ class WorkoutControlBar extends StatelessWidget {
                         
                         if(positionAtTop) Navigator.pop(context, true);
                         
-                      
                         context.read<ActiveWorkoutProvider>().setActiveDay(null);
                       
                       },

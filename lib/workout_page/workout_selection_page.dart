@@ -459,27 +459,28 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                   return null;
                                                 }),
                                               ),
-                                              onPressed: () {
-                                                Navigator.push<bool>(
-                                                    context,
-                                                    MaterialPageRoute(builder: (_) => Workout(theme: widget.theme)),
-                                                  )
-                                                  .then((finished) {
-                                                    if (finished == true) {
-                                                      // only clear activeDay once the Workout route is fully popped
-                                                      context.read<ActiveWorkoutProvider>().setActiveDay(null);
-                                                    }
-                                                  });
-                                                
-                                                // Navigator.push(
-                                                //     context,
-                                                //     MaterialPageRoute(
-                                                //       builder: (context) =>
-                                                //           const Workout(),
-                                                //     ));
+                                                onPressed: () async {
+                                              bool? setWorkout = true;
+                                              // if theres already a workout active, prompt user to choose - end current workout to start new one or cancel
+                                              if (context.read<ActiveWorkoutProvider>().activeDay != null){
+                                                setWorkout =  await confirmNewWorkout(context);
+                                              }
+
+                                              debugPrint("setit: $setWorkout");
+
+                                              // If user did not select back, then we start it
+                                              if (setWorkout != null && setWorkout == true){
                                                 context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
                                                 context.read<ActiveWorkoutProvider>().setActiveDay(index);
-                                              },
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                      Workout(theme: widget.theme),
+                                                  )
+                                                );
+                                              }
+                                            },
                                               child: const Text(
                                                 "Start This Workout",
                                                 style: TextStyle(
@@ -512,15 +513,27 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 return null;
                                               }),
                                             ),
-                                            onPressed: () {
-                                              context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                              context.read<ActiveWorkoutProvider>().setActiveDay(index);
-                                              Navigator.push(
+                                             onPressed: () async {
+                                              bool? setWorkout = true;
+                                              // if theres already a workout active, prompt user to choose - end current workout to start new one or cancel
+                                              if (context.read<ActiveWorkoutProvider>().activeDay != null){
+                                                setWorkout = await confirmNewWorkout(context);
+                                              }
+
+                                              debugPrint("setit: $setWorkout");
+
+                                              // If user did not select back, then we start it
+                                              if (setWorkout != null && setWorkout == true){
+                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
+                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                                Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
                                                       Workout(theme: widget.theme),
-                                                  ));
+                                                  )
+                                                );
+                                              }
                                             },
                                             child: Text(
                                               "Start This Workout",
@@ -786,26 +799,27 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 return null;
                                               }),
                                             ),
-                                            onPressed: () {
-                                              Navigator.push<bool>(
+                                            onPressed: () async {
+                                              bool? setWorkout = true;
+                                              // if theres already a workout active, prompt user to choose - end current workout to start new one or cancel
+                                              if (context.read<ActiveWorkoutProvider>().activeDay != null){
+                                                setWorkout = await confirmNewWorkout(context);
+                                              }
+
+                                              debugPrint("setit: $setWorkout");
+
+                                              // If user did not select back, then we start it
+                                              if (setWorkout != null && setWorkout == true){
+                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
+                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                                Navigator.push(
                                                   context,
-                                                  MaterialPageRoute(builder: (_) => Workout(theme: widget.theme)),
-                                                )
-                                                .then((finished) {
-                                                  if (finished == true) {
-                                                    // only clear activeDay once the Workout route is fully popped
-                                                    context.read<ActiveWorkoutProvider>().setActiveDay(null);
-                                                  }
-                                                });
-                                              
-                                              // Navigator.push(
-                                              //     context,
-                                              //     MaterialPageRoute(
-                                              //       builder: (context) =>
-                                              //           const Workout(),
-                                              //     ));
-                                              context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                              context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                      Workout(theme: widget.theme),
+                                                  )
+                                                );
+                                              }
                                             },
                                             child: const Text(
                                               "Start This Workout",
@@ -839,16 +853,28 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               return null;
                                             }),
                                           ),
-                                          onPressed: () {
-                                            context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                            context.read<ActiveWorkoutProvider>().setActiveDay(index);
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                    Workout(theme: widget.theme),
-                                                ));
-                                          },
+                                            onPressed: () async {
+                                              bool? setWorkout = true;
+                                              // if theres already a workout active, prompt user to choose - end current workout to start new one or cancel
+                                              if (context.read<ActiveWorkoutProvider>().activeDay != null){
+                                                setWorkout = await confirmNewWorkout(context);
+                                              }
+
+                                              debugPrint("setit: $setWorkout");
+
+                                              // If user did not select back, then we start it
+                                              if (setWorkout != null && setWorkout == true){
+                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
+                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                      Workout(theme: widget.theme),
+                                                  )
+                                                );
+                                              }
+                                            },
                                           child: Text(
                                             "Start This Workout",
                                             style: TextStyle(
@@ -934,5 +960,36 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         }
 
     }
+  }
+
+  Future<bool?> confirmNewWorkout(BuildContext context) {
+    return showDialog<bool>(
+      context: context, 
+      builder: (context) => AlertDialog(
+        actionsAlignment: MainAxisAlignment.center,
+
+        title: Align(alignment: Alignment.center, child: const Text('End Active Workout')),
+        content: Align(
+          alignment: Alignment.center, 
+          child: Text('To start a new workout, you must end the active workout: ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}'),
+          heightFactor: 1,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('End old workout, start new one'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Back', 
+              style: TextStyle(
+                color: widget.theme.colorScheme.error
+              )
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

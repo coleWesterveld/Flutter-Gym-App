@@ -12,6 +12,9 @@ import '../database/profile.dart';
 import 'package:intl/intl.dart';
 import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/widgets/history_session_view.dart';
+// all null checks are very importasnt cuz when popping there is an instant when this page is still rendering but active day is null
+// I couldnt find a good way around it so everything is just null checked to catch null cases and tries to be discrete. 
+
 
 // list todo: 
 // TACKLING: expanded index should expand once, initially, and when a user finishes an exercise, but should not interfere further with user interaction
@@ -52,26 +55,38 @@ class _WorkoutState extends State<Workout> {
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
     int index = 0;
-    int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
 
-    isExerciseComplete = List.filled(
-      context.read<Profile>().exercises[primaryIndex!].length,
-      false,
-      growable: true,
-    );
+    final workoutProvider = context.read<ActiveWorkoutProvider>();
+    int? primaryIndex = workoutProvider.activeDayIndex;
 
-    for (Exercise exercise
-        in context.read<Profile>().exercises[primaryIndex]) {
-      final record = await dbHelper.getPreviousSessionSets(
-        exercise.exerciseID, 
-        context.read<ActiveWorkoutProvider>().sessionID!,
+    if (primaryIndex != null && workoutProvider.sessionID != null){
+      isExerciseComplete = List.filled(
+        context.read<Profile>().exercises[primaryIndex].length,
+        false,
+        growable: true,
       );
-      if (record.isNotEmpty) {
-        _exerciseHistory[index] = record;
-      }
-      index++;
-    }
 
+
+      for (Exercise exercise
+          in context.read<Profile>().exercises[primaryIndex]) {
+        final record = await dbHelper.getPreviousSessionSets(
+          exercise.exerciseID, 
+          workoutProvider.sessionID!,
+        );
+        if (record.isNotEmpty) {
+          _exerciseHistory[index] = record;
+        }
+        index++;
+      }
+    }else{
+      debugPrint("Primary index is null.");
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    //socks
+    super.didChangeDependencies();
   }
 
 
@@ -90,7 +105,9 @@ class _WorkoutState extends State<Workout> {
 
   @override
   Widget build(BuildContext context) {
-    int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
+    final workoutProvider = context.read<ActiveWorkoutProvider>();
+
+    int? primaryIndex = workoutProvider.activeDayIndex;
 
     return GestureDetector(
       onTap: () {
@@ -106,7 +123,7 @@ class _WorkoutState extends State<Workout> {
               title: Text(
                 // this only happens for short period during transition from popping
                 // so nobody should see the const value, it will hopefully blend in
-                (primaryIndex != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
+                (primaryIndex != null && workoutProvider.activeDay != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
                 style: TextStyle(fontWeight: FontWeight.w900),
               ),
               bottom: PreferredSize(
@@ -140,12 +157,16 @@ class _WorkoutState extends State<Workout> {
     );
   }
 
-  Padding exerciseBuild(BuildContext context, int index) {
+  Widget exerciseBuild(BuildContext context, int index) {
     int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
     bool isNextSet = index == context.watch<ActiveWorkoutProvider>().nextSet[0];
 
+    if (primaryIndex == null){
+      return const SizedBox.shrink();
+    }
+
     return Padding(
-      key: ValueKey(context.watch<Profile>().exercises[primaryIndex!][index]),
+      key: ValueKey(context.watch<Profile>().exercises[primaryIndex][index]),
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
       child: Container(
         decoration: BoxDecoration(
@@ -167,7 +188,7 @@ class _WorkoutState extends State<Workout> {
                 contentPadding: EdgeInsets.only(left: 4, right: 16)),
           ),
           child: ExpansionTile(
-            key: ValueKey('${expandedTileIndex}_$index'),
+            //key: ValueKey('${expandedTileIndex}_$index'),
             initiallyExpanded: expandedTileIndex == index,
             controller: context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index],
             iconColor: widget.theme.colorScheme.onSurface,

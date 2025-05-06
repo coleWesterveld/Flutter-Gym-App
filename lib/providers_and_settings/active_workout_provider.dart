@@ -35,7 +35,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   DatabaseHelper dbHelper;
   int? activeDayIndex;
   Day? activeDay;
-  List<bool>? showHistory;
+  List<bool>? showHistory = <bool>[];
   List<int> nextSet = [0, 0, 0];
 
   final Stopwatch workoutStopwatch = Stopwatch();
@@ -82,6 +82,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     _ensureLength(workoutWeightTEC, numExercises, () => <List<TextEditingController>>[]);
     _ensureLength(workoutRepsTEC,   numExercises, () => <List<TextEditingController>>[]);
     _ensureLength(workoutExpansionControllers, numExercises, () => ExpansionTileController());
+    if (showHistory != null) _ensureLength(showHistory!, numExercises, () => false);
     //_ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
 
 
@@ -172,7 +173,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
 
       activeDayIndex = index;
       activeDay = programProvider.split[index];
-      showHistory = List.filled(programProvider.exercises[index].length, false);
+      showHistory = List.filled(programProvider.exercises[index].length, false, growable: true);
       workoutNotesTEC = List.generate(growable: true, programProvider.exercises[index].length,  (_) => TextEditingController());
       
       workoutRepsTEC = List.generate(

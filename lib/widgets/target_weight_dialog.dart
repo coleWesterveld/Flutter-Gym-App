@@ -140,7 +140,7 @@ class TargetWeightDialogState extends State<TargetWeightDialog> {
             onPressed: () {
               if (_weightController.text.isNotEmpty) {
                 // Pass the weight back when the dialog is popped
-                Navigator.pop(context, int.parse(_weightController.text));
+                Navigator.pop(context, double.parse(_weightController.text));
               } else {
                 setState(() {
                   _submittedWhenEmpty = true;

@@ -31,6 +31,10 @@ import 'widgets/calendar_bottom_sheet.dart';
 
 import 'package:firstapp/widgets/done_button.dart';
 
+// a lil bit of fun when the user finishes a workout
+// maybe in the future I can briung up a modal sheet with workout stats when a workout is done or
+import 'package:confetti/confetti.dart';
+
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
 my goal is to make tappable things blue
@@ -115,7 +119,8 @@ class _MainPage extends State<GymApp> {
             workoutRepsTEC: [],
             workoutRpeTEC: [],
             workoutWeightTEC: [],
-            workoutExpansionControllers: []
+            workoutExpansionControllers: [],
+            showHistory: []
           ),
 
           update: (context, programProvider, previousActiveWorkoutProvider) {
