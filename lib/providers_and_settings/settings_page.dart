@@ -250,7 +250,6 @@ class SettingsPage extends StatelessWidget {
                             child: const Text('Continue'),
                           ),
                       ],
-                      //socks
                     );
                   },
                 );

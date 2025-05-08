@@ -1255,7 +1255,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   // this is the same as above, but is used for only one session past history for during workout quick check.
   Future<List<SetRecord>> getPreviousSessionSets(int exerciseId, String currentSessionID, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
-  debugPrint("sessionID: $currentSessionID");
+  //debugPrint("sessionID: $currentSessionID");
     final results = await db.rawQuery('''
       WITH recent_sessions_with_exercise AS (
         SELECT session_id

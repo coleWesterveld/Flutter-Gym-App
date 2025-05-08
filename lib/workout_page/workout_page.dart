@@ -317,8 +317,8 @@ class _WorkoutState extends State<Workout> {
                                 rpeController: context.read<ActiveWorkoutProvider>().workoutRpeTEC[index][setIndex][subSetIndex],
                                 repsController: context.read<ActiveWorkoutProvider>().workoutRepsTEC[index][setIndex][subSetIndex],
                                 weightController: context.read<ActiveWorkoutProvider>().workoutWeightTEC[index][setIndex][subSetIndex],
-                                initiallyChecked: (context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex] != null),
-                                
+                                //initiallyChecked: (context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex] != null),
+                                recordID: context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex],
                                 // either logs or unlogs a set
                                 onChanged: (isChecked) async {
                                   int loggedRecordID = -1;
@@ -480,12 +480,32 @@ class _WorkoutState extends State<Workout> {
                           maxLines: null,
                           decoration: InputDecoration(
                             filled: true,
-                            //fillColor: const Color(0xFF1e2025),
+                            fillColor: Theme.of(context).scaffoldBackgroundColor,
                             contentPadding:
                                 const EdgeInsets.only(bottom: 10, left: 8),
-                            border: const OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8))),
+                            // border: const OutlineInputBorder(
+                            //     borderRadius:
+                            //         BorderRadius.all(Radius.circular(8))),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.red, width: 2),
+                            ),  
                             hintText: "Notes: ",
                           ),
                         

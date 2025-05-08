@@ -71,6 +71,13 @@ class Profile extends ChangeNotifier {
     return await dbHelper.deleteSetRecord(recordID);
   }
 
+  Future<bool> updateLoggedSet({required int recordID, required Map<String, dynamic> fields}) async{
+    return (await dbHelper.updateSetRecord(
+      recordID,
+      fields
+    ) == 1);
+  }
+
   //defaults to monday of this week
   // hmm the more that I think about it, this should be an attribute of a program, not of a user
   // for now its fine
