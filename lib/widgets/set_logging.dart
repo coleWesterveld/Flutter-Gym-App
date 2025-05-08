@@ -143,25 +143,7 @@ class GymSetRowState extends State<GymSetRow> {
                       widget.onChanged(_isChecked);
                     });
 
-                    if (_isChecked) {
-                      context.read<Profile>().logSet(
-                        SetRecord.fromDateTime(
-                          sessionID: context.read<ActiveWorkoutProvider>().sessionID!,
-                          exerciseID: context.read<Profile>()
-                            .exercises[context.read<ActiveWorkoutProvider>().activeDayIndex!][widget.exerciseIndex].exerciseID,
-                          date: DateTime.now(),
-                          numSets: 1,
-                          reps: double.parse(widget.repsController.text),
-                          weight: double.parse(widget.weightController.text),
-                          rpe: double.parse(widget.rpeController.text),
-                          historyNote: context.read<ActiveWorkoutProvider>().workoutNotesTEC[widget.exerciseIndex].text,
-                        ),
-                        useMetric: context.read<SettingsModel>().useMetric,
-                      );
-                      context.read<ActiveWorkoutProvider>().restStopwatch.reset();
-                    } else{
-                      // unlog this set
-                    }
+                    
                   },
                   child: Container(
                     width: 24.0,

@@ -340,7 +340,7 @@ class PlannedSet {
   final int? setUpper;
   final double? rpe;
   final int setOrder;
-  List<bool> hasBeenLogged;
+  List<int?> loggedRecordID; // stores the ID in the database of records that have been logged
 
   PlannedSet({
     required this.setID, 
@@ -350,8 +350,8 @@ class PlannedSet {
     this.setUpper,
     required this.setOrder,
     this.rpe,
-    List<bool>? hasBeenLogged,
-  }) : hasBeenLogged = hasBeenLogged ?? List.filled(numSets, false);
+    List<int?>? loggedRecordID,
+  }) : loggedRecordID = loggedRecordID ?? List.filled(numSets, null);
 
   Map<String, dynamic> toMap() {
     return {
@@ -391,7 +391,7 @@ class PlannedSet {
     int? newSetLower, 
     int? newSetOrder, 
     double? newRpe,
-    List<bool>? newHasBeenLogged,
+    List<int?>? newLoggedRecordID,
   }) {
     return PlannedSet(
       setID: newSetID ?? setID,
@@ -401,7 +401,7 @@ class PlannedSet {
       setLower: newSetLower ?? setLower,
       setOrder: newSetOrder ?? setOrder,
       rpe: newRpe ?? rpe,
-      hasBeenLogged: newHasBeenLogged ?? List.from(hasBeenLogged),
+      loggedRecordID: newLoggedRecordID ?? loggedRecordID,
     );
   }
 }

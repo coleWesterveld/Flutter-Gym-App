@@ -1,5 +1,6 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -307,14 +308,58 @@ class _WorkoutState extends State<Workout> {
                                 rpeController: context.read<ActiveWorkoutProvider>().workoutRpeTEC[index][setIndex][subSetIndex],
                                 repsController: context.read<ActiveWorkoutProvider>().workoutRepsTEC[index][setIndex][subSetIndex],
                                 weightController: context.read<ActiveWorkoutProvider>().workoutWeightTEC[index][setIndex][subSetIndex],
-                                initiallyChecked: context.read<Profile>().sets[primaryIndex][index][setIndex].hasBeenLogged[subSetIndex],
+                                initiallyChecked: (context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex] != null),
                                 
-                                
-                                onChanged: (isChecked) {
+                                // either logs or unlogs a set
+                                onChanged: (isChecked) async {
+                                  int loggedRecordID = -1;
+                                  final workoutProvider = context.read<ActiveWorkoutProvider>();
+
+                                  // logs the set to the DB - sets loggedRecordID to be the ID of the set so we can referecne to update and delete
+                                  if (isChecked) {
+
+                                    // log the set
+                                    loggedRecordID = await context.read<Profile>().logSet(
+                                      SetRecord.fromDateTime(
+                                        sessionID: context.read<ActiveWorkoutProvider>().sessionID!,
+                                        exerciseID: context.read<Profile>()
+                                          .exercises[context.read<ActiveWorkoutProvider>().activeDayIndex!][index].exerciseID,
+                                        date: DateTime.now(),
+                                        numSets: 1,
+                                        reps: double.parse(workoutProvider.workoutRepsTEC[index][setIndex][subSetIndex].text),
+                                        weight: double.parse(workoutProvider.workoutWeightTEC[index][setIndex][subSetIndex].text),
+                                        rpe: double.parse(workoutProvider.workoutRpeTEC[index][setIndex][subSetIndex].text),
+                                        historyNote: workoutProvider.workoutNotesTEC[index].text,
+                                      ),
+                                      useMetric: context.read<SettingsModel>().useMetric,
+                                    );
+
+                                    // reset "rest since last set" stopwatch to zero once we log a set
+                                    if (context.mounted) context.read<ActiveWorkoutProvider>().restStopwatch.reset();
+                                  
+                                  } else{
+                                    if (context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex] != null){
+                                      context.read<Profile>().deleteLoggedSet(
+                                        recordID: context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex]!
+                                      );
+                                    } else{
+                                      debugPrint("Cannot unlog set by referencing a null ID");
+                                    }
+                                    // unlog this set
+                                  }
+
+
                                   setState(() {
+                                    
                                     // Update the logged status
-                                    context.read<Profile>().sets[primaryIndex][index][setIndex]
-                                      .hasBeenLogged[subSetIndex] = isChecked;
+                                    if (isChecked){
+                                      context.read<Profile>().sets[primaryIndex][index][setIndex]
+                                      .loggedRecordID[subSetIndex] = loggedRecordID;
+                                    } else{
+                                      context.read<Profile>().sets[primaryIndex][index][setIndex]
+                                      .loggedRecordID[subSetIndex] = null;
+                                    }
+                                    
 
                                     if (isChecked) {
                                       context.read<ActiveWorkoutProvider>().incrementSet([index, setIndex, subSetIndex]);
@@ -332,10 +377,12 @@ class _WorkoutState extends State<Workout> {
                                     // Improved all-logged check
                                     
                                     bool allLogged = true;
+
+                                    // if no set in the exercise is yet to be logged, we mark the exercise as entirely logged and complete
                                     outerLoop: // Label for the outer loop
                                     for (final workoutSet in context.read<Profile>().sets[primaryIndex][index]) {
-                                      for (int j = 0; j < workoutSet.hasBeenLogged.length; j++) {
-                                        if (!workoutSet.hasBeenLogged[j]) {
+                                      for (int j = 0; j < workoutSet.loggedRecordID.length; j++) {
+                                        if ((workoutSet.loggedRecordID[j] == null)) {
                                           allLogged = false;
                                           break outerLoop; // Break both loops immediately
                                         }

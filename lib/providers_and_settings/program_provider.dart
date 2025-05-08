@@ -66,8 +66,10 @@ class Profile extends ChangeNotifier {
     return await dbHelper.insertSetRecord(record, useMetric: useMetric);
   }
 
-  // unlogs a set by index
-  //void unLogSet
+  // unlogs a set by index - returns number of rows affected (should just be one... good check ig)
+  Future<int> deleteLoggedSet({required int recordID}) async{
+    return await dbHelper.deleteSetRecord(recordID);
+  }
 
   //defaults to monday of this week
   // hmm the more that I think about it, this should be an attribute of a program, not of a user
