@@ -82,7 +82,7 @@ class ProgramPageState extends State<ProgramPage> {
   // Search mode callback - is choosing exercise or not
   void _updateSearchMode(bool isEditing, BuildContext context) {
     final uiState = context.read<UiStateProvider>();
-    uiState.isEditing = isEditing;
+    uiState.isChoosingExercise = isEditing;
   }
 
 
@@ -103,7 +103,7 @@ class ProgramPageState extends State<ProgramPage> {
         Provider.of<Profile>(context, listen: false).changeDone(false);
       },
 
-      child: uiState.isEditing ? Stack(
+      child: uiState.isChoosingExercise ? Stack(
           children: [
             ExerciseSearchWidget(
               theme: theme,
@@ -126,7 +126,7 @@ class ProgramPageState extends State<ProgramPage> {
                   onExerciseAdded: (index) {
                     setState(() {
                       _activeIndex = index;
-                      uiState.isEditing = true;
+                      uiState.isChoosingExercise = true;
                     });
                   },
                 

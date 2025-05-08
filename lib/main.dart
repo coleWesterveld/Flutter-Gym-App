@@ -336,7 +336,14 @@ void initState() {
       
         resizeToAvoidBottomInset: true,
         bottomNavigationBar: NavigationBar(
-          onDestinationSelected: (int index) => uiState.currentPageIndex = index,
+          onDestinationSelected: (int index) {
+            // reset bottombar and variables in this niche case
+            if (uiState.currentPageIndex == 3 && uiState.isDisplayingChart) {
+              uiState.onAppBarBackButtonPress!();
+            }
+            
+            uiState.currentPageIndex = index;
+          },
           indicatorColor: theme.colorScheme.primary,
           indicatorShape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
@@ -555,7 +562,7 @@ void initState() {
     // then, if active workout then we display workoutstopwatch
     // otherwise display nothing 
 
-    if (uiState.isEditing) return null;
+    if (uiState.isChoosingExercise || uiState.isDisplayingChart) return null;
 
     if (context.read<Profile>().done){ 
       return DoneButtonBottom(

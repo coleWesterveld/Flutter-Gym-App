@@ -84,8 +84,6 @@ class AnalyticsPage extends StatefulWidget {
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
   Map<String, dynamic>? _exercise;
-  bool _isSearching = false;
-  bool _displayChart = false;
 
   //Future<List<List<SetRecord>>>? _exerciseHistory;
 
@@ -141,7 +139,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
    // Define a function to handle the logic when a *new* exercise is selected
-  void _loadExerciseHistory(Map<String, dynamic> exercise) {
+  void _loadExerciseHistory(Map<String, dynamic> exercise,) {
+    final uiState = context.read<UiStateProvider>();
      // Reset pagination state for the new exercise
      _allLoadedSessions = [];
      _currentPage = 0;
@@ -150,9 +149,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
      // Update the selected exercise and display state
      _exercise = exercise;
-     _displayChart = true;
+     uiState.isDisplayingChart = true;
 
-     final uiState = context.read<UiStateProvider>(); // Get provider instance
      uiState.setAppBarConfig(
        showBackButton: true,
        onPressed: _handleAppBarBackButtonPressed, // Provide the callback for the button press
@@ -169,7 +167,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     // ### Reset local state to exit chart view ###
     setState(() {
-      _displayChart = false;
+      uiState.isDisplayingChart = false;
       _exercise = null;
       // Reset pagination state when leaving the chart view
       _allLoadedSessions = [];
@@ -274,7 +272,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       extendBody: true, // Allows FAB to overlap MainScaffold's bottom nav
       backgroundColor: Colors.transparent, // Prevents double background
 
-      floatingActionButton: (_displayChart && showBackToTop)
+      floatingActionButton: (uiState.isDisplayingChart && showBackToTop)
         ? FloatingActionButton(
           onPressed: (){
             scrollControl.animateTo(
@@ -290,12 +288,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       body: Stack(
         children: [
           // Show analytics content with the persistent search bar only when not searching.
-          if (!_isSearching && !uiState.isAddingGoal)
+          if (!uiState.isChoosingExercise && !uiState.isAddingGoal)
             Column(
               children: [
-                if (!_displayChart) _buildPersistentSearchBar(),
+                if (!uiState.isDisplayingChart) _buildPersistentSearchBar(context),
                 Expanded(
-                  child: _displayChart
+                  child: uiState.isDisplayingChart
                       ? _buildExerciseHistory()
                       : _buildAnalyticsContent(),
                 ),
@@ -303,7 +301,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
 
           // When search is active, show the full-screen search overlay.
-          if (_isSearching) _buildFullScreenSearch(),
+          if (uiState.isChoosingExercise) _buildFullScreenSearch(context),
           if (uiState.isAddingGoal) _createGoal(context),
         ],
       ),
@@ -696,7 +694,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                           onSelected: (exercise){
                             setState(() {
                               _exercise = exercise.toMap();
-                              _displayChart = true;
+                              uiState.isDisplayingChart = true;
                             });
                             _handleExerciseSelected(exercise.toMap());
               
@@ -841,13 +839,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // Persistent search bar
-  Widget _buildPersistentSearchBar() {
+  Widget _buildPersistentSearchBar(BuildContext context) {
+    final uiState = context.read<UiStateProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
       child: InkWell(
         onTap: () {
           setState(() {
-            _isSearching = true;
+            uiState.isChoosingExercise = true;
           });
         },
         child: Container(
@@ -885,13 +884,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // Full-screen search overlay.
-  Widget _buildFullScreenSearch() {
+  Widget _buildFullScreenSearch(BuildContext context) {
+    final uiState = context.read<UiStateProvider>();
+
     return ExerciseSearchWidget(
       theme: widget.theme,
       onExerciseSelected: (exercise){
         setState(() {
           _exercise = exercise;
-          _displayChart = true;
+          uiState.isDisplayingChart = true;
         });
         _handleExerciseSelected(exercise);
 
@@ -900,7 +901,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
       onSearchModeChanged: (isSearching) {
         setState(() {
-          _isSearching = isSearching;          
+          uiState.isChoosingExercise = isSearching;          
         });
       },
     );

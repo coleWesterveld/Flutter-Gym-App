@@ -18,11 +18,11 @@ class UiStateProvider extends ChangeNotifier {
   int _currentPageIndex = 2;
   bool _isAddingGoal = false;
   bool _isDisplayingChart = false;
-  bool _isEditing = false;
   String? _customAppBarTitle;
   int? _expandProgramIndex;
   bool _openProgramDrawerRequested = false;
   bool _showAppBarBackButton = false;
+  bool _isChoosingExercise = false;
 
 
 
@@ -30,6 +30,7 @@ class UiStateProvider extends ChangeNotifier {
   int? get expandProgramIndex => _expandProgramIndex;
   bool get openProgramDrawerRequested => _openProgramDrawerRequested;
   bool get showAppBarBackButton => _showAppBarBackButton;
+  bool get isChoosingExercise => _isChoosingExercise;
 
   // The action to perform when the back button is pressed
   VoidCallback? _onAppBarBackButtonPress;
@@ -71,7 +72,7 @@ class UiStateProvider extends ChangeNotifier {
   // In Analytics
   bool get isAddingGoal => _isAddingGoal;
   bool get isDisplayingChart => _isDisplayingChart;
-  bool get isEditing => _isEditing;
+  //bool get isEditing => _isEditing;
   String? get customAppBarTitle => _customAppBarTitle;
 
   // In UiStateProvider class
@@ -101,6 +102,11 @@ class UiStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  set isChoosingExercise(bool newVal){
+    _isChoosingExercise = newVal;
+    notifyListeners();
+  }
+
   set isAddingGoal(bool isAddingGoal){
     _isAddingGoal = isAddingGoal;
     notifyListeners();
@@ -108,11 +114,6 @@ class UiStateProvider extends ChangeNotifier {
 
   set isDisplayingChart(bool isDisplayingChart){
     _isDisplayingChart = isDisplayingChart;
-    notifyListeners();
-  }
-
-  set isEditing(bool isEditing){
-    _isEditing = isEditing;
     notifyListeners();
   }
 
