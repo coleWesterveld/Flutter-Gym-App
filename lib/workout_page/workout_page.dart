@@ -70,10 +70,13 @@ class _WorkoutState extends State<Workout> {
 
       for (Exercise exercise
           in context.read<Profile>().exercises[primaryIndex]) {
+
+        //debugPrint("exercises: ${exercise.exerciseTitle} : ${exercise.exerciseID}");
         final record = await dbHelper.getPreviousSessionSets(
           exercise.exerciseID, 
           workoutProvider.sessionID!,
         );
+        //debugPrint("record found for exercise: ${record}");
         if (record.isNotEmpty) {
           _exerciseHistory[index] = record;
         }
@@ -82,6 +85,8 @@ class _WorkoutState extends State<Workout> {
     }else{
       debugPrint("Primary index is null.");
     }
+
+    //debugPrint("History: ${_exerciseHistory}");
   }
 
   @override
@@ -269,7 +274,11 @@ class _WorkoutState extends State<Workout> {
                               ],
                             ),
                           )
-                        : const Text("No History Found For This Exercise")
+                        : const Align(
+                            heightFactor: 3,
+                            alignment: Alignment.center,
+                            child:  Text("No History Found For This Exercise")
+                          )
                   ]
                 : [
                     const Padding(
@@ -546,6 +555,8 @@ class _WorkoutState extends State<Workout> {
       );
     }
 
+    // Ion think I am using pagination here, seems ok for now 
+    // but could be added in the future just like how ive done for analytics page to speed up loads
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.7,

@@ -1255,57 +1255,52 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
   // this is the same as above, but is used for only one session past history for during workout quick check.
   Future<List<SetRecord>> getPreviousSessionSets(int exerciseId, String currentSessionID, {useMetric = false}) async {
     final db = await DatabaseHelper.instance.database;
-
+  debugPrint("sessionID: $currentSessionID");
     final results = await db.rawQuery('''
-      WITH recent_sessions AS (
+      WITH recent_sessions_with_exercise AS (
         SELECT session_id
         FROM set_log
-        WHERE session_id != ?
+        WHERE session_id != '2025-05-08T13:53:52.835625' -- Exclude current session
+          AND exercise_id = 70                         -- *** ADD THIS CONDITION ***
         GROUP BY session_id
         ORDER BY MAX(date) DESC
         LIMIT 1
       )
-      SELECT 
+      SELECT
         reps,
         weight,
         rpe,
         COUNT(*) as num_sets,
         MAX(date) as date,
         (
-          SELECT history_note 
-          FROM set_log AS s2 
-          WHERE s2.reps = set_log.reps 
-            AND s2.weight = set_log.weight 
-            AND s2.rpe = set_log.rpe 
-            AND s2.session_id IN (SELECT session_id FROM recent_sessions)
-          ORDER BY date DESC 
+          SELECT history_note
+          FROM set_log AS s2
+          WHERE s2.reps = set_log.reps
+            AND s2.weight = set_log.weight
+            AND s2.rpe = set_log.rpe
+            AND s2.session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Use updated CTE
+          ORDER BY date DESC
           LIMIT 1
         ) as history_note,
         (
-          SELECT session_id
-          FROM set_log AS s3
-          WHERE s3.reps = set_log.reps
-            AND s3.weight = set_log.weight
-            AND s3.rpe = set_log.rpe
-            AND s3.session_id IN (SELECT session_id FROM recent_sessions)
-          LIMIT 1
+          SELECT session_id FROM recent_sessions_with_exercise LIMIT 1 -- More direct way to get this
         ) as session_id,
-        ? as exercise_id,
+        70 as exercise_id,
         (
           SELECT id
           FROM set_log AS s4
           WHERE s4.reps = set_log.reps
             AND s4.weight = set_log.weight
             AND s4.rpe = set_log.rpe
-            AND s4.session_id IN (SELECT session_id FROM recent_sessions)
+            AND s4.session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Use updated CTE
           ORDER BY date DESC
           LIMIT 1
         ) as record_id
       FROM set_log
-      WHERE exercise_id = ?
-        AND session_id IN (SELECT session_id FROM recent_sessions)
-      GROUP BY reps, weight, rpe
-      ORDER BY date DESC
+      WHERE exercise_id = 70 -- Main filter for the specific exercise
+        AND session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Link to the found session
+      GROUP BY reps, weight, rpe -- Group sets within that found session and exercise
+      ORDER BY date DESC;
     ''', [currentSessionID, exerciseId, exerciseId]);
 
     return results.map((r) => SetRecord(
