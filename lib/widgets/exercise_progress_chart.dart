@@ -87,10 +87,10 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
     for (int i = 0; i < sessionData.length; i++) {
       final record = sessionData[i];
       DateTime date = DateTime.parse(record['date']);
-      double e1RM_pounds = record['max_e1rm_pounds'] as double;
+      double e1rmPounds = record['max_e1rm_pounds'] as double;
 
       // Convert e1RM to kilograms if metric is used for display
-      double displayE1RM = widget.useMetric ? lbToKg(pounds: e1RM_pounds) : e1RM_pounds;
+      double displayE1RM = widget.useMetric ? lbToKg(pounds: e1rmPounds) : e1rmPounds;
 
       // Add the data point. X value is simply the index since data is chronological.
       points.add(FlSpot(i.toDouble(), displayE1RM));
@@ -155,7 +155,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
               children: [
                 Text(
                   widget.exercise['exercise_title'],
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -262,7 +262,7 @@ class _ExerciseProgressChartState extends State<ExerciseProgressChart> {
                         ),
                       ),
                       borderData: FlBorderData(show: true),
-                      gridData: FlGridData(show: true),
+                      gridData: const FlGridData(show: true),
                       lineBarsData: [
                         LineChartBarData(
                           spots: _dataPoints,

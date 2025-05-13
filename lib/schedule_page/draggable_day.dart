@@ -41,7 +41,7 @@ class DraggableDay extends StatelessWidget {
           // cuz thats the whole purpose of this page
           // at the same time, user needs to be able to scroll whout dragging stuff everywhere instantly 
 
-          delay: Duration(milliseconds: 200),
+          delay: const Duration(milliseconds: 200),
           data: _days[_index]!,
           
           // what the picked-up widget looks like
@@ -51,7 +51,7 @@ class DraggableDay extends StatelessWidget {
               BoxShadow(
                 blurStyle: BlurStyle.normal,
                 color: Colors.black.withValues(alpha: 0.6), // Shadow color
-                offset: Offset(0, 4), // Horizontal and ßvertical offset
+                offset: const Offset(0, 4), // Horizontal and ßvertical offset
                 blurRadius: 8, // Blur effect
                 spreadRadius: 12, // Spread effect
               ),
@@ -82,7 +82,7 @@ class DraggableDay extends StatelessWidget {
                       Container(
                         width: 60,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(8.0),
                             topLeft: Radius.circular(8.0),
                             ),
@@ -137,7 +137,7 @@ class DraggableDay extends StatelessWidget {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               _days[_index]!.dayTitle,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
                             
                                 fontWeight: FontWeight.w900,
@@ -174,7 +174,7 @@ class DraggableDay extends StatelessWidget {
                     Container(
                       width: 60,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(10.0),
                           topLeft: Radius.circular(10.0),
                           ),
@@ -268,7 +268,7 @@ class DraggableDay extends StatelessWidget {
                     Container(
                       width: 60,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(10.0),
                           topLeft: Radius.circular(10.0),
                           ),
@@ -323,7 +323,7 @@ class DraggableDay extends StatelessWidget {
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             _days[_index]!.dayTitle,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                           
                               fontWeight: FontWeight.w900,

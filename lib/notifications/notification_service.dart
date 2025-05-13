@@ -28,7 +28,7 @@ tz.TZDateTime convertToTZDateTime(DateTime dateTime) {
 class NotiService {
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  bool _isInitialized = false;
+  final bool _isInitialized = false;
 
   bool get isInitialized => _isInitialized;
 
@@ -86,7 +86,6 @@ class NotiService {
 
   }) async {
     return notificationsPlugin.show(
-
       id, 
       title, 
       body, 
@@ -105,6 +104,7 @@ class NotiService {
     await cancelAllNotifications();
 
     final originDate = convertToTZDateTime(profile.origin);
+    debugPrint("origin: ${profile.origin}");
     final now = tz.TZDateTime.now(tz.local);
     final endDate = now.add(Duration(days: daysInAdvance));
 
@@ -116,7 +116,7 @@ class NotiService {
       while (currentDate.isBefore(endDate)) {
         // Skip if this date is in the past
         if (currentDate.isBefore(now)) {
-          currentDate = _nextOccurrence(day, profile, currentDate.add(Duration(days: 1)));
+          currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
           continue;
         }
 
@@ -149,7 +149,7 @@ class NotiService {
         }
 
         // Move to next occurrence in the program cycle
-        currentDate = _nextOccurrence(day, profile, currentDate.add(Duration(days: 1)));
+        currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
       }
     }
   }
@@ -165,7 +165,7 @@ class NotiService {
       if (dayInProgram == day.dayOrder) { // Keep dayOrder as-is (matches getEventsForDay)
         return date;
       }
-      date = date.add(Duration(days: 1));
+      date = date.add(const Duration(days: 1));
     }
   }
 
@@ -185,7 +185,7 @@ class NotiService {
     final pending = await notificationsPlugin.pendingNotificationRequests();
     
     debugPrint('📋 Pending Notifications (${pending.length})');
-    pending.forEach((n) {
+    for (var n in pending) {
       debugPrint('''
       ID: ${n.id}
       Title: ${n.title}
@@ -200,7 +200,7 @@ class NotiService {
       ''';
 
 
-    });
+    }
 
     return notifs;
   }

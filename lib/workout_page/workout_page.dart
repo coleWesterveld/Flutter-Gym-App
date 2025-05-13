@@ -48,7 +48,7 @@ class _WorkoutState extends State<Workout> {
 
 
 
-  Map<int, List<SetRecord>> _exerciseHistory = {};
+  final Map<int, List<SetRecord>> _exerciseHistory = {};
 
   // will be false until all sets in an exercise are logged.
   List<bool> isExerciseComplete = [];
@@ -129,7 +129,7 @@ class _WorkoutState extends State<Workout> {
                 // this only happens for short period during transition from popping
                 // so nobody should see the const value, it will hopefully blend in
                 (primaryIndex != null && workoutProvider.activeDay != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
-                style: TextStyle(fontWeight: FontWeight.w900),
+                style: const TextStyle(fontWeight: FontWeight.w900),
               ),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(80), // Increased height to accommodate the control bar
@@ -141,11 +141,11 @@ class _WorkoutState extends State<Workout> {
 
               actions: [
                 IconButton(
-                  icon: Icon(Icons.settings),
+                  icon: const Icon(Icons.settings),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SettingsPage()),
+                      MaterialPageRoute(builder: (context) => const SettingsPage()),
                     );
                   },
                 ),
@@ -435,7 +435,7 @@ class _WorkoutState extends State<Workout> {
                                   side: BorderSide(
                                       width: 2, color: widget.theme.colorScheme.primary),
                                   borderRadius:
-                                      BorderRadius.all(Radius.circular(8))),
+                                      const BorderRadius.all(Radius.circular(8))),
                             ),
                             onPressed: () {
                               context.read<Profile>().setsAppend(
@@ -488,23 +488,23 @@ class _WorkoutState extends State<Workout> {
                             //         BorderRadius.all(Radius.circular(8))),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey),
+                              borderSide: const BorderSide(color: Colors.grey),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey),
+                              borderSide: const BorderSide(color: Colors.grey),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue),
+                              borderSide: const BorderSide(color: Colors.blue),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.red, width: 2),
+                              borderSide: const BorderSide(color: Colors.red, width: 2),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.red, width: 2),
+                              borderSide: const BorderSide(color: Colors.red, width: 2),
                             ),  
                             hintText: "Notes: ",
                           ),

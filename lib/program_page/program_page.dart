@@ -22,8 +22,6 @@ Still Todo on this page:
 // TODO: fix the done button. it has a wierd bar going over it, like it has too much height allocated
 */
 
-import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
-import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,12 +31,7 @@ import 'package:firstapp/providers_and_settings/program_provider.dart';  // Acce
 
 // Widgets
 import 'package:firstapp/widgets/exercise_search.dart';           // New Exercise Search
-import 'package:firstapp/widgets/programs_drawer.dart';
-import 'package:firstapp/providers_and_settings/settings_page.dart';
 import 'package:firstapp/widgets/list_days.dart';
-import 'package:firstapp/widgets/done_button.dart';
-import 'package:firstapp/widgets/calendar_bottom_sheet.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 
 class ProgramPage extends StatefulWidget {

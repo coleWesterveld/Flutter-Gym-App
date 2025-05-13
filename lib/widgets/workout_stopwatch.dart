@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../providers_and_settings/program_provider.dart';
 import '../workout_page/workout_page.dart';
 import '../providers_and_settings/settings_provider.dart';
 

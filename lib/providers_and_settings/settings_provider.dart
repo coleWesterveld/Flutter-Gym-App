@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../database/database_helper.dart';
 import '../database/profile.dart';
-import 'package:firstapp/notifications/notification_service.dart';
-import 'package:firstapp/providers_and_settings/program_provider.dart';
-import 'package:provider/provider.dart';
 
 class SettingsModel extends ChangeNotifier {
   final DatabaseHelper dbHelper = DatabaseHelper.instance;

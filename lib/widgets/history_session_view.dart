@@ -64,7 +64,7 @@ class HistorySessionView extends StatelessWidget {
                   ),
                   child: Text(
                     "${exerciseHistory[historyIndex].numSets} sets x ${formatReps(exerciseHistory[historyIndex].reps)} reps @ $formattedWeight (RPE: ${exerciseHistory[historyIndex].rpe})",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.w700
                     ),

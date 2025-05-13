@@ -13,11 +13,8 @@ import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import 'edit_schedule.dart';
-import '../other_utilities/days_between.dart';
 import '../other_utilities/lightness.dart';
-import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/other_utilities/events.dart';
-import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:showcaseview/showcaseview.dart';
 
 class SchedulePage extends StatefulWidget {

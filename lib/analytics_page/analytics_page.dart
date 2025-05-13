@@ -99,7 +99,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Pagination state variables for exercise history
   List<List<SetRecord>> _allLoadedSessions = []; // Store all sessions loaded so far
-  int _sessionsPerPage = 20; // Number of sessions to load per page
+  final int _sessionsPerPage = 20; // Number of sessions to load per page
   int _currentPage = 0; // Current page index (0-based)
   bool _isLoadingMore = false; // Flag to prevent multiple simultaneous fetches
   bool _hasMoreData = true; // Flag to indicate if more data is available

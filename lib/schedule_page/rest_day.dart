@@ -36,7 +36,7 @@ class RestDay extends StatelessWidget {
         // [strokelength, spacelength]
         dashPattern: const [15, 10],
         borderType: BorderType.RRect, // Rounded rectangle border
-        radius: Radius.circular(12),
+        radius: const Radius.circular(12),
         
         color: isActive 
           ? theme.colorScheme.primaryContainer 
@@ -59,7 +59,7 @@ class RestDay extends StatelessWidget {
             Container(
               width: 60,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(12),
                   topLeft: Radius.circular(12),
                 ),
@@ -80,7 +80,7 @@ class RestDay extends StatelessWidget {
                     Text(
                      
                       daysOfWeek[(index + startDay) % 7],
-                      style: TextStyle(
+                      style: const TextStyle(
                         height: 1.0,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
@@ -91,7 +91,7 @@ class RestDay extends StatelessWidget {
                      
                       "${index + 1}",
                     
-                      style: TextStyle(
+                      style: const TextStyle(
                         height: 1.0,
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
@@ -109,7 +109,7 @@ class RestDay extends StatelessWidget {
               child: Center(
                 //alignment: Alignment.center,
                 child: Container(
-                  child: Text(
+                  child: const Text(
                     "Rest Day",
                     style: TextStyle(
                       fontWeight: FontWeight.w900,

@@ -78,13 +78,13 @@ class DayProgress extends StatefulWidget {
   final ThemeData theme;
 
   const DayProgress({
-    Key? key,
+    super.key,
     required this.index,
     required this.day,
     required this.exercises,
     required this.onSelected,
     required this.theme,
-  }) : super(key: key);
+  });
 
   @override
   State<DayProgress> createState() => _DayProgressState();
@@ -156,11 +156,10 @@ class ExerciseProgressRow extends StatefulWidget {
   final Exercise exercise;
   final Function(Exercise) onSelected;
   const ExerciseProgressRow({
-    Key? key, 
+    super.key, 
     required this.exercise,
     required this.onSelected
-  })
-      : super(key: key);
+  });
 
   @override
   _ExerciseProgressRowState createState() => _ExerciseProgressRowState();

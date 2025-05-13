@@ -399,7 +399,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                       Container(
                         decoration: BoxDecoration(
                           color: widget.theme.colorScheme.surface,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                               bottomRight: Radius.circular(12.0),
                               bottomLeft: Radius.circular(12.0)),
                         ),
@@ -739,7 +739,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     Container(
                       decoration: BoxDecoration(
                         color: widget.theme.colorScheme.surface,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                             bottomRight: Radius.circular(12.0),
                             bottomLeft: Radius.circular(12.0)),
                       ),
@@ -968,11 +968,11 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
       builder: (context) => AlertDialog(
         actionsAlignment: MainAxisAlignment.center,
 
-        title: Align(alignment: Alignment.center, child: const Text('End Active Workout')),
+        title: const Align(alignment: Alignment.center, child: Text('End Active Workout')),
         content: Align(
-          alignment: Alignment.center, 
+          alignment: Alignment.center,
+          heightFactor: 1, 
           child: Text('To start a new workout, you must end the active workout: ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}'),
-          heightFactor: 1,
         ),
         actions: [
           TextButton(

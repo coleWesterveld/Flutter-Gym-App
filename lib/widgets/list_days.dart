@@ -12,7 +12,6 @@ import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/day_tile.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
-import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 
 class ListDays extends StatefulWidget {
   const ListDays({

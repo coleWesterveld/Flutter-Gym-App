@@ -148,12 +148,12 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
                     minWidth: double.infinity,
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        backgroundColor: MaterialStateProperty.all(const Color(0xFF007aff)),
+                        backgroundColor: WidgetStateProperty.all(const Color(0xFF007aff)),
                       ),
                       onPressed: () {
                         // Prevent the outer GestureDetector from handling this tap.

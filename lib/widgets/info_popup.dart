@@ -7,8 +7,8 @@ class InfoPopupWidget extends StatelessWidget {
   const InfoPopupWidget({
     this.child,
     required this.popupContent,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class InfoPopupWidget extends StatelessWidget {
               barrierDismissible: true, // Dismiss when tapping outside
               builder: (BuildContext context) {
                 return Dialog(
-                  insetPadding: EdgeInsets.all(20),
+                  insetPadding: const EdgeInsets.all(20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

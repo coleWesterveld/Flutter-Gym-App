@@ -260,7 +260,7 @@ class TutorialManager extends ChangeNotifier {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 "Would you like to create your very first program now, or explore the app on your own?",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18),

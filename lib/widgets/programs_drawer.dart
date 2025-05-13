@@ -1,10 +1,8 @@
 // Side drawer to edit, select and add programs
 
-import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/database/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:showcaseview/showcaseview.dart';
 
 class ProgramsDrawer extends StatelessWidget {
   final int currentProgramId;

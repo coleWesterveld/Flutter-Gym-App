@@ -21,8 +21,8 @@ import 'package:showcaseview/showcaseview.dart';        // Splash Screen
 
 import 'package:firstapp/app_tutorial/tutorial_manager.dart'; // Import manager
 import 'package:firstapp/app_tutorial/tutorial_welcome_page.dart'; // Import welcome page
-import 'package:firstapp/workout_page/workout_selection_page.dart'; // Import workout page state for key
-import 'package:showcaseview/showcaseview.dart'; // Import showcase
+// Import workout page state for key
+// Import showcase
 import 'package:firstapp/app_tutorial/tutorial_settings_page.dart';
 import 'package:firstapp/widgets/programs_drawer.dart';
 import 'package:firstapp/providers_and_settings/settings_page.dart';
@@ -33,7 +33,6 @@ import 'package:firstapp/widgets/done_button.dart';
 
 // a lil bit of fun when the user finishes a workout
 // maybe in the future I can briung up a modal sheet with workout stats when a workout is done or
-import 'package:confetti/confetti.dart';
 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
@@ -310,6 +309,7 @@ void initState() {
 
 
     final ThemeData theme = Theme.of(context);
+    // final notiService = NotiService();
 
     // Ignore interaction during tutorial
     return IgnorePointer(

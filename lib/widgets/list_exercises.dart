@@ -275,8 +275,7 @@ class _ListExercisesState extends State<ListExercises> {
                           // TODO: here we need to use the new exercise selector
                           onPressed: () async {
                             if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                              int? exerciseID = 70;//await openDialog();
-                              if (exerciseID == null) return;
+                              int? exerciseID = 70;
                               
                             setState( () {
                               Provider.of<Profile>(context, listen: false).exerciseAssign(

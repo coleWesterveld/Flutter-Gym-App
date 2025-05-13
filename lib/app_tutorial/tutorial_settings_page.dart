@@ -33,7 +33,7 @@ class TutorialSettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings")
+        title: const Text("Settings")
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -54,7 +54,7 @@ class TutorialSettingsPage extends StatelessWidget {
             Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           children: [
             ListTile(
@@ -254,7 +254,6 @@ class TutorialSettingsPage extends StatelessWidget {
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
                       key: AppTutorialKeys.tutorialStartButton,
-                      child: const Text('Start App Tutorial'),
                       onPressed: () {
                         // Navigate to the main app, PASSING A FLAG to start the tutorial
                         Navigator.pushReplacement(
@@ -285,6 +284,7 @@ class TutorialSettingsPage extends StatelessWidget {
                         width:2
                       )
                                       ),
+                      child: const Text('Start App Tutorial'),
 
                                   ),
                     ),

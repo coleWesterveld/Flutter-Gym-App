@@ -4,7 +4,6 @@ import '../database/database_helper.dart';
 import '../database/profile.dart';
   // import 'dart:math';
   import 'dart:async';
-  import '../../other_utilities/day_of_week.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';
 
 //import 'dart:math';

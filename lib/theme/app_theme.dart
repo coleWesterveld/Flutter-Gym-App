@@ -85,11 +85,11 @@ class AppTheme {
             }),
         iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
             (Set<WidgetState> states) => states.contains(WidgetState.selected)
-                ? IconThemeData(color: onPrimary) // Color inside the indicator
-                : IconThemeData(color: onWidgetBackground)), // Changed to onWidgetBackground (no opacity)
+                ? const IconThemeData(color: onPrimary) // Color inside the indicator
+                : const IconThemeData(color: onWidgetBackground)), // Changed to onWidgetBackground (no opacity)
       ),
 
-      listTileTheme: ListTileThemeData(
+      listTileTheme: const ListTileThemeData(
          // Colors for text/icons within ListTiles (which are often on a surface)
          iconColor: onWidgetBackground,
          textColor: onWidgetBackground,
@@ -116,7 +116,7 @@ class AppTheme {
           filled: true,
           // Maybe use a darker variant for input fields
           fillColor: widgetBackgroundDark,
-          contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
           border: OutlineInputBorder(
              borderRadius: BorderRadius.circular(8.0),
              borderSide: BorderSide.none,
@@ -128,7 +128,7 @@ class AppTheme {
           ),
           focusedBorder: OutlineInputBorder(
              borderRadius: BorderRadius.circular(8.0),
-             borderSide: BorderSide(color: primary, width: 2.0),
+             borderSide: const BorderSide(color: primary, width: 2.0),
           ),
           hintStyle: TextStyle(color: onWidgetBackground.withOpacity(0.5)),
        ),
@@ -276,7 +276,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: primary, width: 2.0),
+          borderSide: const BorderSide(color: primary, width: 2.0),
         ),
         hintStyle: TextStyle(
           color: onWidgetBackground.withOpacity(0.5)),
@@ -289,7 +289,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8.0)),
       ),
 
-      snackBarTheme: SnackBarThemeData(
+      snackBarTheme: const SnackBarThemeData(
         backgroundColor: secondary,
         contentTextStyle: TextStyle(color: onSecondary),
         actionTextColor: onSecondary,

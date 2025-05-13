@@ -1,7 +1,6 @@
 import 'package:firstapp/notifications/notification_service.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'settings_provider.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';
