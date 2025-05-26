@@ -20,7 +20,7 @@ class GymSetRow extends StatefulWidget {
   final TextEditingController weightController;
   final TextEditingController repsController;
   final TextEditingController rpeController;
-  final recordID;
+  final int? recordID;
 
   const GymSetRow({
     super.key,
@@ -118,9 +118,9 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
 
   void _validateInputs() {
     setState(() {
-      _weightError = widget.weightController.text.isEmpty || int.tryParse(widget.weightController.text) == null;
-      _repsError = widget.repsController.text.isEmpty || int.tryParse(widget.repsController.text) == null;
-      _rpeError = widget.rpeController.text.isEmpty || int.tryParse(widget.rpeController.text) == null;
+      _weightError = widget.weightController.text.isEmpty || double.tryParse(widget.weightController.text) == null;
+      _repsError = widget.repsController.text.isEmpty || double.tryParse(widget.repsController.text) == null;
+      _rpeError = widget.rpeController.text.isEmpty || double.tryParse(widget.rpeController.text) == null;
     });
 
     if (_weightError || _repsError || _rpeError) {
@@ -182,10 +182,19 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     // FocusScope.of(context).unfocus();
     // await Future.delayed(Duration(milliseconds: 50)); // Give time for keyboard to hide if unfocused
 
-
     _validateInputs();
     if (_weightError || _repsError || _rpeError) {
       debugPrint("Validation error on update for field $fieldName, not saving.");
+
+      // revert changes that cause an error. this is also paired with red and shake to indicate error.
+      if (_weightError){
+        widget.weightController.text = _initialWeightOnFocus;
+      } else if (_repsError){
+        widget.repsController.text = _initialRepsOnFocus;
+      } else if (_repsError){
+        widget.rpeController.text = _initialRpeOnFocus;
+      }
+
       return;
     }
 
@@ -250,9 +259,9 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     assert(context.read<ActiveWorkoutProvider>().sessionID != null, "SessionID is null");
     assert(context.read<ActiveWorkoutProvider>().activeDayIndex != null, "No active day index");
     assert(context.read<ActiveWorkoutProvider>().activeDay != null, "No active day");
-
     return ShakeWidget(
       shake: _moveItmoveIt,
+      onAnimationComplete: () => _moveItmoveIt = false,
       child: Container(
         decoration: BoxDecoration(
           color: _isChecked ? Colors.blue.withAlpha(128) : null,
@@ -283,6 +292,7 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
                     // is not checked means now we are trying to save it
                     // we dont need to validate inputs when unsaving
                     if (!_isChecked){
+                      WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
                       _validateInputs();
                       if (_weightError || _repsError || _rpeError) return;
                     }

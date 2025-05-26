@@ -1,16 +1,15 @@
-// Shakes whatever widget is its child when a given bool value becomes true
-// Used primarily on text fields - user presses "submit" on a form when a textfield is still required 
-
 import 'package:flutter/material.dart';
 
 class ShakeWidget extends StatefulWidget {
   final Widget child;
   final bool shake;
+  final VoidCallback? onAnimationComplete;
 
   const ShakeWidget({
     super.key,
     required this.child,
     required this.shake,
+    this.onAnimationComplete,
   });
 
   @override
@@ -35,13 +34,21 @@ class ShakeWidgetState extends State<ShakeWidget>
       TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 2),
       TweenSequenceItem(tween: Tween(begin: 10.0, end: 0.0), weight: 1),
     ]).animate(_controller);
+
+    // Listen for animation status changes
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // Call the callback when animation completes
+        widget.onAnimationComplete?.call();
+      }
+    });
   }
 
   @override
   void didUpdateWidget(covariant ShakeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // When the "shake" flag changes to true, trigger the animation.
+    // When the "shake" flag changes from false to true, trigger the animation.
     if (widget.shake && !oldWidget.shake) {
       _controller.forward(from: 0.0);
     }

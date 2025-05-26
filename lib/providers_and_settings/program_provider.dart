@@ -63,15 +63,18 @@ class Profile extends ChangeNotifier {
   DatabaseHelper dbHelper;
 
   Future<int> logSet(SetRecord record, {useMetric = false}) async{
+    // debugPrint("adding ${record}");
     return await dbHelper.insertSetRecord(record, useMetric: useMetric);
   }
 
   // unlogs a set by index - returns number of rows affected (should just be one... good check ig)
   Future<int> deleteLoggedSet({required int recordID}) async{
+    // debugPrint("deleting ${recordID}");
     return await dbHelper.deleteSetRecord(recordID);
   }
 
   Future<bool> updateLoggedSet({required int recordID, required Map<String, dynamic> fields}) async{
+    // debugPrint("updated ${recordID}, fields: ${fields}");
     return (await dbHelper.updateSetRecord(
       recordID,
       fields
