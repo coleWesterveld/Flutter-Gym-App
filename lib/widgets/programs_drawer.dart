@@ -9,11 +9,13 @@ class ProgramsDrawer extends StatelessWidget {
   final Function(Program) onProgramSelected;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
   final ThemeData theme;
+  final String debugText;
 
   ProgramsDrawer({
     required this.currentProgramId,
     required this.onProgramSelected,
     required this.theme,
+    required this.debugText,
     super.key,
   });
 
@@ -40,27 +42,30 @@ class ProgramsDrawer extends StatelessWidget {
       
             final programs = snapshot.data!;
             
-            return Column(
-              children: [
-                 DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                  ),
-      
-                  child: Center(
-                    child: Text(
-                      'Your Programs',
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                   DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                    ),
+                    
+                    child: Center(
+                      child: Text(
+                        'Your Programs',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-      
-                Expanded(
-                  child: ListView.builder(
+                  Text("debug: ${debugText}"),
+                    
+                  // TODO: when removing debug, wrap with expanded
+                  ListView.builder(
+                    shrinkWrap: true,
                     itemCount: programs.length,
                     itemBuilder: (context, index) {
                       final program = programs[index];
@@ -69,7 +74,7 @@ class ProgramsDrawer extends StatelessWidget {
                           Icons.fitness_center, 
                           color: theme.colorScheme.onSurface,
                         ),
-      
+                  
                         title: Row(
                           children: [
                             Expanded(
@@ -87,7 +92,7 @@ class ProgramsDrawer extends StatelessWidget {
                                   color: theme.colorScheme.onSurface, 
                                   size: 20
                                 ),
-      
+                  
                                 onPressed: () => _showEditProgramDialog(context, program),
                               ),
                           ],
@@ -101,27 +106,27 @@ class ProgramsDrawer extends StatelessWidget {
                       );
                     },
                   ),
-                ),
-      
-                Divider(color: theme.colorScheme.outline),
-      
-                ListTile(
+                    
+                  Divider(color: theme.colorScheme.outline),
+                    
+                  ListTile(
+                    
+                    leading: Icon(
+                      Icons.add, 
+                      color: theme.colorScheme.onSurface
+                    ),
                   
-                  leading: Icon(
-                    Icons.add, 
-                    color: theme.colorScheme.onSurface
+                    title: Text(
+                      'Create New Program',
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                  
+                    onTap: () {
+                      showCreateProgramDialog(context);
+                    },
                   ),
-                
-                  title: Text(
-                    'Create New Program',
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                  ),
-                
-                  onTap: () {
-                    showCreateProgramDialog(context);
-                  },
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),

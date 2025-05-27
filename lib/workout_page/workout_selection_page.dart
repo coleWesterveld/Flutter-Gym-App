@@ -469,14 +469,13 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               debugPrint("setit: $setWorkout");
 
                                               // If user did not select back, then we start it
-                                              if (setWorkout != null && setWorkout == true){
-                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                              if (setWorkout == true){ // User confirmed to start new (or no old one active)
+                                                // This will clear any old snapshot, generate new ID, init structures, start timers
+                                                await context.read<ActiveWorkoutProvider>().setActiveDayAndStartNew(index);
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) =>
-                                                      Workout(theme: widget.theme),
+                                                    builder: (context) => Workout(theme: widget.theme),
                                                   )
                                                 );
                                               }
@@ -523,14 +522,13 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               debugPrint("setit: $setWorkout");
 
                                               // If user did not select back, then we start it
-                                              if (setWorkout != null && setWorkout == true){
-                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                              if (setWorkout == true){ // User confirmed to start new (or no old one active)
+                                                // This will clear any old snapshot, generate new ID, init structures, start timers
+                                                await context.read<ActiveWorkoutProvider>().setActiveDayAndStartNew(index);
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) =>
-                                                      Workout(theme: widget.theme),
+                                                    builder: (context) => Workout(theme: widget.theme),
                                                   )
                                                 );
                                               }
@@ -809,14 +807,13 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               debugPrint("setit: $setWorkout");
 
                                               // If user did not select back, then we start it
-                                              if (setWorkout != null && setWorkout == true){
-                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                              if (setWorkout == true){ // User confirmed to start new (or no old one active)
+                                                // This will clear any old snapshot, generate new ID, init structures, start timers
+                                                await context.read<ActiveWorkoutProvider>().setActiveDayAndStartNew(index);
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) =>
-                                                      Workout(theme: widget.theme),
+                                                    builder: (context) => Workout(theme: widget.theme),
                                                   )
                                                 );
                                               }
@@ -863,14 +860,13 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               debugPrint("setit: $setWorkout");
 
                                               // If user did not select back, then we start it
-                                              if (setWorkout != null && setWorkout == true){
-                                                context.read<ActiveWorkoutProvider>().generateWorkoutSessionId();
-                                                context.read<ActiveWorkoutProvider>().setActiveDay(index);
+                                              if (setWorkout == true){ // User confirmed to start new (or no old one active)
+                                                // This will clear any old snapshot, generate new ID, init structures, start timers
+                                                await context.read<ActiveWorkoutProvider>().setActiveDayAndStartNew(index);
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) =>
-                                                      Workout(theme: widget.theme),
+                                                    builder: (context) => Workout(theme: widget.theme),
                                                   )
                                                 );
                                               }

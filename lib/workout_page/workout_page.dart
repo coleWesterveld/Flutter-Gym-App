@@ -194,8 +194,13 @@ class _WorkoutState extends State<Workout> {
           ),
           child: ExpansionTile(
             //key: ValueKey('${expandedTileIndex}_$index'),
-            initiallyExpanded: expandedTileIndex == index,
+            initiallyExpanded: context.read<ActiveWorkoutProvider>().expansionStates[index],
             controller: context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index],
+            onExpansionChanged: (isExpanded) {
+              // track for saving purposes
+              context.read<ActiveWorkoutProvider>().expansionStates[index] = isExpanded;
+            },
+
             iconColor: widget.theme.colorScheme.onSurface,
             collapsedIconColor: widget.theme.colorScheme.onSurface,
             title: Row(
@@ -221,11 +226,6 @@ class _WorkoutState extends State<Workout> {
                 IconButton(
                   onPressed: () {
                     setState(() {
-                      // Expand the tile if not already expanded
-                      if (expandedTileIndex != index) {
-                        expandedTileIndex = index;
-                        //_userHasInteracted = true;
-                      }
                       // Toggle history visibility
                       context.read<ActiveWorkoutProvider>().showHistory![index] =
                           !context.read<ActiveWorkoutProvider>().showHistory![index];
@@ -344,7 +344,7 @@ class _WorkoutState extends State<Workout> {
                                     );
 
                                     // reset "rest since last set" stopwatch to zero once we log a set
-                                    if (context.mounted) context.read<ActiveWorkoutProvider>().restStopwatch.reset();
+                                    if (context.mounted) context.read<ActiveWorkoutProvider>().lastRestStartTime = DateTime.now();
                                   
                                   } else{
                                     if (context.read<Profile>().sets[primaryIndex][index][setIndex].loggedRecordID[subSetIndex] != null){
@@ -378,7 +378,12 @@ class _WorkoutState extends State<Workout> {
                                         context.read<ActiveWorkoutProvider>().workoutExpansionControllers[
                                           context.read<ActiveWorkoutProvider>().nextSet[0]
                                         ].expand();
+                                        context.read<ActiveWorkoutProvider>().expansionStates[
+                                          context.read<ActiveWorkoutProvider>().nextSet[0]
+                                        ] = true;
+
                                         context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index].collapse();
+                                        context.read<ActiveWorkoutProvider>().expansionStates[index] = false;
                                       }
                                     }
 

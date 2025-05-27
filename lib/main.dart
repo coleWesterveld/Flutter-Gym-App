@@ -1,5 +1,6 @@
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
+import 'package:firstapp/providers_and_settings/snapshot_active_workout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +53,7 @@ simplify the design, get rid of unnessecary colours so that attention is drawn t
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
-    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
 
   runApp(const GymApp());
@@ -65,15 +66,31 @@ class GymApp extends StatefulWidget {
   State<GymApp> createState() => _MainPage();
 }
 
-class _MainPage extends State<GymApp> {
+class _MainPage extends State<GymApp>{
 
   @override
   void initState() {
     super.initState();
-    //Future.delayed(const Duration(seconds: 1), () {
+
+    // just wait for 1.5 seconds to let stuff get set up
+    // this isnt really scientific or even nessecary, stuff would load asynchronously if this didnt happen
+    // I just feel like its nicer to see the logo then see everything ready rather than seeing everything 
+    // pop in over about a second -- looks more proper and a 1 time 1 sec wait is not bad. 
+    Future.delayed(const Duration(seconds: 1), () {
       FlutterNativeSplash.remove();
-    //});
+    });
   }
+
+  // @override
+  // void dispose() {
+  //   // If you want to ensure a save if _MainPage itself is disposed while a workout is active.
+  //   // However, didChangeAppLifecycleState should cover most app closing scenarios.
+  //   // final activeWorkoutP = Provider.of<ActiveWorkoutProvider>(context, listen: false);
+  //   // if (activeWorkoutP.sessionID != null) {
+  //   //   activeWorkoutP.saveActiveWorkoutState();
+  //   // }
+  //   super.dispose();
+  // }
 
   final dbHelper = DatabaseHelper.instance;
   final GlobalKey<MainScaffoldState> mainScaffoldKey = GlobalKey<MainScaffoldState>();
@@ -119,7 +136,8 @@ class _MainPage extends State<GymApp> {
             workoutRpeTEC: [],
             workoutWeightTEC: [],
             workoutExpansionControllers: [],
-            showHistory: []
+            showHistory: [],
+            expansionStates: []
           ),
 
           update: (context, programProvider, previousActiveWorkoutProvider) {
@@ -212,7 +230,7 @@ class MainScaffold extends StatefulWidget {
   final GlobalKey<ProgramPageState> programPageKey; // Accept the key
 
   final BuildContext showcaseContext; // Receive the showcase context
-
+  String? debugtext;
 
   MainScaffold({
     super.key, 
@@ -226,9 +244,8 @@ class MainScaffold extends StatefulWidget {
   MainScaffoldState createState() => MainScaffoldState();
 }
 
-class MainScaffoldState extends State<MainScaffold> {
+class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
 
   @override
   void didChangeDependencies() {
@@ -260,6 +277,39 @@ class MainScaffoldState extends State<MainScaffold> {
     }
 
   }
+
+      // App Lifecycle Listener (to save state when app is paused/detached)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Ensure context is valid if this widget can be rebuilt, or use a stored context.
+    // For Provider.of with listen:false, it's generally safe if providers are above this in the tree.
+    final activeWorkoutP = Provider.of<ActiveWorkoutProvider>(context, listen: false);
+
+    // Only save if there's an active session ID in the provider
+    if (activeWorkoutP.sessionID != null) {
+      if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+        activeWorkoutP.saveActiveWorkoutState();
+        debugPrint("THIS SHOULD RUN AAAAAH App lifecycle: State saved on $state");
+      }
+      // Note: The stopwatch accuracy when simply backgrounding (not closing)
+      // is handled by Dart's Stopwatch itself. The save/restore logic
+      // primarily handles full app closure and restart.
+      // If app is just resumed from pause, ensure UI timer is active if workout isn't paused.
+      else if (state == AppLifecycleState.resumed) {
+          if (!activeWorkoutP.isPaused && (activeWorkoutP.timer == null || !activeWorkoutP.timer!.isActive)) {
+              activeWorkoutP.startTimers(); // Ensure UI timer is running if workout is active
+          }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // REMOVE OBSERVER
+    super.dispose();
+  }
+
   void _checkAndOpenDrawer() {
   final uiState = context.read<UiStateProvider>(); // Use read if not watching in build
 
@@ -288,17 +338,84 @@ class MainScaffoldState extends State<MainScaffold> {
     _scaffoldKey.currentState?.openDrawer();
   }
 
-@override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final settings = Provider.of<SettingsModel>(context, listen: false);
-    if (settings.isFirstTime) {
-      Provider.of<TutorialManager>(context, listen: false)
-          .startTutorialSequence(widget.showcaseContext); // Use the passed showcaseContext
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This context is now guaranteed to be below MultiProvider from _MainPage
+      if (mounted) {
+        final settings = Provider.of<SettingsModel>(context, listen: false);
+        if (settings.isFirstTime) {
+          Provider.of<TutorialManager>(context, listen: false)
+              .startTutorialSequence(widget.showcaseContext); // Use the passed context
+        } else {
+          // Not first time, attempt to resume workout
+          debugPrint("attempting resume");
+          _initiateResumeAttempt();
+        }
+      }
+    });
+  }
+
+  Future<void> _initiateResumeAttempt() async {
+    // This context is MainScaffoldState's context.
+    final activeWorkoutP = Provider.of<ActiveWorkoutProvider>(context, listen: false);
+    final profileP = Provider.of<Profile>(context, listen: false);
+
+    // Wait for Profile provider to be fully initialized
+    if (!profileP.isInitialized) {
+      debugPrint("MainScaffold: Profile not yet initialized. Awaiting initialization...");
+      try {
+        await profileP.initializationDone;
+        debugPrint("MainScaffold: Profile initialization complete. Proceeding with resume check.");
+      } catch (e) {
+        debugPrint("MainScaffold: Profile initialization failed during await: $e. Aborting resume.");
+        return;
+      }
     }
-  });
-}
+
+    ActiveWorkoutSnapshot? snapshot = await activeWorkoutP.loadActiveWorkoutState();
+    debugPrint("we got a snapshot: $snapshot");
+    widget.debugtext = snapshot?.toJson().toString() ?? "this was null";
+
+
+    if (snapshot != null) {
+      debugPrint("MainScaffold: Snapshot found for session ${snapshot.sessionID}. Attempting to auto-resume.");
+
+      // Ensure Profile is set to the correct day context if necessary.
+      // For now, assuming ActiveWorkoutProvider uses Profile's currently loaded data.
+      // If you saved activeProgramID in snapshot, you'd tell Profile here:
+      // await profileP.setActiveProgram(snapshot.activeProgramID);
+      // Then, ensure Profile's internal "current day index" matches snapshot.activeDayIndex
+      // await profileP.setCurrentDayForResume(snapshot.activeDayIndex);
+
+      bool structuresPrepared = activeWorkoutP.prepareStructuresForRestoredDay(snapshot.activeDayIndex);
+      if (!structuresPrepared) {
+          debugPrint("MainScaffold: Failed to prepare AWP structures for day ${snapshot.activeDayIndex}. Clearing snapshot.");
+          await activeWorkoutP.clearActiveWorkoutState();
+          return;
+      }
+      
+      bool restored = await activeWorkoutP.restoreFromSnapshot(snapshot);
+
+      if (restored && mounted) {
+        debugPrint("MainScaffold: Workout session resumed. UI should react.");
+        // NO explicit navigation here from MainScaffold.
+        // The UI (e.g., WorkoutSelectionPage or the initial page in your NavigationBar)
+        // should watch ActiveWorkoutProvider.sessionID. If it becomes non-null
+        // due to a resume, that page should trigger navigation to the Workout screen.
+        // This keeps MainScaffold decoupled from direct Workout page navigation.
+        // Example: WorkoutSelectionPage's initState or build method checks and navigates.
+      } else if (!restored) {
+        debugPrint("MainScaffold: Failed to restore snapshot. Clearing snapshot.");
+        await activeWorkoutP.clearActiveWorkoutState();
+      }
+    } else {
+      debugPrint("MainScaffold: No snapshot found to resume.");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -329,6 +446,7 @@ void initState() {
           onProgramSelected: (selectedProgram) {
             context.read<Profile>().updateProgram(selectedProgram);
           },
+          debugText: widget.debugtext ?? "no debug -- null",
       
           theme: theme,
         ),
@@ -499,7 +617,7 @@ void initState() {
         // Takes to settings page
         Showcase(
           disableDefaultTargetGestures: true,
-          description: "If you want to change any settings in the future, you can find them here.",
+          description: "If you want to change any settings in the future or redo this walkthrough, you can find them here.",
           //disableDefaultTargetGestures: true,
           key: AppTutorialKeys.settingsButton,
           tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,

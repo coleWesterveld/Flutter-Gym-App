@@ -49,6 +49,7 @@ class Profile extends ChangeNotifier {
 
   List<int> _editIndex = [-1, -1, -1];
   bool isInitialized = false;
+  final Completer<void> _initializationCompleter = Completer<void>();
 
   set editIndex(List<int> newVal){
     assert(newVal.length == 3, "edit index must be length 3");
@@ -108,25 +109,29 @@ class Profile extends ChangeNotifier {
     required this.dbHelper,
     this.splitLength = 7,
   }){
-    init();
+    _initializeProfileData();
   }
 
-  Future<void> init() async {
-    // Fetch data from DB and assign to in-memory lists
-    currentProgram = await dbHelper.initializeProgram();
-    split = await dbHelper.initializeSplitList(currentProgram.programID);
-    exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
-    sets = await dbHelper.initializeSetList(currentProgram.programID);
+  Future<void> get initializationDone => _initializationCompleter.future; // Public getter for the Future
 
-    // I am just getting settings for the _origin
-    // this is remnant of legacy (2 month old, super old clearly) code 
-    // that I havent fully switched over to settings provider fully yet
-    settings = await dbHelper.fetchUserSettings();
-    //assert(settings != null, "settings not found...");
-    if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
-    
-    isInitialized = true;
-    notifyListeners();
+  Future<void> _initializeProfileData() async { // Renamed from init to avoid confusion
+    try {
+      currentProgram = await dbHelper.initializeProgram();
+      split = await dbHelper.initializeSplitList(currentProgram.programID);
+      exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
+      sets = await dbHelper.initializeSetList(currentProgram.programID);
+      settings = await dbHelper.fetchUserSettings();
+      if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
+      
+      isInitialized = true;
+      notifyListeners();
+      _initializationCompleter.complete(); // Signal completion
+      debugPrint("Profile initialized successfully.");
+    } catch (e) {
+      debugPrint("Profile initialization failed: $e");
+      _initializationCompleter.completeError(e); // Signal error
+      // You might want to set isInitialized = false or handle this error state
+    }
   }
 
 
@@ -169,7 +174,7 @@ class Profile extends ChangeNotifier {
   void updateProgram(Program program) async {
     currentProgram = program;
     dbHelper.setCurrentProgramId(currentProgram.programID);
-    init();
+    _initializeProfileData();
     notifyListeners();
   }
 

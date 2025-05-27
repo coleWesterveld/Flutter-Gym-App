@@ -53,7 +53,7 @@ class WorkoutControlBar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Workout: ${_formatDuration(activeWorkout.workoutStopwatch.elapsed)}",
+                      "Workout: ${_formatDuration(activeWorkout.workoutTime)}",
                       style: TextStyle(
                         fontSize: 16,
                         color: theme.colorScheme.onSurface,
@@ -62,7 +62,7 @@ class WorkoutControlBar extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Rest: ${_formatDuration(activeWorkout.restStopwatch.elapsed)}",
+                      "Rest: ${_formatDuration(activeWorkout.restTime)}",
                       style: TextStyle(
                         fontSize: 14,
                         color: theme.colorScheme.onSurface,
@@ -119,13 +119,13 @@ class WorkoutControlBar extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () async {
                         if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                        activeWorkout.workoutStopwatch.reset();
-                        activeWorkout.restStopwatch.reset();
+                        activeWorkout.workoutStartTime = null;
+                        activeWorkout.lastRestStartTime = null;
                         activeWorkout.timer?.cancel();
                         
                         if(positionAtTop) Navigator.pop(context, true);
                         
-                        context.read<ActiveWorkoutProvider>().setActiveDay(null);
+                        context.read<ActiveWorkoutProvider>().setActiveDayAndStartNew(null);
                       
                       },
                       style: OutlinedButton.styleFrom(

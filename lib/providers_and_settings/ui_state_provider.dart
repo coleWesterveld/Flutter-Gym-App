@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 //
 
 class UiStateProvider extends ChangeNotifier {
-  int _currentPageIndex = 2;
+  int _currentPageIndex = 0;
   bool _isAddingGoal = false;
   bool _isDisplayingChart = false;
   String? _customAppBarTitle;
