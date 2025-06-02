@@ -337,7 +337,7 @@ class DraggableDay extends StatelessWidget {
                     GestureDetector(
                       onTap: () async {
                         final TimeOfDay? pickedTime = await showTimePicker(
-                          initialEntryMode: TimePickerEntryMode.input,
+                          initialEntryMode: TimePickerEntryMode.dial,
 
                           context: context,
                           initialTime: _days[_index]?.workoutTime ?? TimeOfDay.now(),

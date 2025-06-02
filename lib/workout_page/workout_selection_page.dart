@@ -186,9 +186,6 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
-    final theme = Theme.of(context);
-    final manager = context.watch<TutorialManager>();
-
     
     int todaysWorkout = toExpand();
     return SizedBox(
@@ -221,7 +218,6 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   }
 
   Widget dayBuild(BuildContext context, int index, bool todaysWorkout) {
-    final settings = context.watch<SettingsModel>();
     final theme = Theme.of(context);
     final manager = context.watch<TutorialManager>();
 
@@ -287,33 +283,46 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                 top: (!todaysWorkout && index == 0) ? 8 : 8),
         
             child: Container(
-              // TODO: dont like how this goes all the way down under "start workout" button and stuff,
               decoration: BoxDecoration(
             
-                border: Border.all(color: widget.theme.colorScheme.outline),
+                // border: Border.all(
+                //   color: widget.theme.colorScheme.outline),
                 boxShadow: [
                   todaysWorkout
                       ? BoxShadow(
                           color: Color(context.watch<Profile>().split[index].dayColor),
-                          offset: const Offset(0.0, 0.0),
-                          blurRadius: 8.0,
+                          offset: const Offset(2.0, 2.0),
+                          blurRadius: 4.0,
                         )
-                      : const BoxShadow(),
+                      : BoxShadow(
+                        color: widget.theme.colorScheme.shadow,
+                        offset: const Offset(2, 2),
+                        blurRadius: 4.0,
+                      ),
+
+                  // BoxShadow(
+                  //   color: lighten(widget.theme.colorScheme.shadow, 20),
+                  //   offset: const Offset(-2, -2),
+                  //   blurRadius: 4.0,
+                  // ),
                 ],
                 color: widget.theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(12.0),
               ),
-        
+                    
               //defining the inside of the actual box, display information
               child: Theme(
                 data: Theme.of(context).copyWith(
+                  splashColor: Colors.transparent,
                   dividerColor: Colors.transparent,
                   listTileTheme: const ListTileThemeData(
                     contentPadding: EdgeInsets.only(
-                        left: 4, right: 16), // Removes extra padding
+                      left: 4, right: 16
+                    ), // Removes extra padding
+                    horizontalTitleGap: 0
                   ),
                 ),
-        
+                      
                 //expandable to see exercises and sets for that day
                 child: ExpansionTile(
                     controller: _expansionControllers[index],
@@ -334,13 +343,47 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     //controller: context.watch<Profile>().controllers[index],
                     iconColor: widget.theme.colorScheme.onSurface,
                     collapsedIconColor: widget.theme.colorScheme.onSurface,
-        
+                        
                     //top row always displays day title, and edit button
                     //sized boxes and padding is just a bunch of formatting stuff
                     //tbh it could probably be made more concise
-                    //TODO: simplify this
+                    
+
+                    leading: Row( 
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          //width: 50,
+                          child: Text(
+                            "${index + 1}",
+                                                  
+                            style: TextStyle(
+                              height: 0.6,
+                              color: widget.theme.colorScheme.onSurface,
+                              fontSize: 35,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration:  BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(context.watch<Profile>().split[index].dayColor),
+                            ),
+                          
+                          ),
+                        ),
+                      ]
+                    ),
+                    
                     title: SizedBox(
                       height: 40,
+                      
                       child: Row(
                         children: [
                           Expanded(
@@ -348,37 +391,18 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                               height: 30,
                               width: 100,
                               child: Row(
-                                children: [
-                                  //number
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [                                  
+                        
                                   SizedBox(
-                                    width: 30,
+                                    width:  MediaQuery.sizeOf(context).width - 148,
                                     child: Text(
-                                      "${index + 1}",
-        
+                                      overflow: TextOverflow.ellipsis,
+                                      context.watch<Profile>().split[index].dayTitle,
                                       style: TextStyle(
-                                        height: 0.6,
-                                        color: Color(context.watch<Profile>().split[index].dayColor),
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                      
-        
-                                      //day title
-                                    ),
-                                  ),
-        
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 16.0),
-                                    child: SizedBox(
-                                      width:  MediaQuery.sizeOf(context).width - 138,
-                                      child: Text(
-                                        overflow: TextOverflow.ellipsis,
-                                        context.watch<Profile>().split[index].dayTitle,
-                                        style: TextStyle(
-                                          color: widget.theme.colorScheme.onSurface,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                        ),
+                                        color: widget.theme.colorScheme.onSurface,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),
@@ -389,7 +413,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                         ],
                       ),
                     ),
-        
+                        
                     //children of expansion tile - what gets shown when user expands that day
                     // shows exercises for that day
                     //this part is viewed after tile is expanded
@@ -411,9 +435,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                               context.read<Profile>().exercises[index].length +
                                   1,
                           shrinkWrap: true,
-        
+                        
                           //displaying list of exercises for that day
-        
+                        
                           itemBuilder: (context, exerciseIndex) {
                             if (exerciseIndex ==
                                 context
@@ -465,9 +489,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               if (context.read<ActiveWorkoutProvider>().activeDay != null){
                                                 setWorkout =  await confirmNewWorkout(context);
                                               }
-
+                
                                               debugPrint("setit: $setWorkout");
-
+                
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
                                                 // This will clear any old snapshot, generate new ID, init structures, start timers
@@ -518,9 +542,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               if (context.read<ActiveWorkoutProvider>().activeDay != null){
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
-
+                
                                               debugPrint("setit: $setWorkout");
-
+                
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
                                                 // This will clear any old snapshot, generate new ID, init structures, start timers
@@ -545,13 +569,18 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                               return Container(
                                 decoration: BoxDecoration(
                                   borderRadius: const BorderRadius.all(Radius.circular(1)),
-                                  border: Border(bottom: BorderSide(color: widget.theme.colorScheme.outline),),
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: widget.theme.colorScheme.outline,
+                                      width: 0.5
+                                    ),
+                                  ),
                                 ),
                                 child: Material(
-                                  color:widget.theme.colorScheme.surface,
+                                  color: widget.theme.colorScheme.surface,
                                   child: Padding(
                                     padding:
-                                        const EdgeInsets.symmetric(horizontal: 8.0),
+                                        const EdgeInsets.symmetric(horizontal: 12.0),
                                     child: Column(
                                       children: [
                                         Row(
@@ -560,7 +589,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               Align(
                                                 alignment: Alignment.topLeft,
                                                 child: Padding(
-                                                  padding: const EdgeInsets.all(12.0),
+                                                  padding: const EdgeInsets.all(6.0),
                                                   child: SizedBox(
                                                     width: MediaQuery.sizeOf(context).width - 172,
                                                     child: Text(
@@ -620,40 +649,57 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
       return Padding(
           key: ValueKey(context.watch<Profile>().split[index]),
           padding: EdgeInsets.only(
-              left: 8,
-              right: 8,
-              top: (!todaysWorkout && index == 0) ? 8 : 8),
+            left: 8,
+            right: 8,
+            top: 8
+          ),
 
           child: Container(
-            // TODO: dont like how this goes all the way down under "start workout" button and stuff,
             decoration: BoxDecoration(
-    
-              border: Border.all(color: widget.theme.colorScheme.outline),
+              
+              // border: Border.all(
+              //   color: widget.theme.colorScheme.outline,
+              //   width: 0.5
+              // ),
               boxShadow: [
                 todaysWorkout
                     ? BoxShadow(
                         color: Color(context.watch<Profile>().split[index].dayColor),
-                        offset: const Offset(0.0, 0.0),
-                        blurRadius: 8.0,
+                        offset: const Offset(2, 2),
+                        blurRadius: 4.0,
                       )
-                    : const BoxShadow(),
+                    : BoxShadow(
+                        color: widget.theme.colorScheme.shadow,
+                        offset: const Offset(2, 2),
+                        blurRadius: 4.0,
+                      ),
+
+                  // BoxShadow(
+                  //   color: lighten(widget.theme.colorScheme.shadow, 20),
+                  //   offset: const Offset(-2, -2),
+                  //   blurRadius: 4.0,
+                  // ),
               ],
               color: widget.theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12.0),
             ),
-
+          
             //defining the inside of the actual box, display information
             child: Theme(
               data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
                 dividerColor: Colors.transparent,
                 listTileTheme: const ListTileThemeData(
                   contentPadding: EdgeInsets.only(
-                      left: 4, right: 16), // Removes extra padding
+                    left: 4, right: 16
+                  ), // Removes extra padding
+                  horizontalTitleGap: 0,
                 ),
               ),
-
+          
               //expandable to see exercises and sets for that day
               child: ExpansionTile(
+                
                   controller: _expansionControllers[index],
                   key: ValueKey(context.watch<Profile>().split[index]),
                   onExpansionChanged: (isExpanded) {
@@ -672,62 +718,69 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   //controller: context.watch<Profile>().controllers[index],
                   iconColor: widget.theme.colorScheme.onSurface,
                   collapsedIconColor: widget.theme.colorScheme.onSurface,
-
+              
                   //top row always displays day title, and edit button
                   //sized boxes and padding is just a bunch of formatting stuff
                   //tbh it could probably be made more concise
                   //TODO: simplify this
+
+                  leading: Row( 
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          //width: 50,
+                          child: Text(
+                            "${index + 1}",
+                                                  
+                            style: TextStyle(
+                              height: 0.6,
+                              color: widget.theme.colorScheme.onSurface,
+                              fontSize: 35,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration:  BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(context.watch<Profile>().split[index].dayColor),
+                            ),
+                          
+                          ),
+                        ),
+                      ]
+                    ),
                   title: SizedBox(
-                    height: 40,
+                    height: 30,
                     child: Row(
                       children: [
                         Expanded(
                           child: SizedBox(
                             height: 30,
                             width: 100,
-                            child: Row(
-                              children: [
-                                //number
-                                SizedBox(
-                                  width: 30,
-                                  child: Text(
-                                    "${index + 1}",
-
-                                    style: TextStyle(
-                                      height: 0.6,
-                                      color: Color(context.watch<Profile>().split[index].dayColor),
-                                      fontSize: 50,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                    
-
-                                    //day title
-                                  ),
+                            child: SizedBox(
+                              width:  MediaQuery.sizeOf(context).width - 138,
+                              child: Text(
+                                overflow: TextOverflow.ellipsis,
+                                context.watch<Profile>().split[index].dayTitle,
+                                style: TextStyle(
+                                  color: widget.theme.colorScheme.onSurface,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
                                 ),
-
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: SizedBox(
-                                    width:  MediaQuery.sizeOf(context).width - 138,
-                                    child: Text(
-                                      overflow: TextOverflow.ellipsis,
-                                      context.watch<Profile>().split[index].dayTitle,
-                                      style: TextStyle(
-                                        color: widget.theme.colorScheme.onSurface,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-
+              
                   //children of expansion tile - what gets shown when user expands that day
                   // shows exercises for that day
                   //this part is viewed after tile is expanded
@@ -749,9 +802,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                             context.read<Profile>().exercises[index].length +
                                 1,
                         shrinkWrap: true,
-
+              
                         //displaying list of exercises for that day
-
+              
                         itemBuilder: (context, exerciseIndex) {
                           if (exerciseIndex ==
                               context
@@ -803,9 +856,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               if (context.read<ActiveWorkoutProvider>().activeDay != null){
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
-
+              
                                               debugPrint("setit: $setWorkout");
-
+              
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
                                                 // This will clear any old snapshot, generate new ID, init structures, start timers
@@ -856,9 +909,9 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               if (context.read<ActiveWorkoutProvider>().activeDay != null){
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
-
+              
                                               debugPrint("setit: $setWorkout");
-
+              
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
                                                 // This will clear any old snapshot, generate new ID, init structures, start timers
@@ -889,7 +942,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                 color:widget.theme.colorScheme.surface,
                                 child: Padding(
                                   padding:
-                                      const EdgeInsets.symmetric(horizontal: 8.0),
+                                      const EdgeInsets.symmetric(horizontal: 12.0),
                                   child: Column(
                                     children: [
                                       Row(
@@ -898,7 +951,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                             Align(
                                               alignment: Alignment.topLeft,
                                               child: Padding(
-                                                padding: const EdgeInsets.all(12.0),
+                                                padding: const EdgeInsets.all(6.0),
                                                 child: SizedBox(
                                                   width: MediaQuery.sizeOf(context).width - 172,
                                                   child: Text(

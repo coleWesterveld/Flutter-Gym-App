@@ -9,13 +9,13 @@ class ProgramsDrawer extends StatelessWidget {
   final Function(Program) onProgramSelected;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
   final ThemeData theme;
-  final String debugText;
+  //final String debugText;
 
   ProgramsDrawer({
     required this.currentProgramId,
     required this.onProgramSelected,
     required this.theme,
-    required this.debugText,
+    //required this.debugText,
     super.key,
   });
 
@@ -41,30 +41,30 @@ class ProgramsDrawer extends StatelessWidget {
             }
       
             final programs = snapshot.data!;
-            
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                   DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                    ),
-                    
-                    child: Center(
-                      child: Text(
-                        'Your Programs',
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+            // TODO: when In debug, wrap with singlechildscrollview
+            return Column(
+              children: [
+                 DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                  ),
+                  
+                  child: Center(
+                    child: Text(
+                      'Your Programs',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  Text("debug: ${debugText}"),
-                    
-                  // TODO: when removing debug, wrap with expanded
-                  ListView.builder(
+                ),
+                //Text("debug: ${debugText}"),
+                  
+                // TODO: when removing debug, wrap with expanded
+                Expanded(
+                  child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: programs.length,
                     itemBuilder: (context, index) {
@@ -106,27 +106,27 @@ class ProgramsDrawer extends StatelessWidget {
                       );
                     },
                   ),
-                    
-                  Divider(color: theme.colorScheme.outline),
-                    
-                  ListTile(
-                    
-                    leading: Icon(
-                      Icons.add, 
-                      color: theme.colorScheme.onSurface
-                    ),
+                ),
                   
-                    title: Text(
-                      'Create New Program',
-                      style: TextStyle(color: theme.colorScheme.onSurface),
-                    ),
+                Divider(color: theme.colorScheme.outline),
                   
-                    onTap: () {
-                      showCreateProgramDialog(context);
-                    },
+                ListTile(
+                  
+                  leading: Icon(
+                    Icons.add, 
+                    color: theme.colorScheme.onSurface
                   ),
-                ],
-              ),
+                
+                  title: Text(
+                    'Create New Program',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
+                
+                  onTap: () {
+                    showCreateProgramDialog(context);
+                  },
+                ),
+              ],
             );
           },
         ),

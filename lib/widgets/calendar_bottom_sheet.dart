@@ -85,10 +85,10 @@ class CalendarBottomSheet extends StatelessWidget {
                   color: today.isBefore(day) ? 
                     Color(context.watch<Profile>().split[events[0].index].dayColor): 
                     Color(context.watch<Profile>().split[events[0].index].dayColor),
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(12.0),
-                  ),
-                  shape: BoxShape.rectangle,
+                  // borderRadius: const BorderRadius.all(
+                  //   Radius.circular(12.0),
+                  // ),
+                  shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
@@ -122,10 +122,10 @@ class CalendarBottomSheet extends StatelessWidget {
                     color: today.isBefore(day) ? 
                       Color(context.watch<Profile>().split[events[0].index].dayColor): 
                       Color(context.watch<Profile>().split[events[0].index].dayColor),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(12.0),
-                    ),
-                    shape: BoxShape.rectangle,
+                    // borderRadius: const BorderRadius.all(
+                    //   Radius.circular(12.0),
+                    // ),
+                    shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
@@ -148,28 +148,28 @@ class CalendarBottomSheet extends StatelessWidget {
           
             todayDecoration: _buildToday(today, context),
             //markerDecoration: const BoxDecoration(),
-            defaultDecoration: BoxDecoration(
+            defaultDecoration: const BoxDecoration(
               //color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              shape: BoxShape.rectangle,
+              //borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
             ),
             
             // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
             // idk a better way to do this, but this works, even if its maybe not elegant
-            rangeEndDecoration: BoxDecoration(
+            rangeEndDecoration: const BoxDecoration(
               //color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              shape: BoxShape.rectangle,
+              //borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
             ),
-            weekendDecoration: BoxDecoration(
+            weekendDecoration: const BoxDecoration(
               //color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              shape: BoxShape.rectangle,
+              //borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
             ),
-            outsideDecoration: BoxDecoration(
+            outsideDecoration: const BoxDecoration(
               //color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              shape: BoxShape.rectangle,
+              //borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
             ),
       
             selectedTextStyle: TextStyle(
@@ -198,7 +198,8 @@ class CalendarBottomSheet extends StatelessWidget {
     );
     return BoxDecoration(
       border: Border.all(width: 3, color: theme.colorScheme.onSurface),
-      borderRadius: BorderRadius.circular(12),
+      //borderRadius: BorderRadius.circular(12),
+      shape: BoxShape.circle,
       color: (events.isEmpty) 
       ? theme.colorScheme.surface
       : Color(context.watch<Profile>().split[events[0].index].dayColor)

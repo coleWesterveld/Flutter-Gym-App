@@ -4,6 +4,9 @@ I will just use shared_preferences and json for this -- I know I already have th
 but adding a separate table for this relatively short-term buffer seems overkill and unnessecary
 */
 
+// TODO: i should maybe make something so that if like a workout just goes on for a day or more 
+// we can assume the user just forgot about it and is not actually working out that long, it just ends it or maybe just asks the user first
+
 import 'dart:convert'; // For jsonEncode/jsonDecode
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 
@@ -12,7 +15,7 @@ import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 class ActiveWorkoutSnapshot {
   final String sessionID;
   final int activeDayIndex; // Index within the current program's days
-  // You might also need to save the ID of the Program this day belongs to
+  // You might also need1 to save the ID of the Program this day belongs to
   // final String activeProgramID;
   final List<int> nextSet; // e.g., [exerciseIndex, setIndex, subSetIndex]
 

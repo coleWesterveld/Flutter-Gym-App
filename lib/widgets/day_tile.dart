@@ -44,7 +44,19 @@ class _DayTileState extends State<DayTile> {
 
     return Container(  
       decoration: BoxDecoration(
-        border: Border.all(color: widget.theme.colorScheme.outline),
+        // border: Border.all(
+        //   color: widget.theme.colorScheme.outline,
+        //   width: 0.5
+        // ),
+
+        boxShadow: [
+          BoxShadow(
+            color: widget.theme.colorScheme.shadow,
+            offset: const Offset(2, 2),
+            blurRadius: 4.0,
+          ),
+        ],
+        
 
         color: widget.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12.0),
@@ -57,6 +69,7 @@ class _DayTileState extends State<DayTile> {
             dividerColor: Colors.transparent,
             listTileTheme: const ListTileThemeData(
               // Removes extra padding
+              horizontalTitleGap: 0,
               contentPadding: EdgeInsets.only(left: 4, right: 16), 
             ),
           ),
@@ -86,6 +99,38 @@ class _DayTileState extends State<DayTile> {
             // Top row always displays day title, and edit button
             // Sized boxes and padding is just a bunch of formatting stuff
             // tbh it could probably be made more concise
+
+            leading: Row( 
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  //width: 50,
+                  child: Text(
+                    "${widget.index + 1}",
+                                          
+                    style: TextStyle(
+                      height: 0.6,
+                      color: widget.theme.colorScheme.onSurface,
+                      fontSize: 35,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    width: 15,
+                    height: 15,
+                    decoration:  BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(context.watch<Profile>().split[widget.index].dayColor),
+                    ),
+                  
+                  ),
+                ),
+              ]
+            ),
             title: 
               SizedBox(
                 height: 40,
@@ -98,37 +143,17 @@ class _DayTileState extends State<DayTile> {
                         child: 
                           Row(
                             children: [
-                              // Number
-                              SizedBox(
-                                width: 30,
-                                child: Text(
-                                
-                                  "${widget.index + 1}",
-                                    
-                                  style: TextStyle(
-                                    height: 0.6,
-                          
-                                    color: Color(context.watch<Profile>().split[widget.index].dayColor),
-                                    fontSize: 50,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-
                               // Day title
-                              Padding(
-                                padding: const EdgeInsets.only(left : 16.0),
-                                child: SizedBox(
-                                  width: MediaQuery.sizeOf(context).width - 186,
-                                  child: Text(
-                                    overflow: TextOverflow.ellipsis,
-                                    context.watch<Profile>().split[widget.index].dayTitle,
-                                    
-                                    style: TextStyle(
-                                      color: widget.theme.colorScheme.onSurface,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                              SizedBox(
+                                width: MediaQuery.sizeOf(context).width - 186,
+                                child: Text(
+                                  overflow: TextOverflow.ellipsis,
+                                  context.watch<Profile>().split[widget.index].dayTitle,
+                                  
+                                  style: TextStyle(
+                                    color: widget.theme.colorScheme.onSurface,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               ),

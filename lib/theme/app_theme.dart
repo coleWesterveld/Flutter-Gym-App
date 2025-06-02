@@ -97,7 +97,7 @@ class AppTheme {
          // tileColor: widgetBackground // Optional: Explicitly set tile color if needed
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         // Explicitly set Card color to widget background
         color: widgetBackground,
         elevation: 0, // Or maybe 1-2 for slight separation
@@ -107,7 +107,7 @@ class AppTheme {
         ),
       ),
 
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
          backgroundColor: widgetBackground, // Dialogs should use widget background
          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -245,7 +245,7 @@ class AppTheme {
         contentPadding: EdgeInsets.only(left: 4, right: 16),
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: widgetBackground,
         elevation: 1,
         surfaceTintColor: Colors.transparent,
@@ -255,7 +255,7 @@ class AppTheme {
         ),
       ),
 
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: widgetBackground,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10)),

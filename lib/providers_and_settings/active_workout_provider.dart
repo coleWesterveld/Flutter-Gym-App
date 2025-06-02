@@ -406,7 +406,6 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     debugPrint("allo?");
     timer?.cancel(); // Ensure no multiple timers
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      debugPrint("hello... anyone?");
       if (!isPaused) { // isPaused should be correctly set from snapshot
         notifyListeners();
       } else{
@@ -418,13 +417,10 @@ class ActiveWorkoutProvider extends ChangeNotifier {
         //  -- they are "paused" (they both move at the same speed)
 
         // these *shouldnt* be null, but yk, just in case
-        debugPrint("uhh stuff should be running...?");
         if (workoutStartTime != null){
-          debugPrint("adding a second");
           workoutStartTime = workoutStartTime!.add(const Duration(seconds: 1));
         }
         if (lastRestStartTime != null){
-          debugPrint("adding a second rest");
           lastRestStartTime = lastRestStartTime!.add(const Duration(seconds: 1));
         }
         notifyListeners();

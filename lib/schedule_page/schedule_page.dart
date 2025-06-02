@@ -7,6 +7,7 @@
 
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
+import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -102,7 +103,15 @@ class _MyScheduleState extends State<SchedulePage> {
                   shape: BoxShape.circle,
                 ),
               ),
-              Expanded(child: Text(" ${day.dayTitle}",overflow: TextOverflow.ellipsis,)),
+              Expanded(
+                child: Text(
+                  " ${day.dayTitle}",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700
+                  )
+                )
+              ),
             ],
             ),
           ),
@@ -127,17 +136,17 @@ class _MyScheduleState extends State<SchedulePage> {
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: theme.colorScheme.onSurface, width: 3),
-        borderRadius: const BorderRadius.all(Radius.circular(14)),
-        color: darken(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
-        shape: BoxShape.rectangle, 
+        //borderRadius: const BorderRadius.all(Radius.circular(14)),
+        color: darken(Color(context.watch<Profile>().split[events[0].index].dayColor),50), 
+        shape: BoxShape.circle, 
       );
     }
 
     return  BoxDecoration(
-        color:  darken(const Color(0xFF1e2025), 20),
+        color:  darken(const Color(0xFF1e2025), 50),
         border: Border.all(color: theme.colorScheme.onSurface, width: 3),
-        borderRadius:  const BorderRadius.all(Radius.circular(14)),
-        shape: BoxShape.rectangle, 
+        //borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        shape: BoxShape.circle, 
       );
     
     
@@ -151,16 +160,16 @@ class _MyScheduleState extends State<SchedulePage> {
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: theme.colorScheme.surface, width: 3),
-        borderRadius: const BorderRadius.all(Radius.circular(14)),
+        //borderRadius: const BorderRadius.all(Radius.circular(14)),
         color: lighten(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
-        shape: BoxShape.rectangle, 
+        shape: BoxShape.circle, 
       );
     }
 
     return  BoxDecoration(
         color:  theme.colorScheme.outline,
-        border: Border.all(color: theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
-        shape: BoxShape.rectangle, 
+        //border: Border.all(color: theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+        shape: BoxShape.circle, 
       );
     
     
@@ -274,139 +283,136 @@ class _MyScheduleState extends State<SchedulePage> {
         
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-                      child: Container(
-                        child: TableCalendar(
-
-
-//TODO: add button in header to take user back to today
-                          // limit to only monthview
-                          availableCalendarFormats: const {
-                            CalendarFormat.month: 'Month',
-                          },
-
-                          // will return true if seected day is same as day, will highlight day as selected
-                          selectedDayPredicate: (day) {
-                            return _selectedDay!.year == day.year &&
-                              _selectedDay!.month == day.month &&
-                              _selectedDay!.day == day.day;
-                          },
-
-                          // manage when a day gets tapped
-                          onDaySelected: _onDaySelected,
-
-                          // given a day, load its events
-                          eventLoader: (day){
-                            return getEventsForDay(day: day, context: context);
-                          },
+                      child: TableCalendar(
+                      
+                      //TODO: add button in header to take user back to today
+                        // limit to only monthview
+                        availableCalendarFormats: const {
+                          CalendarFormat.month: 'Month',
+                        },
+                      
+                        // will return true if seected day is same as day, will highlight day as selected
+                        selectedDayPredicate: (day) {
+                          return _selectedDay!.year == day.year &&
+                            _selectedDay!.month == day.month &&
+                            _selectedDay!.day == day.day;
+                        },
+                      
+                        // manage when a day gets tapped
+                        onDaySelected: _onDaySelected,
+                      
+                        // given a day, load its events
+                        eventLoader: (day){
+                          return getEventsForDay(day: day, context: context);
+                        },
+                        
+                        
+                        // build by day
+                        
+                        calendarBuilders: CalendarBuilders(
+                        outsideBuilder: (context, day, focusedDay) {
+                          var events = getEventsForDay(day: day, context: context);
+                        
+                          //DateTime origin = DateTime(2024, 1, 7);
                           
-                          
-                          // build by day
-                          
-                          calendarBuilders: CalendarBuilders(
-                          outsideBuilder: (context, day, focusedDay) {
-                            var events = getEventsForDay(day: day, context: context);
-                          
-                            //DateTime origin = DateTime(2024, 1, 7);
-                            
-                            if (events.isNotEmpty){
-                              return  Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: today.isBefore(day) ? 
-                                      Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                                      darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 40),
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(16.0),
-                                    ),
-                                    shape: BoxShape.rectangle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${day.day}',
-                                      style: TextStyle(color: theme.colorScheme.onSurface),
-                                    ),
+                          if (events.isNotEmpty){
+                            return  Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: today.isBefore(day) ? 
+                                    Color(context.watch<Profile>().split[events[0].index].dayColor): 
+                                    darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 50),
+                                  // borderRadius: const BorderRadius.all(
+                                  //   Radius.circular(16.0),
+                                  // ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${day.day}',
+                                    style: TextStyle(color: theme.colorScheme.onSurface),
                                   ),
                                 ),
-                              );
-                            }
-                            
+                              ),
+                            );
+                          }
                           
-                            return null;
-                          },
-
-
-
-
-                          defaultBuilder: (context, day, focusedDay) {
-                            var events = getEventsForDay(day: day, context: context);
+                        
+                          return null;
+                        },
+                      
+                      
+                      
+                      
+                        defaultBuilder: (context, day, focusedDay) {
+                          var events = getEventsForDay(day: day, context: context);
+                        
+                          //DateTime origin = DateTime(2024, 1, 7);
                           
-                            //DateTime origin = DateTime(2024, 1, 7);
-                            
-                            if (events.isNotEmpty){
-                              return  Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: today.isBefore(day) ? 
-                                      Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                                      darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 40),
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(16.0),
-                                    ),
-                                    shape: BoxShape.rectangle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${day.day}',
-                                      style: TextStyle(color: theme.colorScheme.onPrimary),
-                                    ),
+                          if (events.isNotEmpty){
+                            return  Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: today.isBefore(day) ? 
+                                    Color(context.watch<Profile>().split[events[0].index].dayColor): 
+                                    darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 50),
+                                  // borderRadius: const BorderRadius.all(
+                                  //   Radius.circular(16.0),
+                                  // ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${day.day}',
+                                    style: TextStyle(color: theme.colorScheme.onPrimary),
                                   ),
                                 ),
-                              );
-                            }
-                            
-                            return null;
-                          },
+                              ),
+                            );
+                          }
+                          
+                          return null;
+                        },
+                        ),
+                        rowHeight: 70,
+                        focusedDay: _selectedDay!, 
+                        firstDay: DateTime.utc(2010, 10, 16), 
+                        lastDay: DateTime.utc(2030, 3, 14),
+                        calendarStyle: CalendarStyle(
+                          markerDecoration: const BoxDecoration(),
+                          defaultDecoration: BoxDecoration(
+                            //color: Colors.white,
+                            //borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
                           ),
-                          rowHeight: 70,
-                          focusedDay: _selectedDay!, 
-                          firstDay: DateTime.utc(2010, 10, 16), 
-                          lastDay: DateTime.utc(2030, 3, 14),
-                          calendarStyle: CalendarStyle(
-                            markerDecoration: const BoxDecoration(),
-                            defaultDecoration: BoxDecoration(
-                              //color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              shape: BoxShape.rectangle,
-                            ),
-                            
-                            
-                            selectedDecoration: _buildSelected(context),
-                            todayDecoration: _buildToday(context),
-
-                            // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
-                            // idk a better way to do this, but this works, even if its maybe not elegant
-                            rangeEndDecoration: BoxDecoration(
-                              //color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              shape: BoxShape.rectangle,
-                            ),
-                            weekendDecoration: BoxDecoration(
-                              //color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              shape: BoxShape.rectangle,
-                            ),
-                            outsideDecoration: BoxDecoration(
-                              //color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              shape: BoxShape.rectangle,
-                            ),
-
-                            selectedTextStyle: TextStyle(
-                              color: theme.colorScheme.onPrimary, 
-                              fontWeight: FontWeight.bold,
-                            ),
+                          
+                          
+                          selectedDecoration: _buildSelected(context),
+                          todayDecoration: _buildToday(context),
+                      
+                          // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
+                          // idk a better way to do this, but this works, even if its maybe not elegant
+                          rangeEndDecoration: const BoxDecoration(
+                            //color: Colors.white,
+                            //borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
+                          ),
+                          weekendDecoration: const BoxDecoration(
+                            //color: Colors.white,
+                            //borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
+                          ),
+                          outsideDecoration: const BoxDecoration(
+                            //color: Colors.white,
+                            //borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
+                          ),
+                      
+                          selectedTextStyle: TextStyle(
+                            color: theme.colorScheme.onPrimary, 
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -416,6 +422,8 @@ class _MyScheduleState extends State<SchedulePage> {
                 ),
               ),
             ),
+
+            // shows more info upon click
             ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents, 
               builder: (context, value, _){
@@ -437,16 +445,34 @@ class _MyScheduleState extends State<SchedulePage> {
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 5,
-                              offset: const Offset(0, 0),
+                              offset: const Offset(2, 2),
                               spreadRadius: 2,
                               color: theme.colorScheme.shadow.withAlpha((0.3*255).round())
 
                             )
                           ]
                         ),
-                        child: ListTile(
-                          //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
-                          title: Text(value[0].title)
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ListTile(
+                            
+                            //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
+                            title: Text(
+                              "Day ${value[0].index + 1} • ${value[0].title}",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700
+                              )
+                            ),
+                            subtitle: Text(formatDate(_selectedDay!)),
+                            trailing: Text(
+                              value[0].time?.format(context) ?? "No Time Set",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700
+                              )
+                            )
+                          ),
                         ),
                       
                       ),

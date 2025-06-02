@@ -9,7 +9,8 @@ import 'package:firstapp/other_utilities/days_between.dart';
 class Event{
   final String title;
   final int index;
-  Event(this.title, this.index);
+  final TimeOfDay? time;
+  Event(this.title, this.index, this.time);
 }
 
 // Given a specific date and program start day, this function will find the workout, if any, for a specific day
@@ -22,7 +23,13 @@ List<Event> getEventsForDay ({required DateTime day, required BuildContext conte
     // if days between origin and day is equal to dayorder
 
     if (daysBetween(startDay , day) % context.read<Profile>().splitLength == context.read<Profile>().split[splitDay].dayOrder) {
-      return [Event(context.read<Profile>().split[splitDay].dayTitle, splitDay)];
+      return [
+        Event(
+          context.read<Profile>().split[splitDay].dayTitle, 
+          splitDay, 
+          context.read<Profile>().split[splitDay].workoutTime, 
+        )
+    ];
     }
   }
   return [];

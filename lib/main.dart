@@ -230,7 +230,7 @@ class MainScaffold extends StatefulWidget {
   final GlobalKey<ProgramPageState> programPageKey; // Accept the key
 
   final BuildContext showcaseContext; // Receive the showcase context
-  String? debugtext;
+  // String? debugtext;
 
   MainScaffold({
     super.key, 
@@ -287,10 +287,11 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
     final activeWorkoutP = Provider.of<ActiveWorkoutProvider>(context, listen: false);
 
     // Only save if there's an active session ID in the provider
+    // Note: we dont have enough time to save on detached, so I removed it for now
+    // MAYBE if this is more efficient it could work, but it would have to be super fast. 
     if (activeWorkoutP.sessionID != null) {
-      if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      if (state == AppLifecycleState.paused /*|| state == AppLifecycleState.detached*/) {
         activeWorkoutP.saveActiveWorkoutState();
-        debugPrint("THIS SHOULD RUN AAAAAH App lifecycle: State saved on $state");
       }
       // Note: The stopwatch accuracy when simply backgrounding (not closing)
       // is handled by Dart's Stopwatch itself. The save/restore logic
@@ -378,7 +379,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
 
     ActiveWorkoutSnapshot? snapshot = await activeWorkoutP.loadActiveWorkoutState();
     debugPrint("we got a snapshot: $snapshot");
-    widget.debugtext = snapshot?.toJson().toString() ?? "this was null";
+    // widget.debugtext = snapshot?.toJson().toString() ?? "this was null";
 
 
     if (snapshot != null) {
@@ -446,7 +447,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
           onProgramSelected: (selectedProgram) {
             context.read<Profile>().updateProgram(selectedProgram);
           },
-          debugText: widget.debugtext ?? "no debug -- null",
+          //debugText: widget.debugtext ?? "no debug -- null",
       
           theme: theme,
         ),
