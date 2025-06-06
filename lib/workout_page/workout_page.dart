@@ -51,7 +51,7 @@ class _WorkoutState extends State<Workout> {
   final Map<int, List<SetRecord>> _exerciseHistory = {};
 
   // will be false until all sets in an exercise are logged.
-  List<bool> isExerciseComplete = [];
+
 
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
@@ -61,12 +61,6 @@ class _WorkoutState extends State<Workout> {
     int? primaryIndex = workoutProvider.activeDayIndex;
 
     if (primaryIndex != null && workoutProvider.sessionID != null){
-      isExerciseComplete = List.filled(
-        context.read<Profile>().exercises[primaryIndex].length,
-        false,
-        growable: true,
-      );
-
 
       for (Exercise exercise
           in context.read<Profile>().exercises[primaryIndex]) {
@@ -79,6 +73,10 @@ class _WorkoutState extends State<Workout> {
         //debugPrint("record found for exercise: ${record}");
         if (record.isNotEmpty) {
           _exerciseHistory[index] = record;
+          // debugPrint("index: ${index}");
+          // debugPrint("record for ID: ${exercise.exerciseID}");
+          // debugPrint("record saved: ${_exerciseHistory[index]}");
+
         }
         index++;
       }
@@ -181,7 +179,7 @@ class _WorkoutState extends State<Workout> {
                 ? widget.theme.colorScheme.primary
                 : widget.theme.colorScheme.outline,
           ),
-          color: isExerciseComplete[index] 
+          color: context.watch<ActiveWorkoutProvider>().isExerciseComplete[index] 
             ? widget.theme.colorScheme.primary.withAlpha((255 * 0.25).round()) 
             :widget.theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12.0),
@@ -404,7 +402,7 @@ class _WorkoutState extends State<Workout> {
                                     }
 
                                     // Update exercise completion status
-                                    isExerciseComplete[index] = allLogged;
+                                    context.read<ActiveWorkoutProvider>().isExerciseComplete[index] = allLogged;
                                   });
                                 },
                               );
@@ -447,7 +445,7 @@ class _WorkoutState extends State<Workout> {
                                     index1: primaryIndex,
                                     index2: index,
                                   );
-                              isExerciseComplete[index] = false;
+                              context.read<ActiveWorkoutProvider>().isExerciseComplete[index] = false;
                               setState(() {});
                             },
                             label: Row(
@@ -568,14 +566,18 @@ class _WorkoutState extends State<Workout> {
     if (records.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("No History Found",
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text("No recorded sets found for $title"),
-          ],
+        child: SizedBox(
+          width: double.infinity,
+          height: MediaQuery.sizeOf(context).height * 0.7,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("No History Found",
+                  style: Theme.of(context).textTheme.titleLarge),
+              SizedBox(height: 24),
+              Text("No recorded sets found for $title"),
+            ],
+          ),
         ),
       );
     }

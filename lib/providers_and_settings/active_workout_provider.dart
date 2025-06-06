@@ -43,6 +43,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   Day? activeDay;
   List<bool>? showHistory = <bool>[];
   List<int> nextSet = [0, 0, 0];
+  List<bool> isExerciseComplete = [];
 
   DateTime? workoutStartTime;
   DateTime? lastRestStartTime;
@@ -207,7 +208,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   Future<ActiveWorkoutSnapshot?> loadActiveWorkoutState() async {
     final prefs = await SharedPreferences.getInstance();
     final String? snapshotString = prefs.getString(_snapshotKey);
-    debugPrint("string is raw here: ${snapshotString}");
+    //debugPrint("string is raw here: ${snapshotString}");
     if (snapshotString != null) {
       try {
         final snapshot = ActiveWorkoutSnapshot.fromJson(jsonDecode(snapshotString));
@@ -219,14 +220,14 @@ class ActiveWorkoutProvider extends ChangeNotifier {
         return null;
       }
     }
-    debugPrint('No saved workout state found.');
+    //debugPrint('No saved workout state found.');
     return null;
   }
 
   Future<void> clearActiveWorkoutState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_snapshotKey);
-    debugPrint('Cleared active workout state from SharedPreferences.');
+    //debugPrint('Cleared active workout state from SharedPreferences.');
   }
 
   // Add this method to your ActiveWorkoutProvider class
@@ -395,15 +396,47 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     
     activeDay = programProvider.split[activeDayIndex!]; // Ensure activeDay is also set
     showHistory = List.filled(programProvider.exercises[activeDayIndex!].length, false, growable: true); // Re-init showHistory if needed
-
+    _calculateExerciseCompletion();
     notifyListeners();
-    debugPrint("Active workout state fully restored from snapshot.");
+    //debugPrint("Active workout state fully restored from snapshot.");
     return true;
+  }
+
+  void _calculateExerciseCompletion(){
+    // determines which exercises to mark as 'complete' based on if all sets for that exercise are compeleted
+    if (activeDayIndex == null){
+      debugPrint("WARN: invalid call of calculating exercise state when no workout active.");
+      return;
+
+    } else{
+      // for each exercise
+      for (int exerciseIndex = 0; exerciseIndex < programProvider.exercises[activeDayIndex!].length; exerciseIndex++){
+        bool complete = true;
+        
+        // for each set cluster in each exercise
+        setLoop:
+        for (int setIndex = 0; setIndex < programProvider.sets[activeDayIndex!][exerciseIndex].length; setIndex++){
+        
+          // for each subset of each set cluster
+          for (int? subSet in programProvider.sets[activeDayIndex!][exerciseIndex][setIndex].loggedRecordID){
+            // if any of them are unlogged, we break out and check next exercise.
+            if (subSet == null){
+              complete = false;
+              break setLoop;
+            }
+          }
+        }
+
+        isExerciseComplete[exerciseIndex] = complete;
+      }
+
+    }
+
+
   }
 
   // Helper to start UI timer based on current pause state
   void startTimers() {
-    debugPrint("allo?");
     timer?.cancel(); // Ensure no multiple timers
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!isPaused) { // isPaused should be correctly set from snapshot
@@ -435,7 +468,12 @@ void _initializeStructuresForDay(int dayIdx) {
 
   activeDay = programProvider.split[dayIdx];
   showHistory = List.filled(programProvider.exercises[dayIdx].length, false, growable: true);
-
+  
+  isExerciseComplete = List.filled(
+    programProvider.exercises[dayIdx].length,
+    false,
+    growable: true,
+  );
   // Initialize based on programProvider's data for the dayIdx
   // This structure must match exactly how TECs are accessed
 
@@ -500,7 +538,7 @@ void _initializeStructuresForDay(int dayIdx) {
     growable: true,
   );
 
-  debugPrint("Structures initialized for day index: $dayIdx with ${programProvider.exercises[dayIdx].length} exercises.");
+  //debugPrint("Structures initialized for day index: $dayIdx with ${programProvider.exercises[dayIdx].length} exercises.");
 }
 
   // Call this from `update:` or a listener:
@@ -605,7 +643,7 @@ void _initializeStructuresForDay(int dayIdx) {
   String _generateNewSessionId() {
     final now = DateTime.now();
     final timestamp = now.toIso8601String();
-    debugPrint("Generated new session ID: $timestamp");
+    // debugPrint("Generated new session ID: $timestamp");
     return timestamp;
   }
 

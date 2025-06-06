@@ -262,6 +262,10 @@ class _MyScheduleState extends State<SchedulePage> {
               child: Container(
                 
                 decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    width: 0.5
+                  ),
                   
                   color: theme.colorScheme.surface,
                   //border: Border

@@ -285,8 +285,10 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
             child: Container(
               decoration: BoxDecoration(
             
-                // border: Border.all(
-                //   color: widget.theme.colorScheme.outline),
+                border: Border.all(
+                  color: widget.theme.colorScheme.outline,
+                  width: 0.5
+                ),
                 boxShadow: [
                   todaysWorkout
                       ? BoxShadow(
@@ -349,36 +351,39 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     //tbh it could probably be made more concise
                     
 
-                    leading: Row( 
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          //width: 50,
-                          child: Text(
-                            "${index + 1}",
-                                                  
-                            style: TextStyle(
-                              height: 0.6,
-                              color: widget.theme.colorScheme.onSurface,
-                              fontSize: 35,
-                              fontWeight: FontWeight.w900,
-                            ),
-                            ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Container(
-                            width: 15,
-                            height: 15,
-                            decoration:  BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(context.watch<Profile>().split[index].dayColor),
-                            ),
-                          
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Row( 
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            //width: 50,
+                            child: Text(
+                              "${index + 1}",
+                                                    
+                              style: TextStyle(
+                                height: 0.6,
+                                color: widget.theme.colorScheme.onSurface,
+                                fontSize: 35,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              ),
                           ),
-                        ),
-                      ]
+                      
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Container(
+                              width: 15,
+                              height: 15,
+                              decoration:  BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(context.watch<Profile>().split[index].dayColor),
+                              ),
+                            
+                            ),
+                          ),
+                        ]
+                      ),
                     ),
                     
                     title: SizedBox(
@@ -490,7 +495,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 setWorkout =  await confirmNewWorkout(context);
                                               }
                 
-                                              debugPrint("setit: $setWorkout");
+                                              //debugPrint("setit: $setWorkout");
                 
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
@@ -543,7 +548,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
                 
-                                              debugPrint("setit: $setWorkout");
+                                              //debugPrint("setit: $setWorkout");
                 
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
@@ -657,10 +662,10 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
           child: Container(
             decoration: BoxDecoration(
               
-              // border: Border.all(
-              //   color: widget.theme.colorScheme.outline,
-              //   width: 0.5
-              // ),
+              border: Border.all(
+                color: widget.theme.colorScheme.outline,
+                width: 0.5
+              ),
               boxShadow: [
                 todaysWorkout
                     ? BoxShadow(
@@ -724,37 +729,40 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   //tbh it could probably be made more concise
                   //TODO: simplify this
 
-                  leading: Row( 
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          //width: 50,
-                          child: Text(
-                            "${index + 1}",
-                                                  
-                            style: TextStyle(
-                              height: 0.6,
-                              color: widget.theme.colorScheme.onSurface,
-                              fontSize: 35,
-                              fontWeight: FontWeight.w900,
-                            ),
-                            ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Container(
-                            width: 15,
-                            height: 15,
-                            decoration:  BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(context.watch<Profile>().split[index].dayColor),
-                            ),
-                          
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row( 
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            //width: 50,
+                            child: Text(
+                              "${index + 1}",
+                                                    
+                              style: TextStyle(
+                                height: 0.6,
+                                color: widget.theme.colorScheme.onSurface,
+                                fontSize: 35,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              ),
                           ),
-                        ),
-                      ]
-                    ),
+                    
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Container(
+                              width: 15,
+                              height: 15,
+                              decoration:  BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(context.watch<Profile>().split[index].dayColor),
+                              ),
+                            
+                            ),
+                          ),
+                        ]
+                      ),
+                  ),
                   title: SizedBox(
                     height: 30,
                     child: Row(
@@ -857,7 +865,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
               
-                                              debugPrint("setit: $setWorkout");
+                                              //debugPrint("setit: $setWorkout");
               
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)
@@ -910,7 +918,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 setWorkout = await confirmNewWorkout(context);
                                               }
               
-                                              debugPrint("setit: $setWorkout");
+                                              //debugPrint("setit: $setWorkout");
               
                                               // If user did not select back, then we start it
                                               if (setWorkout == true){ // User confirmed to start new (or no old one active)

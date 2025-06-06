@@ -91,32 +91,6 @@ class DatabaseHelper {
   // then, we allow them to resume the workout, and put them at the set after the most recently logged one
   // then as the user
   Future _createDB(Database db, int version) async {
-    await db.execute(
-      '''
-      CREATE TABLE user_settings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        current_program_id INTEGER,
-        theme_mode TEXT CHECK(theme_mode IN ('light', 'dark', 'system')) DEFAULT 'system',
-        program_start_date TEXT, -- ISO8601 string (YYYY-MM-DD)
-        program_duration_days INTEGER DEFAULT 28, -- Typical 4-week program
-        is_mid_workout BOOLEAN DEFAULT 0, -- 0 = false, 1 = true
-        use_metric BOOLEAN DEFAULT 0, -- Default to lbs but user can switch, data will always be stored as lbs but will be converted in UI to kgs
-        last_workout_id INTEGER, -- For resume functionality
-        last_workout_timestamp TEXT, -- When they paused
-        rest_timer_seconds INTEGER DEFAULT 90, -- Common default rest time
-        enable_sound BOOLEAN DEFAULT 1,
-        enable_haptics BOOLEAN DEFAULT 1,
-        auto_rest_timer BOOLEAN DEFAULT 0,
-        colour_blind_mode BOOLEAN DEFAULT 0,
-        enable_notifications BOOLEAN DEFAULT 0,
-        time_reminder INTEGER DEFAULT 30,
-        is_first_time BOOLEAN DEFAULT 1,
-        
-        FOREIGN KEY (current_program_id) REFERENCES programs(id),
-        FOREIGN KEY (last_workout_id) REFERENCES days(id)
-      );
-    '''
-    );
 
     await db.execute(
     '''
@@ -228,6 +202,33 @@ class DatabaseHelper {
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
       '''
+    );
+
+    await db.execute(
+      '''
+      CREATE TABLE user_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        current_program_id INTEGER,
+        theme_mode TEXT CHECK(theme_mode IN ('light', 'dark', 'system')) DEFAULT 'system',
+        program_start_date TEXT, -- ISO8601 string (YYYY-MM-DD)
+        program_duration_days INTEGER DEFAULT 28, -- Typical 4-week program
+        is_mid_workout BOOLEAN DEFAULT 0, -- 0 = false, 1 = true
+        use_metric BOOLEAN DEFAULT 0, -- Default to lbs but user can switch, data will always be stored as lbs but will be converted in UI to kgs
+        last_workout_id INTEGER, -- For resume functionality
+        last_workout_timestamp TEXT, -- When they paused
+        rest_timer_seconds INTEGER DEFAULT 90, -- Common default rest time
+        enable_sound BOOLEAN DEFAULT 1,
+        enable_haptics BOOLEAN DEFAULT 1,
+        auto_rest_timer BOOLEAN DEFAULT 0,
+        colour_blind_mode BOOLEAN DEFAULT 0,
+        enable_notifications BOOLEAN DEFAULT 0,
+        time_reminder INTEGER DEFAULT 30,
+        is_first_time BOOLEAN DEFAULT 1,
+        
+        FOREIGN KEY (current_program_id) REFERENCES programs(id),
+        FOREIGN KEY (last_workout_id) REFERENCES days(id)
+      );
+    '''
     );
 
     // load all excercises from text file into database
@@ -583,6 +584,7 @@ class DatabaseHelper {
   // update settings
   Future<int> updateUserSettings(UserSettings settings) async {
     final db = await database;
+    debugPrint("settings: ${settings}");
     return await db.update(
       'user_settings',
       settings.toMap(),
@@ -728,8 +730,8 @@ class DatabaseHelper {
   Future<int> getCurrentProgramId() async {
     final db = await database;
     final maps = await db.query('user_settings', limit: 1);
-    if (maps.isEmpty) return 1; // Default fallback
-    return maps.first['current_program_id'] as int? ?? 1;
+    if (maps.isEmpty) return -1;
+    return maps.first['current_program_id'] as int? ?? -1;
   }
 
   Future<void> setCurrentProgramId(int programId) async {
@@ -761,9 +763,61 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> deleteProgram(int programId) async {
+  // this is a bit more complicated that just deleting the program, 
+  //since we reference active program in user settings, and we want there to always be a program
+  // so heres how it goes: 
+  // if the program to delete is the one that is active, we try to set the current program to the first available program 
+  // if we are deleting the final program, we add a new program called "new program", and set the current program to that
+  // if we are not deleting the active program we can just delete it with no worries.
+  Future<void> deleteProgram(int programId) async {
     final db = await DatabaseHelper.instance.database;
-    return await db.delete(
+    // check if the program to be deleted is the currently active program.
+    final List<Map<String, dynamic>> userSettings = await db.query(
+      'user_settings',
+      columns: ['current_program_id', 'id'],
+      limit: 1,
+    );
+    debugPrint("userSettings found: ${userSettings}");
+
+    int? currentProgramId = userSettings.isNotEmpty
+        ? userSettings.first['current_program_id'] as int?
+        : null;
+    debugPrint("currentprogramID: ${currentProgramId}");
+
+    if (currentProgramId == programId) {
+      // The program to be deleted is the active program.
+
+      // attempt to find another program to set as active.
+      final List<Map<String, dynamic>> otherPrograms = await db.query(
+        'programs',
+        columns: ['id'],
+        where: 'id != ?',
+        whereArgs: [programId],
+        limit: 1,
+      );
+      debugPrint("other Program candidates: ${currentProgramId}");
+
+
+      if (otherPrograms.isNotEmpty) {
+        // found another program: update user settings to use it.
+        final int newActiveProgramId = otherPrograms.first['id'] as int;
+        debugPrint("trying to set new active program to: ${newActiveProgramId}");
+        debugPrint("with usersettings: ${userSettings.first['id']}");
+        await db.update(
+          'user_settings',
+          {'current_program_id': newActiveProgramId},
+          where: 'id = ?',
+          whereArgs: [userSettings.first['id']],
+        );
+      } else {
+        // no other programs exist: create a new default program and set it as active.
+        final newProgramID = await insertProgram("New Program");
+        await updateSettingsPartial({'current_program_id' : newProgramID});
+      }
+    }
+
+    // finally, delete the requested program.  This will cascade to other tables as defined.
+    await db.delete(
       'programs',
       where: 'id = ?',
       whereArgs: [programId],
@@ -773,7 +827,6 @@ class DatabaseHelper {
   Future<Program> fetchProgramById(int programId) async {
     final db = await DatabaseHelper.instance.database;
     
-
       final List<Map<String, dynamic>> maps = await db.query(
         'programs',
         where: 'id = ?',
@@ -796,7 +849,11 @@ class DatabaseHelper {
 
   Future<Program> initializeProgram() async {
 
-    final programID = await getCurrentProgramId();
+    int programID = await getCurrentProgramId();
+    if (programID == -1){
+      programID = await insertProgram("New Program");
+      setCurrentProgramId(programID);
+    }
     return fetchProgramById(programID);
     
   }
@@ -1260,8 +1317,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       WITH recent_sessions_with_exercise AS (
         SELECT session_id
         FROM set_log
-        WHERE session_id != '2025-05-08T13:53:52.835625' -- Exclude current session
-          AND exercise_id = 70                         -- *** ADD THIS CONDITION ***
+        WHERE session_id != ? -- Exclude current session
+          AND exercise_id = ?                         -- *** ADD THIS CONDITION ***
         GROUP BY session_id
         ORDER BY MAX(date) DESC
         LIMIT 1
@@ -1285,7 +1342,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         (
           SELECT session_id FROM recent_sessions_with_exercise LIMIT 1 -- More direct way to get this
         ) as session_id,
-        70 as exercise_id,
+        ? as exercise_id,
         (
           SELECT id
           FROM set_log AS s4
@@ -1297,11 +1354,11 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
           LIMIT 1
         ) as record_id
       FROM set_log
-      WHERE exercise_id = 70 -- Main filter for the specific exercise
+      WHERE exercise_id = ? -- Main filter for the specific exercise
         AND session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Link to the found session
       GROUP BY reps, weight, rpe -- Group sets within that found session and exercise
       ORDER BY date DESC;
-    ''', [currentSessionID, exerciseId, exerciseId]);
+    ''', [currentSessionID, exerciseId, exerciseId, exerciseId]);
 
     return results.map((r) => SetRecord(
       reps: r['reps'] as double,

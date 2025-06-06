@@ -353,7 +353,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
               .startTutorialSequence(widget.showcaseContext); // Use the passed context
         } else {
           // Not first time, attempt to resume workout
-          debugPrint("attempting resume");
+          //debugPrint("attempting resume");
           _initiateResumeAttempt();
         }
       }
@@ -378,12 +378,12 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
     }
 
     ActiveWorkoutSnapshot? snapshot = await activeWorkoutP.loadActiveWorkoutState();
-    debugPrint("we got a snapshot: $snapshot");
+    //debugPrint("we got a snapshot: $snapshot");
     // widget.debugtext = snapshot?.toJson().toString() ?? "this was null";
 
 
     if (snapshot != null) {
-      debugPrint("MainScaffold: Snapshot found for session ${snapshot.sessionID}. Attempting to auto-resume.");
+      //debugPrint("MainScaffold: Snapshot found for session ${snapshot.sessionID}. Attempting to auto-resume.");
 
       // Ensure Profile is set to the correct day context if necessary.
       // For now, assuming ActiveWorkoutProvider uses Profile's currently loaded data.
@@ -414,7 +414,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
         await activeWorkoutP.clearActiveWorkoutState();
       }
     } else {
-      debugPrint("MainScaffold: No snapshot found to resume.");
+      //debugPrint("MainScaffold: No snapshot found to resume.");
     }
   }
 
@@ -454,46 +454,59 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
       
       
         resizeToAvoidBottomInset: true,
-        bottomNavigationBar: NavigationBar(
-          onDestinationSelected: (int index) {
-            // reset bottombar and variables in this niche case
-            if (uiState.currentPageIndex == 3 && uiState.isDisplayingChart) {
-              uiState.onAppBarBackButtonPress!();
-            }
-            
-            uiState.currentPageIndex = index;
-          },
-          indicatorColor: theme.colorScheme.primary,
-          indicatorShape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(12),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top:(context.watch<ActiveWorkoutProvider>().activeDay == null 
+              && context.watch<UiStateProvider>().currentPageIndex != 2)
+              ? BorderSide(
+                color: theme.colorScheme.outline,
+                width: 0.5,
+              ) 
+              : BorderSide.none,
             ),
           ),
-      
-          selectedIndex: uiState.currentPageIndex,
-          //different pages that can be navigated to
-          destinations: const <Widget>[
-            NavigationDestination(
-              selectedIcon: Icon(Icons.fitness_center),
-              icon: Icon(Icons.fitness_center_outlined),
-              label: 'Workout',
+          child: NavigationBar(
+            onDestinationSelected: (int index) {
+              // reset bottombar and variables in this niche case
+              if (uiState.currentPageIndex == 3 && uiState.isDisplayingChart) {
+                uiState.onAppBarBackButtonPress!();
+              }
+              
+              uiState.currentPageIndex = index;
+            },
+            indicatorColor: theme.colorScheme.primary,
+            indicatorShape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(12),
+              ),
             ),
-            NavigationDestination(
-              selectedIcon: Icon(Icons.calendar_month),
-              icon: Icon(Icons.calendar_month_outlined),
-              label: 'Schedule',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.now_widgets_outlined),
-              selectedIcon: Icon(Icons.now_widgets),
-              label: 'Program',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.analytics_outlined),
-              selectedIcon: Icon(Icons.analytics),
-              label: 'Analytics',
-            ),
-          ],
+                
+            selectedIndex: uiState.currentPageIndex,
+            //different pages that can be navigated to
+            destinations: const <Widget>[
+              NavigationDestination(
+                selectedIcon: Icon(Icons.fitness_center),
+                icon: Icon(Icons.fitness_center_outlined),
+                label: 'Workout',
+              ),
+              NavigationDestination(
+                selectedIcon: Icon(Icons.calendar_month),
+                icon: Icon(Icons.calendar_month_outlined),
+                label: 'Schedule',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.now_widgets_outlined),
+                selectedIcon: Icon(Icons.now_widgets),
+                label: 'Program',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.analytics_outlined),
+                selectedIcon: Icon(Icons.analytics),
+                label: 'Analytics',
+              ),
+            ],
+          ),
         ),
       
         //what opens for each page
@@ -534,7 +547,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     final uiState = context.watch<UiStateProvider>();
     final manager = context.watch<TutorialManager>();
     final theme = Theme.of(context);
@@ -557,8 +570,6 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
     Widget? leading = uiState.showAppBarBackButton ? 
     IconButton(
       icon: const Icon(Icons.arrow_back),
-      // ### Use the callback from the provider for the onPressed action ###
-      // Use ! because showAppBarBackButton being true implies onPressed is non-null
       onPressed: uiState.onAppBarBackButtonPress!,
     )
     : Showcase(
@@ -605,70 +616,84 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
       ),
     );
     
-    return AppBar(
-        centerTitle: true,
-        title: Text(
-          title
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: Container(
+        decoration: BoxDecoration(
+      border: Border(
+        bottom: BorderSide(
+          color: theme.colorScheme.outline,
+          width: 0.5
         ),
-
-        // Open Drawer to see/select/edit programs if on program page
-        leading: leading,
-
-      actions: [
-        // Takes to settings page
-        Showcase(
-          disableDefaultTargetGestures: true,
-          description: "If you want to change any settings in the future or redo this walkthrough, you can find them here.",
-          //disableDefaultTargetGestures: true,
-          key: AppTutorialKeys.settingsButton,
-          tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
-          descTextStyle: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontSize: 16,
-          ),
-
-          tooltipActions: [
-        TooltipActionButton(
-          type: TooltipDefaultActionType.skip,
-          onTap: () => manager.skipTutorial(),
-          backgroundColor: theme.colorScheme.surface,
-          border: Border.all(
-            color: theme.colorScheme.onSurface
-          ),
-          textStyle: TextStyle(
-            color: theme.colorScheme.onSurface
-          )
-
-          
-        ),
-        TooltipActionButton(
-          type: TooltipDefaultActionType.next,
-          onTap: () => manager.advanceStep(),
-          border: Border.all(
-            color: theme.colorScheme.onSurface
-          ),
-          backgroundColor: theme.colorScheme.surface,
-          textStyle: TextStyle(
-            color: theme.colorScheme.onSurface
-          )
-        )
-      ],
-
-          child: Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsPage()),
+      ),
+    ),
+        child: AppBar(
+            centerTitle: true,
+            title: Text(
+              title
+            ),
+            
+        
+            // Open Drawer to see/select/edit programs if on program page
+            leading: leading,
+        
+          actions: [
+            // Takes to settings page
+            Showcase(
+              disableDefaultTargetGestures: true,
+              description: "If you want to change any settings in the future or redo this walkthrough, you can find them here.",
+              //disableDefaultTargetGestures: true,
+              key: AppTutorialKeys.settingsButton,
+              tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+              descTextStyle: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 16,
+              ),
+        
+              tooltipActions: [
+            TooltipActionButton(
+              type: TooltipDefaultActionType.skip,
+              onTap: () => manager.skipTutorial(),
+              backgroundColor: theme.colorScheme.surface,
+              border: Border.all(
+                color: theme.colorScheme.onSurface
+              ),
+              textStyle: TextStyle(
+                color: theme.colorScheme.onSurface
+              )
+        
+              
+            ),
+            TooltipActionButton(
+              type: TooltipDefaultActionType.next,
+              onTap: () => manager.advanceStep(),
+              border: Border.all(
+                color: theme.colorScheme.onSurface
+              ),
+              backgroundColor: theme.colorScheme.surface,
+              textStyle: TextStyle(
+                color: theme.colorScheme.onSurface
+              )
+            )
+          ],
+        
+              child: Builder(
+                builder: (context) {
+                  return IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsPage()),
+                      );
+                    },
                   );
-                },
-              );
-            }
-          ),
+                }
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

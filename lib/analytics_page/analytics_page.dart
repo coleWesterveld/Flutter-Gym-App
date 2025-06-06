@@ -659,6 +659,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   borderRadius: BorderRadius.circular(16),
                   color: widget.theme.colorScheme.surface,  
               
+                  border: Border.all(
+                    width: 0.5,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 5,
@@ -741,6 +746,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     color: widget.theme.colorScheme.surface,  
+                    
+                    border: Border.all(
+                    width: 0.5,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 
                     boxShadow: [
                       BoxShadow(
@@ -855,6 +865,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           decoration: BoxDecoration(
             color: widget.theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 0.5
+            ),
 
             boxShadow: [
               BoxShadow(

@@ -9,7 +9,10 @@ import '../database/profile.dart';
   import 'package:provider/provider.dart';
   import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
-//import 'dart:math';
+// one thing that could be done is to keep an in memory list of programs 
+// so we dont have to do all this disk I/O to check and change active program to make UI more responsive
+// but for now, this is ok. 
+
 // split, sets, etc in provider
 // on opening app, set split data and other data to whatever is in database
 // database is initialized with values but is then changed by user
@@ -125,8 +128,8 @@ class Profile extends ChangeNotifier {
       
       isInitialized = true;
       notifyListeners();
-      _initializationCompleter.complete(); // Signal completion
-      debugPrint("Profile initialized successfully.");
+      if (!_initializationCompleter.isCompleted) _initializationCompleter.complete(); // Signal completion
+      //debugPrint("Profile initialized successfully.");
     } catch (e) {
       debugPrint("Profile initialization failed: $e");
       _initializationCompleter.completeError(e); // Signal error
@@ -160,14 +163,13 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeProgram(int programID) async {
+  Future<void> changeProgram(int programID) async {
     final newProgram = await dbHelper.fetchProgramById(programID);
     if (newProgram.programID != -1) {
       currentProgram = newProgram;
     } else{
       debugPrint("No program found with ID : $programID");
     }
-
     notifyListeners();
   }
 
@@ -176,6 +178,20 @@ class Profile extends ChangeNotifier {
     dbHelper.setCurrentProgramId(currentProgram.programID);
     _initializeProfileData();
     notifyListeners();
+  }
+
+  void deleteProgram(int programID) async {
+    await dbHelper.deleteProgram(programID);
+
+    final newProgramID = await dbHelper.getCurrentProgramId();
+
+    if (currentProgram.programID != newProgramID){
+      await changeProgram(newProgramID);
+      _initializeProfileData();
+    }
+
+    notifyListeners();
+
   }
 
   void splitAppend() async {

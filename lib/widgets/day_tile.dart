@@ -44,10 +44,10 @@ class _DayTileState extends State<DayTile> {
 
     return Container(  
       decoration: BoxDecoration(
-        // border: Border.all(
-        //   color: widget.theme.colorScheme.outline,
-        //   width: 0.5
-        // ),
+        border: Border.all(
+          color: widget.theme.colorScheme.outline,
+          width: 0.5
+        ),
 
         boxShadow: [
           BoxShadow(
@@ -100,36 +100,39 @@ class _DayTileState extends State<DayTile> {
             // Sized boxes and padding is just a bunch of formatting stuff
             // tbh it could probably be made more concise
 
-            leading: Row( 
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  //width: 50,
-                  child: Text(
-                    "${widget.index + 1}",
-                                          
-                    style: TextStyle(
-                      height: 0.6,
-                      color: widget.theme.colorScheme.onSurface,
-                      fontSize: 35,
-                      fontWeight: FontWeight.w900,
-                    ),
-                    ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Container(
-                    width: 15,
-                    height: 15,
-                    decoration:  BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(context.watch<Profile>().split[widget.index].dayColor),
-                    ),
-                  
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Row( 
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    //width: 50,
+                    child: Text(
+                      "${widget.index + 1}",
+                                            
+                      style: TextStyle(
+                        height: 0.6,
+                        color: widget.theme.colorScheme.onSurface,
+                        fontSize: 35,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      ),
                   ),
-                ),
-              ]
+              
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Container(
+                      width: 15,
+                      height: 15,
+                      decoration:  BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(context.watch<Profile>().split[widget.index].dayColor),
+                      ),
+                    
+                    ),
+                  ),
+                ]
+              ),
             ),
             title: 
               SizedBox(

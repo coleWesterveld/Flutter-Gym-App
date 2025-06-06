@@ -37,9 +37,9 @@ class WorkoutControlBar extends StatelessWidget {
             border: Border(
               top: positionAtTop 
                   ? BorderSide.none 
-                  : BorderSide(color: theme.colorScheme.outline),
+                  : BorderSide(color: theme.colorScheme.outline, width: 0.5),
               bottom: positionAtTop 
-                  ? BorderSide(color: theme.colorScheme.outline)
+                  ? BorderSide(color: theme.colorScheme.outline, width: 0.5)
                   : BorderSide.none,
             ),
           ),

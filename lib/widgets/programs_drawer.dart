@@ -2,7 +2,9 @@
 
 import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/database/profile.dart';
+import 'package:firstapp/providers_and_settings/program_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProgramsDrawer extends StatelessWidget {
   final int currentProgramId;
@@ -103,6 +105,37 @@ class ProgramsDrawer extends StatelessWidget {
                           onProgramSelected(program);
                           Navigator.pop(context);
                         },
+                        onLongPress: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return AlertDialog(
+                                title: const Text('Delete This Program?'),
+                                content: const Text('Do you want to delete this program?'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('No, go back'),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text(
+                                      'Delete Program',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      )
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop();
+                                      context.read<Profile>().deleteProgram(programs[index].programID);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       );
                     },
                   ),
@@ -146,6 +179,7 @@ class ProgramsDrawer extends StatelessWidget {
           decoration: const InputDecoration(hintText: 'Enter new program name'),
         ),
         actions: [
+          
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
@@ -174,6 +208,8 @@ class ProgramsDrawer extends StatelessWidget {
             },
             child: const Text('Save'),
           ),
+
+
         ],
       ),
     );

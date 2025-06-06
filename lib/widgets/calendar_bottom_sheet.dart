@@ -43,9 +43,19 @@ class CalendarBottomSheet extends StatelessWidget {
         );
       },
       child: Container(
-        color: theme.colorScheme.surface,
+        
         padding: const EdgeInsets.all(8.0),
-        height: 82,
+        height: 82.5,
+
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outline,
+              width: 0.5,
+            ),
+          ),
+        ),
       
         child: TableCalendar(
 
