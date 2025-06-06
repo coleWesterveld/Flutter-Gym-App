@@ -5,12 +5,16 @@
 // TODO: these indicators are not very clear, i need to make the design more intuitive
 // ie. what days have passed, what indicates today vs. indicates selected day
 
+import 'dart:async';
+
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
+import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/history_session_view.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
@@ -42,31 +46,38 @@ class _MyScheduleState extends State<SchedulePage> {
 
   DateTime? _selectedDay;
   late ValueNotifier<List<Event>> _selectedEvents;
+  Future<List<SetRecord>>? loggedSets;
 
-  Map<DateTime, List<SetRecord>> _workoutHistory = {};
+  List<DateTime>? didWorkout;
 
-  Future<void> loadWorkouts() async {
-    final raw = await fetchLoggedEventsForMonth(today);
-    _workoutHistory = {
-      for (var entry in raw.entries)
-        normalizeDay(entry.key): entry.value
-    };
+  Future<void> loadDaysActive() async {
+    didWorkout = await context.read<Profile>().getDaysWithHistory(today.subtract(Duration(days: 43)), today);
+    if (_selectedDay != null && mounted){
+      loggedSets = context.read<Profile>().getSetsForDay(normalizeDay(_selectedDay!));
+    }
+    setState(() {});
   }
-
-
 
   @override
   void initState(){
-    loadWorkouts();
     super.initState();
+    loadDaysActive();
     
     _selectedDay = today;
     _selectedEvents = ValueNotifier(getWorkoutForDay(day: _selectedDay!, context: context));
     //loadEvents();
   }
 
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay){
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay, BuildContext realContext) {
     if (!isSameDay(_selectedDay, selectedDay)){
+      if (didWorkout != null && didWorkout!.contains(normalizeDay(selectedDay))){
+        loggedSets = realContext.read<Profile>().getSetsForDay(normalizeDay(selectedDay));
+        setState((){});
+      } else{
+        loggedSets = null;
+        setState((){});
+      }
+      
       setState((){
         _selectedDay = selectedDay;
         //today = focusedDay;
@@ -165,28 +176,6 @@ class _MyScheduleState extends State<SchedulePage> {
     
   }
 
-  BoxDecoration _buildSelected(BuildContext context){
-    final theme = Theme.of(context);
-
-    
-    final events = getWorkoutForDay(day: _selectedDay!, context: context);
-    if (events.isNotEmpty){
-      return BoxDecoration(
-        border: Border.all(color: theme.colorScheme.surface, width: 3),
-        //borderRadius: const BorderRadius.all(Radius.circular(14)),
-        color: lighten(Color(context.watch<Profile>().split[events[0].index].dayColor),20), 
-        shape: BoxShape.circle, 
-      );
-    }
-
-    return  BoxDecoration(
-        color:  theme.colorScheme.outline,
-        //border: Border.all(color: theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
-        shape: BoxShape.circle, 
-      );
-    
-    
-  }
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -317,82 +306,38 @@ class _MyScheduleState extends State<SchedulePage> {
                         },
                       
                         // manage when a day gets tapped
-                        onDaySelected: _onDaySelected,
+                        onDaySelected: (day1, day2) => _onDaySelected(day1, day2, this.context),
                       
                         // given a day, load its events
-                        eventLoader: (day){
-                          return getWorkoutForDay(day: day, context: context);
-                        },
+                        // eventLoader: (day){
+                        //   return getWorkoutForDay(day: day, context: context);
+                        // },
                         
                         
                         // build by day
                         
                         calendarBuilders: CalendarBuilders(
-                        outsideBuilder: (context, day, focusedDay) {
-                          var events = getWorkoutForDay(day: day, context: context);
-                        
-                          //DateTime origin = DateTime(2024, 1, 7);
-                          
-                          if (events.isNotEmpty){
-                            return  Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: today.isBefore(day) ? 
-                                    Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                                    darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 50),
-                                  // borderRadius: const BorderRadius.all(
-                                  //   Radius.circular(16.0),
-                                  // ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${day.day}',
-                                    style: TextStyle(color: theme.colorScheme.onSurface),
-                                  ),
-                                ),
+                        outsideBuilder: (context, day, focusedDay) => _buildDay(context, day, focusedDay, theme, this.context),
+                      
+                      
+                        defaultBuilder: (context, day, focusedDay) => _buildDay(context, day, focusedDay, theme, this.context),
+
+                        selectedBuilder: (context, day, focusedDay) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              //color:  theme.colorScheme.,
+                              border: Border.all(
+                                color: theme.colorScheme.onSurface,
+                                width: 3.0,
                               ),
-                            );
-                          }
-                          
-                        
-                          return null;
+                              //border: Border.all(color: theme.colorScheme.surface, width: 1),        borderRadius:  const BorderRadius.all(Radius.circular(14)),
+                              shape: BoxShape.circle, 
+                            ),
+
+                            child: Center(child: Text('${day.day}'))//socks
+                          );
                         },
-                      
-                      
-                      
-                      
-                        defaultBuilder: (context, day, focusedDay) {
-                          var events = getWorkoutForDay(day: day, context: context);
-                        
-                          //DateTime origin = DateTime(2024, 1, 7);
-                          
-                          if (events.isNotEmpty){
-                            return  Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: today.isBefore(day) ? 
-                                    Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                                    darken(Color(context.watch<Profile>().split[events[0].index].dayColor), 50),
-                                  // borderRadius: const BorderRadius.all(
-                                  //   Radius.circular(16.0),
-                                  // ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${day.day}',
-                                    style: TextStyle(color: theme.colorScheme.onPrimary),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          
-                          return null;
-                        },
+
                         ),
                         rowHeight: 70,
                         focusedDay: _selectedDay!, 
@@ -407,7 +352,7 @@ class _MyScheduleState extends State<SchedulePage> {
                           ),
                           
                           
-                          selectedDecoration: _buildSelected(context),
+                          //selectedDecoration: _buildSelected(context),
                           todayDecoration: _buildToday(context),
                       
                           // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
@@ -445,21 +390,102 @@ class _MyScheduleState extends State<SchedulePage> {
             ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents, 
               builder: (context, value, _) {
-                if (_selectedDay!.isBefore(DateTime.now())) {
-                  // For past days - show workout history
-                  if (_workoutHistory[normalizeDay(_selectedDay!)] != null){
-                    return Padding(
+                if (_selectedDay!.isBefore(DateTime.now()) 
+                    && didWorkout != null
+                    && didWorkout!.contains(normalizeDay(_selectedDay!))) {
+                  return FutureBuilder(
+                    future: loggedSets, 
+                    builder: (context, snapshot) {
+                      // this could be one but for some reason checking for null in enabled is not enough so I need an if statement here
+                      if (snapshot.connectionState == ConnectionState.waiting || snapshot.data == null) {
+                          return Skeletonizer(
+                            enabled: true, 
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: BoxBorder.all(
+                                    color: theme.colorScheme.outline,
+                                    width: 0.5
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colorScheme.shadow,
+                                      offset: const Offset(2, 2),
+                                      blurRadius: 4.0,
+                                    ),
+                                  ]
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(14.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "Loading...",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          )
+                                        )
+                                      ),
+                                      
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Text("Loading..."),
+                                      ),
+                              
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "Notes Loading"
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                        );
+                      }
+                        
+                      return Skeletonizer(
+                          enabled: (snapshot.connectionState == ConnectionState.waiting || snapshot.data == null),
+                          child: Padding(
                       padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
                       child: HistorySessionView(
                         color: theme.colorScheme.surface,
-                        exerciseHistory: _workoutHistory[normalizeDay(_selectedDay!)]!, theme: theme),
-                    );
+                        exerciseHistory: snapshot.data!, theme: theme),
+                    ));
+                        
+                      // } else{
 
-                  } else {
-                    debugPrint("${_workoutHistory}");
-                    return Text("not found for ${_selectedDay}");
+                      //   debugPrint("sets: ${snapshot.data}");
+
+                      //   if (snapshot.data!.isEmpty) return Text("empty");
+                      //   return  
+                      // }
+                    },
+                  );
+                  // // For past days - show workout history
+                  // if (_workoutHistory[normalizeDay(_selectedDay!)] != null){
+                  //   return Padding(
+                  //     padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
+                  //     child: HistorySessionView(
+                  //       color: theme.colorScheme.surface,
+                  //       exerciseHistory: _workoutHistory[normalizeDay(_selectedDay!)]!, theme: theme),
+                  //   );
+
+                  // } else {
+                  //   debugPrint("${_workoutHistory}");
+                  //   return Text("not found for ${_selectedDay}");
                     
-                  }
+                  // }
                   
                   
                 } else {
@@ -518,5 +544,70 @@ class _MyScheduleState extends State<SchedulePage> {
           ],
         ),
     );
+  }
+
+  // context is a bit strange, theres a local and a 'real' context
+  Widget? _buildDay(context, day, focusedDay, ThemeData theme, BuildContext realContext) {
+    if (today.isBefore(day)){
+      // if day is in the future, we show what is planned
+
+    } else{
+      
+      if (didWorkout == null){
+        return const CircularProgressIndicator();
+      }
+      // if in the past, check if they completed a workout that day
+      if (didWorkout!.contains(normalizeDay(day))){
+        debugPrint("found it");
+        return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[700],
+            // borderRadius: const BorderRadius.all(
+            //   Radius.circular(16.0),
+            // ),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              '${day.day}',
+              style: TextStyle(color: theme.colorScheme.onPrimary),
+            ),
+          ),
+        ),
+      );
+      }
+
+      return null;
+    }
+    var events = getWorkoutForDay(day: day, context: realContext);
+  
+    //DateTime origin = DateTime(2024, 1, 7);
+    
+    if (events.isNotEmpty){
+      return  Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: today.isBefore(day) ? 
+              Color(realContext.watch<Profile>().split[events[0].index].dayColor)
+              : Colors.red,
+            // borderRadius: const BorderRadius.all(
+            //   Radius.circular(16.0),
+            // ),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              '${day.day}',
+              style: TextStyle(color: theme.colorScheme.onPrimary),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return null;
   }
 }

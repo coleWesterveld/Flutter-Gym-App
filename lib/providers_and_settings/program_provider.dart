@@ -458,6 +458,16 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<DateTime>> getDaysWithHistory(DateTime start, DateTime end){
+    return dbHelper.getDaysWithHistory(start, end);
+  }
+
+  Future<List<SetRecord>> getSetsForDay(DateTime day){
+    
+    return dbHelper.getSetsForDay(day);
+  }
+      
+
   void exerciseAppend({required int index, required int exerciseId}) async {
     // Insert the exercise into the database and get the inserted ID
     int id = await dbHelper.insertExercise(

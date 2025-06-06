@@ -627,6 +627,17 @@ void _initializeStructuresForDay(int dayIdx) {
     } else { // Clearing active day
       timer?.cancel();
       
+      // unlog all sets -- we lose ID reference, these are logged now
+      for (var day in programProvider.sets){
+        for (var exercise in day){
+          for (var set in exercise){
+            for (int i = 0; i < set.loggedRecordID.length; i++){
+              set.loggedRecordID[i] =null;
+            }
+          }
+        }
+      }
+      
       _disposeAllTECs();
       activeDayIndex = null;
       activeDay = null;

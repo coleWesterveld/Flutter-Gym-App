@@ -17,6 +17,7 @@
 // And values will be converted upon returning from fetch if indicated by useMetric function flag
 
 import 'package:firstapp/other_utilities/events.dart';
+import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -1107,6 +1108,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
+  // probably should use this... lol -- will be very big
+  // use the pagination version that also groups by session
   Future<List<Map<String, dynamic>>> fetchAllSetRecords({required int exerciseId, int? lim}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.query(
@@ -1114,7 +1117,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
 
       where: 'exercise_id = ?',
       whereArgs: [exerciseId],
-      orderBy: 'datetime(date) DESC', // Order by date in descending order
+      orderBy: 'datetime(date) DESC',
       limit: lim, // number of records returned
     );
   }
@@ -1336,7 +1339,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         SELECT session_id
         FROM set_log
         WHERE session_id != ? -- Exclude current session
-          AND exercise_id = ?                         -- *** ADD THIS CONDITION ***
+          AND exercise_id = ? 
         GROUP BY session_id
         ORDER BY MAX(date) DESC
         LIMIT 1
@@ -1395,6 +1398,36 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     )).toList();
   }
 
+  // egts all sets that were logged during a day  
+  Future<List<SetRecord>> getSetsForDay(DateTime day, {useMetric = false}) async {
+    
+    // just used for checking UI skeleton
+    //await Future.delayed(Duration(seconds: 1));
+    final db = await DatabaseHelper.instance.database;
+  //debugPrint("sessionID: $currentSessionID");
+    final results = await db.rawQuery('''
+      SELECT * FROM set_log 
+      WHERE date BETWEEN ? AND ?
+      ORDER BY date DESC
+    ''', [DateTime(day.year, day.month, day.day).toIso8601String(), DateTime(day.year, day.month, day.day).add(const Duration(days: 1)).toIso8601String()]);
+
+    // debugPrint("raw results: ${results}");
+
+    return results.map((r) => SetRecord(
+      reps: r['reps'] as double,
+      weight: useMetric ? lbToKg(pounds: r['weight'] as double): r['weight'] as double,
+      rpe: r['rpe'] as double,
+      numSets: r['num_sets'] as int,
+      sessionID: r['session_id'] as String,
+      exerciseID: r['exercise_id'] as int,
+      date: r['date'] as String,
+      historyNote: r['history_note'] as String? ?? '',
+      recordID: r['id'] as int,
+      dayTitle: r['day_title'] as String,
+      programTitle: r['program_title'] as String,
+    )).toList();
+  }
+
   Future<int> updateSetRecord(
     int setRecordId, Map<String, dynamic> newValues) async {
     final db = await DatabaseHelper.instance.database;
@@ -1415,51 +1448,26 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     );
   }
 
+  /// this method returns a list of days in the given range where at least one set was logged
+  /// mainly for use on schedule page to mark a day as having done a workout
+  Future<List<DateTime>> getDaysWithHistory (DateTime startRange, DateTime endRange) async {
 
-  /// Returns a map where keys are the dates of the workouts and values are
-  /// lists of events for that day. This is optimized for use with table_calendar's eventLoader.
-  Future<Map<DateTime, List<SetRecord>>> getLoggedWorkoutsForRange(DateTime firstDay, DateTime lastDay) async {
-    final db = await instance.database; // Assuming 'instance.database' gets your DB
-
-    // Format dates for the SQL query
-    final String firstDayStr = DateFormat('yyyy-MM-dd').format(firstDay);
-    final String lastDayStr = DateFormat('yyyy-MM-dd').format(lastDay);
-
-    // This query joins set_log with days to get the title of the day that was logged.
-    // It groups by date to ensure we only get one event per day.
-    debugPrint("before query ran");
+    final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT
-        *
+        date
       FROM set_log
       WHERE date BETWEEN ? AND ?
       GROUP BY date
       ORDER BY date ASC
-    ''', [firstDayStr, lastDayStr]);
-    debugPrint("afett query ran");
+    ''', [startRange.toIso8601String(), endRange.toIso8601String()]);
+
+    return maps.map((date) {
+      return normalizeDay(DateTime.parse(date['date']));
+    }).toList();
 
 
-    final Map<DateTime, List<SetRecord>> records = {};
-
-    for (final map in maps) {
-      // The date from DB is a string, parse it back to DateTime.
-      // Use UTC to avoid any timezone issues with date-only comparisons.
-      final DateTime workoutDate = DateTime.parse(map['date']);
-
-      // Create an Event for the logged workout.
-      // Note: The title is now the actual day title from the 'days' table!
-      final record = SetRecord.fromMap(map);
-
-      // Add it to our map.
-      if (records[workoutDate] == null) {
-        records[workoutDate] = [];
-      }
-      records[workoutDate]!.add(record);
-    }
-
-    return records;
   }
-
   // close database
   Future close() async {
     final db = await instance.database;

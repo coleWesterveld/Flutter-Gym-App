@@ -49,7 +49,7 @@ class GoalProgress extends StatelessWidget {
                 const SizedBox(height: 5),
                 
                 Text(
-                  '${goal.currentOneRm} lbs',
+                  '${goal.currentOneRm!.round()} lbs',
                   textHeightBehavior: const TextHeightBehavior(
                     applyHeightToFirstAscent: false,
                     applyHeightToLastDescent: false,
@@ -74,7 +74,7 @@ class GoalProgress extends StatelessWidget {
                     applyHeightToLastDescent: false,
                   ),
                                 
-                  '${goal.targetWeight} lbs',
+                  '${goal.targetWeight.round()} lbs',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

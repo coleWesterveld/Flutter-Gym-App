@@ -41,16 +41,4 @@ List<Event> getWorkoutForDay ({required DateTime day, required BuildContext cont
   }
   return [];
 }
-
-Future<Map<DateTime, List<SetRecord>>> fetchLoggedEventsForMonth(DateTime day) async {
-  final firstDayOfMonth = DateTime(day.year, day.month, 1);
-  final lastDayOfMonth = DateTime(day.year, day.month + 1, 0);
-    // Call the new database function
-    final records = await DatabaseHelper.instance.getLoggedWorkoutsForRange(
-      firstDayOfMonth, 
-      lastDayOfMonth
-    );
-
-    return records;
-  }
   
