@@ -30,7 +30,6 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
   Widget build(BuildContext context) {
     // Assuming your Profile provider contains a split (list of Day) and a corresponding list of exercises per day.
     final profile = context.read<Profile>();
-    final settings = context.read<SettingsModel>();
     final days = profile.split;
     final exercisesPerDay = profile.exercises;
 
@@ -94,11 +93,19 @@ class _DayProgressState extends State<DayProgress> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
       child: Container(
         decoration: BoxDecoration(
+          border: Border.all(color: widget.theme.colorScheme.outline, width: 0.5),
           borderRadius: BorderRadius.circular(16),
           color: widget.theme.colorScheme.surfaceContainerHighest,
+          boxShadow: [
+            BoxShadow(
+              color: widget.theme.colorScheme.shadow,
+              offset: const Offset(2, 2),
+              blurRadius: 4.0,
+            ),
+          ]
         ),
         width: 200,
         height: 200,

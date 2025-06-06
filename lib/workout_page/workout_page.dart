@@ -249,6 +249,7 @@ class _WorkoutState extends State<Workout> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: HistorySessionView(
+                                    color: widget.theme.colorScheme.surfaceContainerHighest,
                                     exerciseHistory: _exerciseHistory[index]!,
                                     theme: widget.theme,
                                   ),
@@ -627,6 +628,7 @@ class _WorkoutState extends State<Workout> {
                         vertical: 8.0
                       ),
                       child: HistorySessionView(
+                        color: widget.theme.colorScheme.surfaceContainerHighest,
                         exerciseHistory: records[index], 
                         theme: widget.theme
                       ),

@@ -59,6 +59,7 @@ class ExerciseHistoryList extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: HistorySessionView(
+              color: theme.colorScheme.surfaceContainerHighest,
               exerciseHistory: exerciseHistory[index], 
               theme: theme,
             )

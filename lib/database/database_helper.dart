@@ -497,11 +497,14 @@ class DatabaseHelper {
       // 2. Restore all exercises and their sets
       for (int i = 0; i < exercises.length; i++) {
         final exercise = exercises[i];
+        final exerciseMap = Map<String, dynamic>.from(exercise.toMap());
+        exerciseMap.remove('exercise_title');
+        
         
         // Insert exercise with original ID
         final exerciseId = await txn.insert(
           'exercise_instances',
-          exercise.toMap(),
+          exerciseMap,
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
@@ -1184,6 +1187,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
           COUNT(*) as num_sets,
           exercise_id,
           session_id,
+          day_title,
+          program_title,
           MAX(datetime(date)) as date,
           (
             SELECT history_note 
@@ -1272,6 +1277,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
           COUNT(*) as num_sets,
           exercise_id,
           session_id,
+          day_title,
+          program_title,
           MAX(datetime(date)) as date, -- Use MAX date for the consolidated set entry
           (
             SELECT history_note
@@ -1338,6 +1345,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         reps,
         weight,
         rpe,
+        day_title,
+        program_title,
         COUNT(*) as num_sets,
         MAX(date) as date,
         (

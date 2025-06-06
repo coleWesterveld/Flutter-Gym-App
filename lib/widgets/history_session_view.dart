@@ -15,11 +15,13 @@ class HistorySessionView extends StatelessWidget {
   const HistorySessionView({
     super.key,
     required this.exerciseHistory,
+    required this.color,
     required this.theme,
   });
 
   final List<SetRecord> exerciseHistory;
   final ThemeData theme;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +29,19 @@ class HistorySessionView extends StatelessWidget {
     return Container(
       
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12)
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        border: BoxBorder.all(
+          color: theme.colorScheme.outline,
+          width: 0.5
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow,
+            offset: const Offset(2, 2),
+            blurRadius: 4.0,
+          ),
+        ]
       ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),

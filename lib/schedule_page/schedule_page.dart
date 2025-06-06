@@ -9,6 +9,7 @@ import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/widgets/history_session_view.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,6 @@ import 'edit_schedule.dart';
 import '../other_utilities/lightness.dart';
 import 'package:firstapp/other_utilities/events.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:firstapp/widgets/view_workout.dart';
 
 class SchedulePage extends StatefulWidget {
 
@@ -448,10 +448,13 @@ class _MyScheduleState extends State<SchedulePage> {
                 if (_selectedDay!.isBefore(DateTime.now())) {
                   // For past days - show workout history
                   if (_workoutHistory[normalizeDay(_selectedDay!)] != null){
-                    return SingleDayWorkoutView(
-                      workouts: _workoutHistory[normalizeDay(_selectedDay!)]!,
-                      useMetric: Provider.of<SettingsModel>(context).useMetric,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
+                      child: HistorySessionView(
+                        color: theme.colorScheme.surface,
+                        exerciseHistory: _workoutHistory[normalizeDay(_selectedDay!)]!, theme: theme),
                     );
+
                   } else {
                     debugPrint("${_workoutHistory}");
                     return Text("not found for ${_selectedDay}");

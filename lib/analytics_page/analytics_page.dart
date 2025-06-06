@@ -465,6 +465,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             Container(
               decoration: BoxDecoration(
+                border: Border.all(
+                  width: 0.5,
+                  color: widget.theme.colorScheme.outline,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.theme.colorScheme.shadow,
+                    offset: const Offset(2, 2),
+                    blurRadius: 4.0,
+                  ),
+                ],
                 borderRadius: BorderRadius.circular(16),
                 color: widget.theme.colorScheme.surfaceContainerHighest,
               ),
