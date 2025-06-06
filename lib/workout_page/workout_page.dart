@@ -328,6 +328,9 @@ class _WorkoutState extends State<Workout> {
                                     // log the set
                                     loggedRecordID = await context.read<Profile>().logSet(
                                       SetRecord.fromDateTime(
+                                        dayTitle: context.read<Profile>().split[primaryIndex].dayTitle,
+                                        programTitle: context.read<Profile>().currentProgram.programTitle,
+
                                         sessionID: context.read<ActiveWorkoutProvider>().sessionID!,
                                         exerciseID: context.read<Profile>()
                                           .exercises[context.read<ActiveWorkoutProvider>().activeDayIndex!][index].exerciseID,

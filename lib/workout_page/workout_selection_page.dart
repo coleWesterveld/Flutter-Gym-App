@@ -172,7 +172,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
 
   int toExpand() {
 
-    final workout = getEventsForDay(day: today, context: context);
+    final workout = getWorkoutForDay(day: today, context: context);
 
     if (workout.isEmpty){
       return -1;

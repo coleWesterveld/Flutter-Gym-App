@@ -147,8 +147,7 @@ class _DayTileState extends State<DayTile> {
                           Row(
                             children: [
                               // Day title
-                              SizedBox(
-                                width: MediaQuery.sizeOf(context).width - 186,
+                              Expanded (
                                 child: Text(
                                   overflow: TextOverflow.ellipsis,
                                   context.watch<Profile>().split[widget.index].dayTitle,

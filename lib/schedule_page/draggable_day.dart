@@ -41,7 +41,7 @@ class DraggableDay extends StatelessWidget {
           // cuz thats the whole purpose of this page
           // at the same time, user needs to be able to scroll whout dragging stuff everywhere instantly 
 
-          delay: const Duration(milliseconds: 200),
+          delay: const Duration(milliseconds: 250),
           data: _days[_index]!,
           
           // what the picked-up widget looks like

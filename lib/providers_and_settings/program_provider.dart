@@ -117,25 +117,40 @@ class Profile extends ChangeNotifier {
 
   Future<void> get initializationDone => _initializationCompleter.future; // Public getter for the Future
 
-  Future<void> _initializeProfileData() async { // Renamed from init to avoid confusion
+  Future<void> _initializeProfileData() async {
     try {
       currentProgram = await dbHelper.initializeProgram();
-      split = await dbHelper.initializeSplitList(currentProgram.programID);
-      exercises = await dbHelper.initializeExerciseList(currentProgram.programID);
-      sets = await dbHelper.initializeSetList(currentProgram.programID);
-      settings = await dbHelper.fetchUserSettings();
-      if (settings?.programStartDate != null) _origin = settings!.programStartDate!;
-      
+
+      final programID = currentProgram.programID;
+
+      final futures = await Future.wait([
+        dbHelper.initializeSplitList(programID),
+        dbHelper.initializeExerciseList(programID),
+        dbHelper.initializeSetList(programID),
+        dbHelper.fetchUserSettings(),
+      ]);
+
+      split = futures[0] as List<Day>;
+      exercises = futures[1] as List<List<Exercise>>;
+      sets = futures[2] as List<List<List<PlannedSet>>>;
+      settings = futures[3] as UserSettings?;
+
+      if (settings?.programStartDate != null) {
+        _origin = settings!.programStartDate!;
+      }
+
+      updateSplitLength();
       isInitialized = true;
       notifyListeners();
-      if (!_initializationCompleter.isCompleted) _initializationCompleter.complete(); // Signal completion
-      //debugPrint("Profile initialized successfully.");
+      if (!_initializationCompleter.isCompleted) {
+        _initializationCompleter.complete();
+      }
     } catch (e) {
       debugPrint("Profile initialization failed: $e");
-      _initializationCompleter.completeError(e); // Signal error
-      // You might want to set isInitialized = false or handle this error state
+      _initializationCompleter.completeError(e);
     }
   }
+
 
 
   // This will be moved into its own provider likely...

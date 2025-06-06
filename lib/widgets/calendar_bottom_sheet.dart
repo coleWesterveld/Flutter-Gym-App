@@ -13,7 +13,7 @@ import 'package:firstapp/other_utilities/events.dart';
 import 'package:firstapp/schedule_page/edit_schedule.dart';
 
 
-class CalendarBottomSheet extends StatelessWidget {
+class CalendarBottomSheet extends StatefulWidget {
   const CalendarBottomSheet({
     super.key,
     required this.today,
@@ -24,9 +24,16 @@ class CalendarBottomSheet extends StatelessWidget {
   final DateTime today;
   final ThemeData theme;
 
+  @override
+  State<CalendarBottomSheet> createState() => _CalendarBottomSheetState();
+}
+
+class _CalendarBottomSheetState extends State<CalendarBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.read<Profile>();
+
     return GestureDetector(
 
       onTap: () {
@@ -36,7 +43,7 @@ class CalendarBottomSheet extends StatelessWidget {
             builder: (context) {
               //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
               return EditSchedule(
-                theme: theme
+                theme: widget.theme
               );
             }
           )
@@ -48,10 +55,10 @@ class CalendarBottomSheet extends StatelessWidget {
         height: 82.5,
 
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
+          color: widget.theme.colorScheme.surface,
           border: Border(
             top: BorderSide(
-              color: theme.colorScheme.outline,
+              color: widget.theme.colorScheme.outline,
               width: 0.5,
             ),
           ),
@@ -67,7 +74,7 @@ class CalendarBottomSheet extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) =>
                     EditSchedule(
-                      theme: theme
+                      theme: widget.theme
                     ),
               )
             );
@@ -81,74 +88,14 @@ class CalendarBottomSheet extends StatelessWidget {
             
       
             // Builds a single day
-          outsideBuilder: (context, day, focusedDay) {
-            var events = getEventsForDay(
-              day: day, 
-              context: context,
-            );
-          
-            //DateTime origin = DateTime(2024, 1, 7);
-            
-            if (events.isNotEmpty){
-              return  Container(
-                decoration: BoxDecoration(
-                  color: today.isBefore(day) ? 
-                    Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                    Color(context.watch<Profile>().split[events[0].index].dayColor),
-                  // borderRadius: const BorderRadius.all(
-                  //   Radius.circular(12.0),
-                  // ),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                  ),
-                ),
-              );
-            }
-            
-          
-            return null;
-          },
+          outsideBuilder: (ctx, day, focusedDay) => _buildDay(ctx, day, focusedDay, profile),
       
       
       
       
-          defaultBuilder: (context, day, focusedDay) {
-            var events = getEventsForDay(
-              day: day, 
-              context: context,
-            );
-          
-            //DateTime origin = DateTime(2024, 1, 7);
-            
-            if (events.isNotEmpty){
-              return  Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: today.isBefore(day) ? 
-                      Color(context.watch<Profile>().split[events[0].index].dayColor): 
-                      Color(context.watch<Profile>().split[events[0].index].dayColor),
-                    // borderRadius: const BorderRadius.all(
-                    //   Radius.circular(12.0),
-                    // ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(color: theme.colorScheme.onPrimary),
-                    ),
-                  ),
-                ),
-              );
-            }
-            
-            return null;
-          },
+          defaultBuilder: (ctx, day, focusedDay) => _buildDay(ctx, day, focusedDay, profile),
+
+          todayBuilder: (ctx, day, focusedDay) => _buildDay(ctx, day, focusedDay, profile),
       
           ),
           rowHeight: 50,
@@ -156,13 +103,19 @@ class CalendarBottomSheet extends StatelessWidget {
           lastDay: DateTime.utc(2030, 3, 14),
           calendarStyle: CalendarStyle(
           
-            todayDecoration: _buildToday(today, context),
+            todayDecoration: const BoxDecoration(
+              //color: Colors.white,
+              //borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
+            ),
             //markerDecoration: const BoxDecoration(),
             defaultDecoration: const BoxDecoration(
               //color: Colors.white,
               //borderRadius: BorderRadius.circular(14),
               shape: BoxShape.circle,
             ),
+
+            
             
             // the days default to circle shape, and this throws errors on animating selection (even after chaning default)
             // idk a better way to do this, but this works, even if its maybe not elegant
@@ -183,17 +136,17 @@ class CalendarBottomSheet extends StatelessWidget {
             ),
       
             selectedTextStyle: TextStyle(
-              color: theme.colorScheme.onPrimary, 
+              color: widget.theme.colorScheme.onPrimary, 
               fontWeight: FontWeight.bold,
             ),
       
-            weekendTextStyle: TextStyle(color: theme.colorScheme.onSurface)
+            weekendTextStyle: TextStyle(color: widget.theme.colorScheme.onSurface)
       
           ),
       
           daysOfWeekStyle: DaysOfWeekStyle(
-            weekdayStyle: TextStyle(color: theme.colorScheme.onSurface),
-            weekendStyle: TextStyle(color: theme.colorScheme.onSurface),
+            weekdayStyle: TextStyle(color: widget.theme.colorScheme.onSurface),
+            weekendStyle: TextStyle(color: widget.theme.colorScheme.onSurface),
           ),
       
         ),
@@ -201,18 +154,49 @@ class CalendarBottomSheet extends StatelessWidget {
     );
   }
 
-  BoxDecoration _buildToday(DateTime day, BuildContext context) {
-    var events = getEventsForDay(
+  Widget? _buildDay(context, day, focusedDay, Profile profile) {
+    var events = getWorkoutForDay(
       day: day, 
       context: context,
     );
-    return BoxDecoration(
-      border: Border.all(width: 3, color: theme.colorScheme.onSurface),
-      //borderRadius: BorderRadius.circular(12),
-      shape: BoxShape.circle,
-      color: (events.isEmpty) 
-      ? theme.colorScheme.surface
-      : Color(context.watch<Profile>().split[events[0].index].dayColor)
-    );
+  
+    //DateTime origin = DateTime(2024, 1, 7);
+    
+    if (events.isNotEmpty){
+      return  Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(profile.split[events[0].index].dayColor),
+            // borderRadius: const BorderRadius.all(
+            //   Radius.circular(12.0),
+            // ),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              "${profile.split[events[0].index].dayOrder + 1}",
+              style: TextStyle(
+                color: widget.theme.colorScheme.onPrimary,
+                fontWeight: FontWeight.w900
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return  Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
+            // borderRadius: const BorderRadius.all(
+            //   Radius.circular(12.0),
+            // ),
+            shape: BoxShape.circle,
+          ),
+        ),
+      );
   }
 }

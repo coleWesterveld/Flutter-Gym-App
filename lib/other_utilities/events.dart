@@ -1,5 +1,7 @@
 // Some helpers to load events (workouts) for the calendar
 
+import 'package:firstapp/database/database_helper.dart';
+import 'package:firstapp/database/profile.dart';
 import 'package:firstapp/providers_and_settings/program_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,11 +13,16 @@ class Event{
   final int index;
   final TimeOfDay? time;
   Event(this.title, this.index, this.time);
+
+  @override
+  String toString() {
+    return 'event{title: $title, index: $index, time: $time';
+  }
 }
 
 // Given a specific date and program start day, this function will find the workout, if any, for a specific day
 // from the split in the program provider
-List<Event> getEventsForDay ({required DateTime day, required BuildContext context, DateTime? startDay}){
+List<Event> getWorkoutForDay ({required DateTime day, required BuildContext context, DateTime? startDay}){
   // startday should be provider origin if not provided
   startDay = context.read<Profile>().origin;
 
@@ -34,3 +41,16 @@ List<Event> getEventsForDay ({required DateTime day, required BuildContext conte
   }
   return [];
 }
+
+Future<Map<DateTime, List<SetRecord>>> fetchLoggedEventsForMonth(DateTime day) async {
+  final firstDayOfMonth = DateTime(day.year, day.month, 1);
+  final lastDayOfMonth = DateTime(day.year, day.month + 1, 0);
+    // Call the new database function
+    final records = await DatabaseHelper.instance.getLoggedWorkoutsForRange(
+      firstDayOfMonth, 
+      lastDayOfMonth
+    );
+
+    return records;
+  }
+  

@@ -8,6 +8,7 @@
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ import 'edit_schedule.dart';
 import '../other_utilities/lightness.dart';
 import 'package:firstapp/other_utilities/events.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:firstapp/widgets/view_workout.dart';
 
 class SchedulePage extends StatefulWidget {
 
@@ -41,14 +43,25 @@ class _MyScheduleState extends State<SchedulePage> {
   DateTime? _selectedDay;
   late ValueNotifier<List<Event>> _selectedEvents;
 
+  Map<DateTime, List<SetRecord>> _workoutHistory = {};
+
+  Future<void> loadWorkouts() async {
+    final raw = await fetchLoggedEventsForMonth(today);
+    _workoutHistory = {
+      for (var entry in raw.entries)
+        normalizeDay(entry.key): entry.value
+    };
+  }
+
 
 
   @override
   void initState(){
-    
+    loadWorkouts();
     super.initState();
+    
     _selectedDay = today;
-    _selectedEvents = ValueNotifier(getEventsForDay(day: _selectedDay!, context: context));
+    _selectedEvents = ValueNotifier(getWorkoutForDay(day: _selectedDay!, context: context));
     //loadEvents();
   }
 
@@ -57,7 +70,7 @@ class _MyScheduleState extends State<SchedulePage> {
       setState((){
         _selectedDay = selectedDay;
         //today = focusedDay;
-        _selectedEvents.value = getEventsForDay(day: selectedDay, context: context);
+        _selectedEvents.value = getWorkoutForDay(day: selectedDay, context: context);
       });
       
     }
@@ -132,7 +145,7 @@ class _MyScheduleState extends State<SchedulePage> {
   BoxDecoration _buildToday(BuildContext context){
     final theme = Theme.of(context);
 
-    final events = getEventsForDay(day: today, context: context);
+    final events = getWorkoutForDay(day: today, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: theme.colorScheme.onSurface, width: 3),
@@ -156,7 +169,7 @@ class _MyScheduleState extends State<SchedulePage> {
     final theme = Theme.of(context);
 
     
-    final events = getEventsForDay(day: _selectedDay!, context: context);
+    final events = getWorkoutForDay(day: _selectedDay!, context: context);
     if (events.isNotEmpty){
       return BoxDecoration(
         border: Border.all(color: theme.colorScheme.surface, width: 3),
@@ -177,7 +190,7 @@ class _MyScheduleState extends State<SchedulePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedEvents.value = getEventsForDay(day: _selectedDay!, context: context);
+    _selectedEvents.value = getWorkoutForDay(day: _selectedDay!, context: context);
   }
 
   @override
@@ -288,6 +301,7 @@ class _MyScheduleState extends State<SchedulePage> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
                       child: TableCalendar(
+                        
                       
                       //TODO: add button in header to take user back to today
                         // limit to only monthview
@@ -307,7 +321,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       
                         // given a day, load its events
                         eventLoader: (day){
-                          return getEventsForDay(day: day, context: context);
+                          return getWorkoutForDay(day: day, context: context);
                         },
                         
                         
@@ -315,7 +329,7 @@ class _MyScheduleState extends State<SchedulePage> {
                         
                         calendarBuilders: CalendarBuilders(
                         outsideBuilder: (context, day, focusedDay) {
-                          var events = getEventsForDay(day: day, context: context);
+                          var events = getWorkoutForDay(day: day, context: context);
                         
                           //DateTime origin = DateTime(2024, 1, 7);
                           
@@ -350,7 +364,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       
                       
                         defaultBuilder: (context, day, focusedDay) {
-                          var events = getEventsForDay(day: day, context: context);
+                          var events = getWorkoutForDay(day: day, context: context);
                         
                           //DateTime origin = DateTime(2024, 1, 7);
                           
@@ -382,11 +396,11 @@ class _MyScheduleState extends State<SchedulePage> {
                         ),
                         rowHeight: 70,
                         focusedDay: _selectedDay!, 
-                        firstDay: DateTime.utc(2010, 10, 16), 
-                        lastDay: DateTime.utc(2030, 3, 14),
+                        firstDay: DateTime(today.year - 5, today.month, today.day), 
+                        lastDay: DateTime(today.year + 5, today.month, today.day),
                         calendarStyle: CalendarStyle(
                           markerDecoration: const BoxDecoration(),
-                          defaultDecoration: BoxDecoration(
+                          defaultDecoration: const BoxDecoration(
                             //color: Colors.white,
                             //borderRadius: BorderRadius.circular(14),
                             shape: BoxShape.circle,
@@ -430,16 +444,31 @@ class _MyScheduleState extends State<SchedulePage> {
             // shows more info upon click
             ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents, 
-              builder: (context, value, _){
-                if (value.isNotEmpty){
+              builder: (context, value, _) {
+                if (_selectedDay!.isBefore(DateTime.now())) {
+                  // For past days - show workout history
+                  if (_workoutHistory[normalizeDay(_selectedDay!)] != null){
+                    return SingleDayWorkoutView(
+                      workouts: _workoutHistory[normalizeDay(_selectedDay!)]!,
+                      useMetric: Provider.of<SettingsModel>(context).useMetric,
+                    );
+                  } else {
+                    debugPrint("${_workoutHistory}");
+                    return Text("not found for ${_selectedDay}");
+                    
+                  }
+                  
+                  
+                } else {
+                  // For current/future days - show planned workout (your existing code)
+                  if (value.isNotEmpty) {
                     return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12, 
-                        vertical: 4,
-                      ),
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        
-                        //border: Border.all(color: const Color(0xFF1e2025)),
+                        border: Border.all(
+                          color: theme.colorScheme.outline,
+                          width: 0.5
+                        ),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Container(
@@ -452,15 +481,12 @@ class _MyScheduleState extends State<SchedulePage> {
                               offset: const Offset(2, 2),
                               spreadRadius: 2,
                               color: theme.colorScheme.shadow.withAlpha((0.3*255).round())
-
                             )
                           ]
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: ListTile(
-                            
-                            //tileColor: const Color.fromARGB(255, 43, 43, 43),            //onTap: () => print(""),
                             title: Text(
                               "Day ${value[0].index + 1} • ${value[0].title}",
                               style: const TextStyle(
@@ -478,13 +504,12 @@ class _MyScheduleState extends State<SchedulePage> {
                             )
                           ),
                         ),
-                      
                       ),
                     );
-                  }else{
+                  } else {
                     return const SizedBox(height: 0);
                   }
-                
+                }
               }
             )
           ],

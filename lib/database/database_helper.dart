@@ -16,6 +16,8 @@
 // If the user wants to use metric, a flag will be stored in user_settings
 // And values will be converted upon returning from fetch if indicated by useMetric function flag
 
+import 'package:firstapp/other_utilities/events.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/material.dart';
@@ -175,6 +177,8 @@ class DatabaseHelper {
         rpe REAL NOT NULL,
         history_note TEXT NOT NULL,
         exercise_id INTEGER NOT NULL,
+        program_title TEXT NOT NULL,
+        day_title TEXT NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
       );
 
@@ -356,7 +360,9 @@ class DatabaseHelper {
           'weight': weight, // Round to nearest whole number
           'rpe': rpe,
           'history_note': "Feeling ${feelings[i % feelings.length]} today.",
-          'exercise_id': 70 // Hardcoded to reference "bench press - medium grip"
+          'exercise_id': 70, // Hardcoded to reference "bench press - medium grip"
+          'day_title' : "Bench + Upper Accessories",
+          'program_title' : "Push Pull Legs Split"
         });
       }
     //}
@@ -1208,6 +1214,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       ''', [sessionId, sessionId, exerciseId, sessionId]);
 
       result.add(sets.map((r) => SetRecord(
+
         reps: r['reps'] as double,
         weight: useMetric ? lbToKg(pounds: r['weight'] as double): r['weight'] as double,
         rpe: r['rpe'] as double,
@@ -1217,6 +1224,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         date: r['date'] as String,
         historyNote: r['history_note'] as String? ?? '',
         recordID: r['record_id'] as int,
+        dayTitle: r['day_title'] as String,
+        programTitle: r['program_title'] as String,
       )).toList());
     }
 
@@ -1303,6 +1312,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
         date: r['date'] as String,
         historyNote: r['history_note'] as String? ?? '',
         recordID: r['record_id'] as int,
+        dayTitle: r['day_title'] as String,
+        programTitle: r['program_title'] as String,
       )).toList());
     }
 
@@ -1370,6 +1381,8 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       date: r['date'] as String,
       historyNote: r['history_note'] as String? ?? '',
       recordID: r['record_id'] as int,
+      dayTitle: r['day_title'] as String,
+      programTitle: r['program_title'] as String,
     )).toList();
   }
 
@@ -1391,6 +1404,51 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       where: 'id = ?',
       whereArgs: [setRecordId],
     );
+  }
+
+
+  /// Returns a map where keys are the dates of the workouts and values are
+  /// lists of events for that day. This is optimized for use with table_calendar's eventLoader.
+  Future<Map<DateTime, List<SetRecord>>> getLoggedWorkoutsForRange(DateTime firstDay, DateTime lastDay) async {
+    final db = await instance.database; // Assuming 'instance.database' gets your DB
+
+    // Format dates for the SQL query
+    final String firstDayStr = DateFormat('yyyy-MM-dd').format(firstDay);
+    final String lastDayStr = DateFormat('yyyy-MM-dd').format(lastDay);
+
+    // This query joins set_log with days to get the title of the day that was logged.
+    // It groups by date to ensure we only get one event per day.
+    debugPrint("before query ran");
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT
+        *
+      FROM set_log
+      WHERE date BETWEEN ? AND ?
+      GROUP BY date
+      ORDER BY date ASC
+    ''', [firstDayStr, lastDayStr]);
+    debugPrint("afett query ran");
+
+
+    final Map<DateTime, List<SetRecord>> records = {};
+
+    for (final map in maps) {
+      // The date from DB is a string, parse it back to DateTime.
+      // Use UTC to avoid any timezone issues with date-only comparisons.
+      final DateTime workoutDate = DateTime.parse(map['date']);
+
+      // Create an Event for the logged workout.
+      // Note: The title is now the actual day title from the 'days' table!
+      final record = SetRecord.fromMap(map);
+
+      // Add it to our map.
+      if (records[workoutDate] == null) {
+        records[workoutDate] = [];
+      }
+      records[workoutDate]!.add(record);
+    }
+
+    return records;
   }
 
   // close database

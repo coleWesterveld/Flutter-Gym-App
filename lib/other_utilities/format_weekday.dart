@@ -21,3 +21,7 @@ String formatDate(DateTime date) {
   final dayWithSuffix = _getDayWithSuffix(date.day);
   return '$dayOfWeek, $month $dayWithSuffix, ${date.year}';
 }
+
+DateTime normalizeDay(DateTime dt) {
+  return DateTime(dt.year, dt.month, dt.day);
+}

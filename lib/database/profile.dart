@@ -301,7 +301,7 @@ class Exercise {
       'id': id,
       'exercise_id': exerciseID,
       'day_id': dayID,
-      'exercise_title': exerciseTitle,
+      //'exercise_title': exerciseTitle,
       'exercise_order': exerciseOrder,
     };
   }
@@ -420,6 +420,8 @@ class SetRecord {
   final double weight;
   final double rpe;
   final String? historyNote;
+  final String programTitle;
+  final String dayTitle;
 
   SetRecord({
     required this.sessionID,
@@ -430,6 +432,8 @@ class SetRecord {
     required this.reps,
     required this.weight,
     required this.rpe,
+    required this.programTitle,
+    required this.dayTitle,
     this.historyNote,
   });
 
@@ -444,6 +448,8 @@ class SetRecord {
       'rpe': rpe,
       'history_note': historyNote ?? '',
       'session_id' : sessionID,
+      'day_title' : dayTitle,
+      'program_title' : programTitle
     };
   }
 
@@ -458,6 +464,8 @@ class SetRecord {
       rpe: map['rpe'],
       historyNote: map['history_note'],
       sessionID: map['session_id'],
+      programTitle: map['program_title'],
+      dayTitle: map['day_title']
     );
   }
 
@@ -479,12 +487,16 @@ class SetRecord {
     required double weight,
     required double rpe,
     required String sessionID,
+    required String dayTitle,
+    required String programTitle,
     String? historyNote,
   }) {
     return SetRecord(
       recordID: recordID,
       exerciseID: exerciseID,
       sessionID: sessionID,
+      dayTitle: dayTitle,
+      programTitle: programTitle,
 
       date: date.toIso8601String(),
       
@@ -511,9 +523,13 @@ class SetRecord {
     double? reps,
     double? weight,
     double? rpe,
+    String? dayTitle,
+    String? programTitle,
     String? historyNote,
   }) {
     return SetRecord(
+      programTitle: programTitle ?? this.programTitle,
+      dayTitle: dayTitle ?? this.dayTitle,
       recordID:    recordID    ?? this.recordID,
       exerciseID:  exerciseID  ?? this.exerciseID,
       sessionID:   sessionID   ?? this.sessionID,
@@ -522,6 +538,7 @@ class SetRecord {
       reps:        reps        ?? this.reps,
       weight:      weight      ?? this.weight,
       rpe:         rpe         ?? this.rpe,
+
       historyNote: historyNote ?? this.historyNote,
     );
   }

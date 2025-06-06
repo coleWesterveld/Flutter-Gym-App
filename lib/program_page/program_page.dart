@@ -126,7 +126,7 @@ class ProgramPageState extends State<ProgramPage> {
                 ),
             ),
             
-            const SizedBox(height: 82),
+            const SizedBox(height: 82.5),
           ],
         ),
         
