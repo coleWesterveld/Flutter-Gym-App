@@ -1,6 +1,3 @@
-// Popup to edit day title, colour
-// comes up on pressing edit button of a day
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';                                 // For Slider
@@ -17,20 +14,37 @@ class PopUpDayEditor extends StatefulWidget {
     required this.theme,
     required this.index,
     required this.titleTEC,
+    required this.equipmentTEC, // Add equipment controller
   });
 
   final ThemeData theme;
   final int index;
   final TextEditingController titleTEC;
+  final TextEditingController equipmentTEC;
 
   @override
   State<PopUpDayEditor> createState() => _PopUpDayEditorState();
 }
 
 class _PopUpDayEditorState extends State<PopUpDayEditor> {
-
-  // For day-editor slider - 0 is editing title, 1 is editing colour
+  // For day-editor slider - false is editing title/equipment, true is editing colour
   bool? _sliding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize text selection for both fields
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.titleTEC.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: widget.titleTEC.text.length,
+      );
+      widget.equipmentTEC.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: widget.equipmentTEC.text.length,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,84 +52,110 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
       title: CupertinoSlidingSegmentedControl(
         padding: const EdgeInsets.all(4.0),
         children: const <bool, Text>{
-          false: Text("Title"),
+          false: Text("Details"),
           true: Text("Color"),
         }, 
-                                
-        onValueChanged: (bool? newValue){
-          setState((){
+        onValueChanged: (bool? newValue) {
+          setState(() {
             _sliding = newValue;
           });                       
         },
         thumbColor: widget.theme.colorScheme.secondary,
         groupValue: _sliding,
       ),
-    
-      content: editBuilder(widget.index, widget.theme, widget.titleTEC),
-    
+      content: editBuilder(widget.index, widget.theme, widget.titleTEC, widget.equipmentTEC),
       actions: [
         IconButton(
-          onPressed: (){
+          onPressed: () {
             if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-            
             
             if (widget.titleTEC.text.isNotEmpty) {
               Provider.of<Profile>(context, listen: false).splitAssign(
                 index: widget.index, 
-                newDay: context.read<Profile>().split[widget.index].copyWith(newDayTitle: widget.titleTEC.text),
+                newDay: context.read<Profile>().split[widget.index].copyWith(
+                  newDayTitle: widget.titleTEC.text,
+                  newGear: widget.equipmentTEC.text, // Save equipment
+                ),
                 context: context
               );
             }
-    
             Navigator.of(context, rootNavigator: true).pop('dialog');
             _sliding = false;
           },
           icon: const Icon(Icons.check)
         )
       ]
-        
     );
   }
 
-  Widget editBuilder(index, theme, titleTEC){ 
-
-    // Ensure text is selected when the widget is built
-    titleTEC.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: titleTEC.text.length,
-    );
-
-    if(_sliding == false){
-      return SizedBox(
-        height: 100,
-        width: 300,
-
-        child: TextFormField(
-          onFieldSubmitted: (value){
-            if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-            Navigator.of(context).pop(widget.titleTEC.text);
-          },
-          
-          autofocus: true,
-          controller: titleTEC,
-
-          decoration: InputDecoration(
-            suffixIcon: IconButton(
-              onPressed: titleTEC.clear,
-              icon: const Icon(Icons.highlight_remove),
+  Widget editBuilder(int index, ThemeData theme, TextEditingController titleTEC, TextEditingController equipmentTEC) { 
+    if (_sliding == false) {
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Day Title Field
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                maxLength: 50,
+                onFieldSubmitted: (value) {
+                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
+                  Navigator.of(context).pop(widget.titleTEC.text);
+                },
+                autofocus: true,
+                controller: titleTEC,
+                decoration: InputDecoration(
+                  //counterText: "${titleTEC.text.length}/200",
+                  labelText: "Workout Title",
+                  suffixIcon: IconButton(
+                    onPressed: titleTEC.clear,
+                    icon: const Icon(Icons.highlight_remove),
+                  ),
+                  hintText: "e.g. Upper Body",
+                ),
+              ),
             ),
-
-            hintText: "Enter Text",
-          )
+            
+            // Equipment Field
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                onFieldSubmitted: (value) {
+                  if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
+                  Navigator.of(context).pop();
+                },
+                maxLength: 200,
+                controller: equipmentTEC,
+                maxLines: 2, // Allow multiple lines for equipment
+                decoration: InputDecoration(
+                  //counterText: "${equipmentTEC.text.length}/200",
+                  labelText: "Equipment to Bring",
+                  suffixIcon: IconButton(
+                    onPressed: equipmentTEC.clear,
+                    icon: const Icon(Icons.highlight_remove),
+                  ),
+                  hintText: "e.g. Belt, Straps, Chalk...",
+                ),
+              ),
+            ),
+            
+            // Help text
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                "List all equipment you'll need for this workout",
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              ),
+            ),
+          ],
         ),
       );
-    }else{
+    } else {
       return SizedBox(
         height: 250,
         width: 300,
         child: SingleChildScrollView(
-          
-          // Allow user to change day colour
           child: BlockPicker(
             pickerColor: Color(context.watch<Profile>().split[index].dayColor),
             onColorChanged: (Color color) {
@@ -125,7 +165,6 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
                 context: context
               );
             },
-            
             availableColors: Profile.colors,
             layoutBuilder: pickerLayoutBuilder,
             itemBuilder: pickerItemBuilder,
@@ -136,7 +175,6 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
   }
 
   Widget pickerItemBuilder(Color color, bool isCurrentColor, void Function() changeColor) {
-    
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -149,13 +187,11 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
             blurRadius: 0.0)
           ],
       ),
-
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: changeColor,
           borderRadius: BorderRadius.circular(8.0),
-
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 250),
             opacity: isCurrentColor ? 1 : 0,
@@ -164,22 +200,19 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
               size: 36,
               color: widget.theme.colorScheme.onSurface,
             ),
-
           ),
         ),
       ),
     );
   }
 
-  // Layout of pop-up colour picker
   Widget pickerLayoutBuilder(BuildContext context, List<Color> colors, PickerItem child) {
     Orientation orientation = MediaQuery.of(context).orientation;
-
     return SizedBox(
       width: 300,
       height: orientation == Orientation.portrait ? 360 : 240,
       child: GridView.count(
-        crossAxisCount: orientation == Orientation.portrait ?  5: 4,
+        crossAxisCount: orientation == Orientation.portrait ? 5 : 4,
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
         children: [for (Color color in colors) child(color)],

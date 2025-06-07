@@ -23,7 +23,7 @@ class ListDays extends StatefulWidget {
 
   final BuildContext context;
   final ThemeData theme;
-  final Function(int) onExerciseAdded;
+  final Function(int, int) onExerciseAdded;
 
   @override
   State<ListDays> createState() => _ListDaysState();
@@ -193,7 +193,7 @@ class _ListDaysState extends State<ListDays> {
                   index: index,
                   theme: widget.theme,
         
-                  onExerciseAdded: () => widget.onExerciseAdded(index)
+                  onExerciseAdded: (exerciseIndex) => widget.onExerciseAdded(index, exerciseIndex)
                 
                 )
               ),  

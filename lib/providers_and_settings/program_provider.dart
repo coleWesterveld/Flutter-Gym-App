@@ -220,6 +220,7 @@ class Profile extends ChangeNotifier {
         programID: currentProgram.programID,
         dayColor: colors[(split.length) % (colors.length)].value,
         dayID: id,
+        gear: ''
       )
     );
 
@@ -487,6 +488,7 @@ class Profile extends ChangeNotifier {
         dayID: split[index].dayID,
         exerciseTitle: exerciseTitle, // Use the title from the database
         exerciseOrder: exercises[index].length,
+        notes: ''
       ),
     );
 
@@ -513,59 +515,62 @@ class Profile extends ChangeNotifier {
   }
 
   //assigns value for an exercise on a day
+  // updated to take in index and assign to index, leaving sets all the same
   void exerciseAssign({
     required int index1,
     required int index2,
-    required Exercise data,
+    required int exerciseId,
 
   }) async {
-    dbHelper.updateExerciseInstance(exercises[index1][index2].exerciseID, 
-      {
-        'exercise_order' : data.exerciseOrder,
-        'exercise_id' : data.exerciseID,
-        'day_id' : data.dayID
-      }
+    String exerciseTitle = await dbHelper.fetchExerciseTitleById(exerciseId);
+
+    await dbHelper.updateExerciseInstance(
+      exercises[index1][index2].id, 
+      {'exercise_id': exerciseId}
     );
-    String newTitle = await dbHelper.fetchExerciseTitleById(data.exerciseID);
-    exercises[index1][index2] = data.copyWith(newexerciseTitle: newTitle);
 
+    // update the exercise in the list with the fetched title
+    exercises[index1][index2] = exercises[index1][index2].copyWith(
+      newexerciseID: exerciseId,
+      newexerciseTitle: exerciseTitle
+    );
 
-    
+    // Notify listeners to update the UI
     notifyListeners();
   }
 
   //inserts exercise onto a specific day in list
-void exerciseInsert({
-  required int index1,
-  required int index2,
-  required Exercise data,
-  required List<PlannedSet> newSets,
+  void exerciseInsert({
+    required int index1,
+    required int index2,
+    required Exercise data,
+    required List<PlannedSet> newSets,
 
-}) async {
-  // Insert the exercise data
-  exercises[index1].insert(index2, data);
-  
-  // Insert the sets
-  sets[index1].insert(index2, newSets);
+  }) async {
+    // Insert the exercise data
+    exercises[index1].insert(index2, data);
+    
+    // Insert the sets
+    sets[index1].insert(index2, newSets);
 
-  // Insert into database
-  await dbHelper.insertExercise(
-    dayID: exercises[index1][index2].dayID, 
-    exerciseOrder: index2, 
-    exerciseID: data.exerciseID,
-    id: data.id,
-  );
-  await dbHelper.insertPlannedSetsBatch(
-    // CAREFUL: DO NOT CONFUSE EXERCISEID WITH ID FOR EXERCISES
-    // exercise objects store instances of exercises, which reference in DB to specific exercises
-    // the exerciseID is the row in the table of the exercise, ie. bench press, 
-    // and the id is the row where the exercise INSTANCE of that exercise is stored in the DB
-    exerciseInstanceId: exercises[index1][index2].id, 
-    sets: sets[index1][index2]
-  );
+    // Insert into database
+    await dbHelper.insertExercise(
+      dayID: exercises[index1][index2].dayID, 
+      exerciseOrder: index2, 
+      exerciseID: data.exerciseID,
+      id: data.id,
+    );
+    await dbHelper.insertPlannedSetsBatch(
+      // CAREFUL: DO NOT CONFUSE EXERCISEID WITH ID FOR EXERCISES
+      // exercise objects store instances of exercises, which reference in DB to specific exercises
+      // the exerciseID is the row in the table of the exercise, ie. bench press, 
+      // and the id is the row where the exercise INSTANCE of that exercise is stored in the DB
+      exerciseInstanceId: exercises[index1][index2].id, 
+      sets: sets[index1][index2]
+    );
 
-  notifyListeners();
-}
+    notifyListeners();
+  }
 
   //removes an exercise  from certain index in certain day in list
   void setsPop({

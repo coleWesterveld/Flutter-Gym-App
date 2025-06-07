@@ -109,6 +109,7 @@ class DatabaseHelper {
       CREATE TABLE days (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         day_title TEXT NOT NULL,
+        gear TEXT NOT NULL,
         day_order INTEGER NOT NULL,
         program_id INTEGER NOT NULL,
         day_color INTEGER NOT NULL,
@@ -123,6 +124,7 @@ class DatabaseHelper {
       CREATE TABLE exercise_instances (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         exercise_order INTEGER NOT NULL,
+        notes TEXT NOT NULL,
         day_id INTEGER NOT NULL,
         exercise_id INTEGER NOT NULL,
         FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
@@ -281,32 +283,32 @@ class DatabaseHelper {
     batch.insert('programs', {'program_title': 'Simple PPL Split'});
 
     // Insert initial days for the program
-    batch.insert('days', {'program_id': 1, 'day_title': 'Push', 'day_order': 0, 'day_color': Profile.colors[0].value});
-    batch.insert('days', {'program_id': 1, 'day_title': 'Pull', 'day_order': 1, 'day_color': Profile.colors[1].value});
-    batch.insert('days', {'program_id': 1, 'day_title': 'Legs', 'day_order': 2, 'day_color': Profile.colors[2].value});
+    batch.insert('days', {'program_id': 1, 'day_title': 'Push', 'day_order': 0, 'day_color': Profile.colors[0].value, 'gear': ''});
+    batch.insert('days', {'program_id': 1, 'day_title': 'Pull', 'day_order': 1, 'day_color': Profile.colors[1].value, 'gear': ''});
+    batch.insert('days', {'program_id': 1, 'day_title': 'Legs', 'day_order': 2, 'day_color': Profile.colors[2].value, 'gear': ''});
 
     // Insert initial exercises for each day
 
     // Push
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 0, 'exercise_id': 70}); // Barbell Bench Press
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 1, 'exercise_id': 851}); // Triceps Pushdown
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 2, 'exercise_id': 690}); // Side Lateral Raise
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 3, 'exercise_id': 270}); // Dumbbell Shoulder Press
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 4, 'exercise_id': 297}); // Cable Chest Fly
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 0, 'exercise_id': 70, 'notes' : ''}); // Barbell Bench Press
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 1, 'exercise_id': 851, 'notes' : ''}); // Triceps Pushdown
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 2, 'exercise_id': 690, 'notes' : ''}); // Side Lateral Raise
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 3, 'exercise_id': 270, 'notes' : ''}); // Dumbbell Shoulder Press
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 4, 'exercise_id': 297, 'notes' : ''}); // Cable Chest Fly
 
     // Pull
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 0, 'exercise_id': 586}); // Pullups
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 1, 'exercise_id': 652}); // Seated Cable Rows
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 2, 'exercise_id': 620}); // Reverse Machine Flyes
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 3, 'exercise_id': 335}); // Hammer Curls
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 4, 'exercise_id': 103}); // Barbell Rows
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 0, 'exercise_id': 586, 'notes' : ''}); // Pullups
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 1, 'exercise_id': 652, 'notes' : ''}); // Seated Cable Rows
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 2, 'exercise_id': 620, 'notes' : ''}); // Reverse Machine Flyes
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 3, 'exercise_id': 335, 'notes' : ''}); // Hammer Curls
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 4, 'exercise_id': 103, 'notes' : ''}); // Barbell Rows
 
     // Legs
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 0, 'exercise_id': 90}); // Barbell Squat
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 1, 'exercise_id': 630}); // Romanian Deadlift
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 2, 'exercise_id': 780}); // Standing Calf Raises
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 3, 'exercise_id': 670}); // Seated Leg Curl
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 4, 'exercise_id': 434}); // Leg Extensions
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 0, 'exercise_id': 90, 'notes' : ''}); // Barbell Squat
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 1, 'exercise_id': 630, 'notes' : ''}); // Romanian Deadlift
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 2, 'exercise_id': 780, 'notes' : ''}); // Standing Calf Raises
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 3, 'exercise_id': 670, 'notes' : ''}); // Seated Leg Curl
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 4, 'exercise_id': 434, 'notes' : ''}); // Leg Extensions
 
     // Sets for each exercise (3 sets, 5-8 reps, RPE 8)
     for (int i = 1; i <= 15; i++) {
@@ -379,8 +381,6 @@ class DatabaseHelper {
   // and writes all the recorded sets to the database
 
 
-
-
   /////////////////////////////////////////////
   // INITIAL LIST POPULATING
   // the following functions run every app opening, retrieve data from database and populates lists in memory
@@ -400,6 +400,7 @@ class DatabaseHelper {
         workoutTime: day['workout_time'] != null 
           ? stringToTimeOfDay(day['workout_time']) 
           : null,
+        gear: day['gear']
       );
     }).toList();
 
@@ -426,6 +427,7 @@ class DatabaseHelper {
           dayID: exercise['day_id'],
           exerciseTitle: exercise['exercise_title'],
           exerciseOrder: exercise['exercise_order'],
+          notes: exercise['notes']
         );
       }).toList();
 
@@ -873,14 +875,15 @@ class DatabaseHelper {
 
   // by default, it will assign a new ID to the day.
   // but if re-adding (ie. undo a day delete), need to add with existing ID to re-link with exercises
-  Future<int> insertDay({required int programId, required String dayTitle, required int dayOrder, int? id}) async {
+  Future<int> insertDay({required int programId, required String dayTitle, required int dayOrder, int? id, String gear = ''}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('days', {
       if (id != null) 'id': id,
       'program_id': programId,
       'day_title': dayTitle,
       'day_order': dayOrder,
-      'day_color': Profile.colors[dayOrder % (Profile.colors.length - 1)].value
+      'day_color': Profile.colors[dayOrder % (Profile.colors.length - 1)].value,
+      'gear' : gear,
     });
   }
 
@@ -918,13 +921,14 @@ class DatabaseHelper {
   ////////////////////////////////////////////////////////////
   // exercise_instances TABLE CRUD
 
-  Future<int> insertExercise({required int dayID, required int exerciseOrder, required int exerciseID, int? id}) async {
+  Future<int> insertExercise({required int dayID, required int exerciseOrder, required int exerciseID, int? id, String notes = ''}) async {
     final db = await DatabaseHelper.instance.database;
     return await db.insert('exercise_instances', {
       if (id != null) 'id': id,
       'day_id': dayID,
       'exercise_order': exerciseOrder,
       'exercise_id' : exerciseID,
+      'notes': notes
     });
   }
 

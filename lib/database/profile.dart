@@ -215,6 +215,7 @@ class Program {
 class Day {
   final int dayID;
   final String dayTitle;
+  final String gear;
   final int programID;
   final int dayColor;
   TimeOfDay? workoutTime;
@@ -227,6 +228,7 @@ class Day {
     required this.dayColor, 
     required this.dayOrder,
     this.workoutTime,
+    this.gear = ''
   });
 
   Map<String, dynamic> toMap() {
@@ -237,6 +239,7 @@ class Day {
       'day_color': dayColor,
       'day_order': dayOrder,
       'workout_time': workoutTime != null ? timeOfDayToString(workoutTime!) : null,
+      'gear' : gear
     };
   }
 
@@ -250,6 +253,7 @@ class Day {
       workoutTime: map['workout_time'] != null 
         ? stringToTimeOfDay(map['workout_time']) 
         : null,
+      gear: map['gear']
     );
   }
 
@@ -266,6 +270,7 @@ class Day {
     int? newProgramID, 
     int? newDayOrder,
     TimeOfDay? newTime,
+    String? newGear,
     }) {
     return Day(
       dayOrder: newDayOrder ?? dayOrder,
@@ -274,6 +279,7 @@ class Day {
       dayTitle: newDayTitle ?? dayTitle,
       programID: newProgramID ?? programID,
       workoutTime: newTime ?? workoutTime,
+      gear: newGear ?? gear
     );
   }
 }
@@ -283,6 +289,8 @@ class Day {
 class Exercise {
   final int id;
   final int exerciseID;
+  // these are not notes recorded during the workout, they are permanent notes/instructions
+  final String notes;
   final int dayID;
   final String exerciseTitle;
   final int exerciseOrder;
@@ -294,6 +302,7 @@ class Exercise {
     required this.dayID, 
     required this.exerciseTitle, 
     required this.exerciseOrder,
+    required this.notes // = ''
   });
 
   Map<String, dynamic> toMap() {
@@ -303,6 +312,7 @@ class Exercise {
       'day_id': dayID,
       'exercise_title': exerciseTitle,
       'exercise_order': exerciseOrder,
+      'notes': notes
     };
   }
 
@@ -312,7 +322,8 @@ class Exercise {
       exerciseID: map['exercise_id'],
       dayID: map['day_id'],
       exerciseTitle: map['exercise_title'],
-      exerciseOrder: map['exercise_order']
+      exerciseOrder: map['exercise_order'],
+      notes: map['notes']
     );
   }
   @override
@@ -320,13 +331,21 @@ class Exercise {
     return 'exercise{title: $exerciseTitle, id: $exerciseID, dayID: $dayID';
   }
 
-  Exercise copyWith({int? newDayID, int? newexerciseID, String? newexerciseTitle, int? newexerciseOrder, int? newID}) {
+  Exercise copyWith({
+    int? newDayID, 
+    int? newexerciseID, 
+    String? newexerciseTitle, 
+    int? newexerciseOrder, 
+    int? newID,
+    String? newNotes
+  }) {
     return Exercise(
       id: newID ?? id,
       exerciseID: newexerciseID ?? exerciseID,
       dayID: newDayID ?? dayID,
       exerciseTitle: newexerciseTitle ?? exerciseTitle,
       exerciseOrder: newexerciseOrder ?? exerciseOrder,
+      notes: newNotes ?? notes
     );
   }
 }

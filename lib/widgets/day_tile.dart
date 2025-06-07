@@ -24,7 +24,7 @@ class DayTile extends StatefulWidget {
   final BuildContext context;
   final int index;
   final ThemeData theme;
-  final Function onExerciseAdded;
+  final Function (int) onExerciseAdded;
 
   @override
   State<DayTile> createState() => _DayTileState();
@@ -134,43 +134,71 @@ class _DayTileState extends State<DayTile> {
                 ]
               ),
             ),
+            
             title: 
               SizedBox(
-                height: 40,
+                height: context.watch<Profile>().split[widget.index].gear.isNotEmpty ? 43 : 40,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 30,
-                        width: 100,
-                        child: 
-                          Row(
-                            children: [
-                              // Day title
-                              Expanded (
-                                child: Text(
-                                  overflow: TextOverflow.ellipsis,
-                                  context.watch<Profile>().split[widget.index].dayTitle,
-                                  
-                                  style: TextStyle(
-                                    color: widget.theme.colorScheme.onSurface,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
+                    // I know I could get an equivalent effect with subtitle, but then trailing icon is uncentered
+                    // if i make ther trailing icon as the "trailing" then I lose the expansion indicator
+                    // so i am doing this
+                    if (context.watch<Profile>().split[widget.index].gear.isNotEmpty)
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              textHeightBehavior: const TextHeightBehavior(applyHeightToLastDescent: false),
+                              overflow: TextOverflow.ellipsis,
+                              context.watch<Profile>().split[widget.index].dayTitle,
+                              
+                              style: TextStyle(
+                                color: widget.theme.colorScheme.onSurface,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
                               ),
-                            ], 
+                            ),
+                        
+                            
+                            Text(
+                              textHeightBehavior: const TextHeightBehavior(applyHeightToFirstAscent: false),
+                              overflow: TextOverflow.ellipsis,
+                              context.watch<Profile>().split[widget.index].gear,
+                              
+                              style: TextStyle(
+                                color: widget.theme.colorScheme.onSurface,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    
+                    if (context.watch<Profile>().split[widget.index].gear.isEmpty)
+                      Text(
+                        textHeightBehavior: const TextHeightBehavior(applyHeightToLastDescent: false),
+                        overflow: TextOverflow.ellipsis,
+                        context.watch<Profile>().split[widget.index].dayTitle,
+                        
+                        style: TextStyle(
+                          color: widget.theme.colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
                     // Update title button
                     IconButton(
+                      
                       onPressed: () {         
                         showDialog(
                           anchorPoint: const Offset(100, 100),
                           context: context,
-
+                    
                           builder: (BuildContext context) {
                             return StatefulBuilder(
                               builder: (context, StateSetter setState) {
@@ -180,7 +208,10 @@ class _DayTileState extends State<DayTile> {
                                   titleTEC: TextEditingController(
                                     text: context.watch<Profile>().split[widget.index].dayTitle
                                   ),
-
+                                  equipmentTEC: TextEditingController(
+                                    text: context.watch<Profile>().split[widget.index].gear
+                                  ),
+                    
                                 );
                               },
                             );
@@ -189,10 +220,13 @@ class _DayTileState extends State<DayTile> {
                       },
                       icon: const Icon(Icons.edit_outlined),
                       color: widget.theme.colorScheme.secondary,
+                      
                     ),
                   ],
                 ),
               ),
+
+            
                           
             // Reorderable list of exercises for that day which come up upon tap to expanding
             children: [
@@ -248,8 +282,9 @@ class _DayTileState extends State<DayTile> {
                     index: widget.index,
                     theme: widget.theme,
 
-                    onExerciseAdded: () async {
-                      widget.onExerciseAdded();
+                    onExerciseAdded: (exerciseIndex) async {
+                      // continue tunneling back the exerciseindex
+                      widget.onExerciseAdded(exerciseIndex);
                     },
 
                   )
@@ -260,8 +295,8 @@ class _DayTileState extends State<DayTile> {
                   index: widget.index,
                   theme: widget.theme,
 
-                  onExerciseAdded: () async {
-                    widget.onExerciseAdded();
+                  onExerciseAdded: (exerciseIndex) async {
+                    widget.onExerciseAdded(exerciseIndex);
                   },
 
                 )

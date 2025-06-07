@@ -52,6 +52,7 @@ class ProgramPageState extends State<ProgramPage> {
 
   int? _exerciseID;
   int? _activeIndex;
+  int? _exerciseIndex;
 
   DateTime startDay = DateTime(2024, 8, 10);
 
@@ -59,26 +60,27 @@ class ProgramPageState extends State<ProgramPage> {
   TextEditingController alertTEC = TextEditingController();
   
   // Add exercise to a day
-  void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index) {
+  void _handleExerciseSelected(BuildContext context, Map<String, dynamic> exercise, int index, int exerciseIndex) {
     setState(() {
       _exerciseID = exercise['exercise_id'];
     });
 
     if (_exerciseID == null) return;
 
-    context.read<Profile>().exerciseAppend(
-      index: index,
-      exerciseId: _exerciseID!,
-    );
+    if (_exerciseIndex == -1){
+      context.read<Profile>().exerciseAppend(
+        index: index,
+        exerciseId: _exerciseID!,
+      );
+    } else{
+      context.read<Profile>().exerciseAssign(
+        index1: index,
+        index2: exerciseIndex,
+        exerciseId: _exerciseID!
+      );
+    }
+    
   }
-
-  // Search mode callback - is choosing exercise or not
-  void _updateSearchMode(bool isEditing, BuildContext context) {
-    final uiState = context.read<UiStateProvider>();
-    uiState.isChoosingExercise = isEditing;
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -101,10 +103,12 @@ class ProgramPageState extends State<ProgramPage> {
             ExerciseSearchWidget(
               theme: theme,
               onExerciseSelected: (exercise) {
-                _handleExerciseSelected(context, exercise, _activeIndex!);
+                _handleExerciseSelected(context, exercise, _activeIndex!, _exerciseIndex!);
               },
-              onSearchModeChanged: (isEditing){
-                return _updateSearchMode(isEditing, context);
+              onSearchModeChanged: (isSearching) {
+                setState(() {
+                  uiState.isChoosingExercise = isSearching;          
+                });
               },
             ),
           ]
@@ -116,9 +120,10 @@ class ProgramPageState extends State<ProgramPage> {
                   theme: theme, 
                   context: context,
                 
-                  onExerciseAdded: (index) {
+                  onExerciseAdded: (index, exerciseIndex) {
                     setState(() {
                       _activeIndex = index;
+                      _exerciseIndex = exerciseIndex;
                       uiState.isChoosingExercise = true;
                     });
                   },

@@ -334,7 +334,7 @@ class _MyScheduleState extends State<SchedulePage> {
                               shape: BoxShape.circle, 
                             ),
 
-                            child: Center(child: Text('${day.day}'))//socks
+                            child: Center(child: Text('${day.day}'))
                           );
                         },
 

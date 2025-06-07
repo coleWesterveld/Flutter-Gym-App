@@ -7,11 +7,7 @@ import 'package:flutter/services.dart';                                  // Hapt
 import 'package:flutter_slidable/flutter_slidable.dart';                 // Swipe To Delete
 import 'package:firstapp/providers_and_settings/program_provider.dart';  // Access Program Details
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
-
 import 'package:firstapp/widgets/list_sets.dart';
-
-//TODO: add sets here too, centre text boxes, add notes option on dropdown
-// TODO: exercise edit doesnt work - i disabled it. I need to migrate to the new exercise selector
 
 class ListExercises extends StatefulWidget {
   const ListExercises({
@@ -24,7 +20,8 @@ class ListExercises extends StatefulWidget {
 
   final BuildContext context;
   final int index;
-  final Function onExerciseAdded;
+  // pass the exerciseindex back, -1 if we are adding
+  final Function (int) onExerciseAdded;
   final ThemeData theme;
 
   @override
@@ -63,7 +60,7 @@ class _ListExercisesState extends State<ListExercises> {
               onPressed: () async {
                 if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                 // callback to program page - displays fullscreen exercise search and adds the chosen exercise
-                await widget.onExerciseAdded();
+                await widget.onExerciseAdded(-1);
               },
             
               style: ButtonStyle(
@@ -275,15 +272,7 @@ class _ListExercisesState extends State<ListExercises> {
                           // TODO: here we need to use the new exercise selector
                           onPressed: () async {
                             if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                              int? exerciseID = 70;
-                              
-                            setState( () {
-                              Provider.of<Profile>(context, listen: false).exerciseAssign(
-                                index1: widget.index, 
-                                index2: exerciseIndex,
-                                data: Provider.of<Profile>(context, listen: false).exercises[widget.index][exerciseIndex].copyWith(newexerciseID: exerciseID)
-                              );
-                            });
+                            widget.onExerciseAdded(exerciseIndex);
                           }, 
                         
                           icon: const Icon(Icons.edit),
