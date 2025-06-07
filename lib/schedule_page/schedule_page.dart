@@ -558,7 +558,7 @@ class _MyScheduleState extends State<SchedulePage> {
       }
       // if in the past, check if they completed a workout that day
       if (didWorkout!.contains(normalizeDay(day))){
-        debugPrint("found it");
+        //debugPrint("found it");
         return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(

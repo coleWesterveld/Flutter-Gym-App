@@ -553,6 +553,7 @@ void _initializeStructuresForDay(int dayIdx) {
     _ensureLength(workoutRepsTEC,   numExercises, () => <List<TextEditingController>>[]);
     _ensureLength(workoutExpansionControllers, numExercises, () => ExpansionTileController());
     _ensureLength(expansionStates, numExercises, () => false);
+    _ensureLength(isExerciseComplete, numExercises, () => false);
     if (showHistory != null) _ensureLength(showHistory!, numExercises, () => false);
     //_ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
 
