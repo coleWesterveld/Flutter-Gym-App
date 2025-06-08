@@ -1,4 +1,5 @@
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,8 @@ class DraggableDay extends StatelessWidget {
 
           delay: const Duration(milliseconds: 250),
           data: _days[_index]!,
+
+          hapticFeedbackOnStart: context.watch<SettingsModel>().hapticsEnabled,
           
           // what the picked-up widget looks like
           feedback: Container(

@@ -137,6 +137,7 @@ class _DayTileState extends State<DayTile> {
             
             title: 
               SizedBox(
+                //color: Colors.red,
                 height: context.watch<Profile>().split[widget.index].gear.isNotEmpty ? 43 : 40,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -150,9 +151,13 @@ class _DayTileState extends State<DayTile> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          
                           children: [
                             Text(
-                              textHeightBehavior: const TextHeightBehavior(applyHeightToLastDescent: false),
+                              textHeightBehavior: const TextHeightBehavior(
+                                applyHeightToLastDescent: false,
+                                applyHeightToFirstAscent: false,
+                              ),
                               overflow: TextOverflow.ellipsis,
                               context.watch<Profile>().split[widget.index].dayTitle,
                               
@@ -165,7 +170,10 @@ class _DayTileState extends State<DayTile> {
                         
                             
                             Text(
-                              textHeightBehavior: const TextHeightBehavior(applyHeightToFirstAscent: false),
+                              textHeightBehavior: const TextHeightBehavior(
+                                applyHeightToLastDescent: false,
+                                applyHeightToFirstAscent: false,
+                              ),
                               overflow: TextOverflow.ellipsis,
                               context.watch<Profile>().split[widget.index].gear,
                               
@@ -179,15 +187,21 @@ class _DayTileState extends State<DayTile> {
                         ),
                       ),
                     if (context.watch<Profile>().split[widget.index].gear.isEmpty)
-                      Text(
-                        textHeightBehavior: const TextHeightBehavior(applyHeightToLastDescent: false),
-                        overflow: TextOverflow.ellipsis,
-                        context.watch<Profile>().split[widget.index].dayTitle,
-                        
-                        style: TextStyle(
-                          color: widget.theme.colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                      Expanded(
+
+                        child: Text(
+                          textHeightBehavior: const TextHeightBehavior(
+                                applyHeightToLastDescent: false,
+                                applyHeightToFirstAscent: false,
+                              ),
+                          overflow: TextOverflow.ellipsis,
+                          context.watch<Profile>().split[widget.index].dayTitle,
+                          
+                          style: TextStyle(
+                            color: widget.theme.colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
 

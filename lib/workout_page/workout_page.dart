@@ -3,6 +3,7 @@ import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers_and_settings/program_provider.dart';
 import '../widgets/set_logging.dart';
@@ -225,6 +226,11 @@ class _WorkoutState extends State<Workout> {
                   onPressed: () {
                     setState(() {
                       // Toggle history visibility
+                      if (!context.read<ActiveWorkoutProvider>().expansionStates[index]) {
+                        context.read<ActiveWorkoutProvider>().workoutExpansionControllers[index].expand();
+                      
+                      }
+                      context.read<ActiveWorkoutProvider>().expansionStates[index] = true;
                       context.read<ActiveWorkoutProvider>().showHistory![index] =
                           !context.read<ActiveWorkoutProvider>().showHistory![index];
                     });
@@ -232,52 +238,107 @@ class _WorkoutState extends State<Workout> {
                   icon: Icon(
                     context.watch<ActiveWorkoutProvider>().showHistory![index]
                         ? Icons.swap_horiz
-                        : Icons.history,
+                        : Icons.info_outline,
                   ),
                 ),
               ],
             ),
             children: context.watch<ActiveWorkoutProvider>().showHistory![index]
                 ? [
-                    _exerciseHistory.containsKey(index)
-                        ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Most Recent History:"),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: HistorySessionView(
-                                    color: widget.theme.colorScheme.surfaceContainerHighest,
-                                    exerciseHistory: _exerciseHistory[index]!,
-                                    theme: widget.theme,
+                    Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (context.read<Profile>().exercises[primaryIndex][index].notes.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: InkWell(
+                                  onTap: () {
+                                    _updatePersistentNotes(context, primaryIndex, index);
+                                  },
+
+                                  child: Container(
+                                    
+                                    decoration: BoxDecoration(
+                                      //color: Theme.of(context).scaffoldBackgroundColor,
+                                      border: Border.symmetric(
+                                        horizontal: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline, 
+                                          width: 2
+                                        )
+                                      )
+                                    ),
+                                    child: Padding(
+                                      padding: const  EdgeInsets.all(8.0),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.edit_note_outlined),
+                                          const SizedBox(width: 10),
+                                          Expanded(child: Text(context.read<Profile>().exercises[primaryIndex][index].notes)),
+                                        ],
+                                      ),
+                                    )
                                   ),
                                 ),
-                                
-                                        
-                                TextButton(
-                                    onPressed: () {
-                                      _showFullHistoryModal(
-                                        context
-                                            .read<Profile>()
-                                            .exercises[primaryIndex][index]
-                                            .exerciseID,
-                                        context
-                                            .read<Profile>()
-                                            .exercises[primaryIndex][index]
-                                            .exerciseTitle,
-                                      );
-                                    },
-                                    child: const Text("Show Full History")),
-                              ],
+                              ),
+                            if (context.read<Profile>().exercises[primaryIndex][index].notes.isEmpty)
+                              InkWell(
+                                onTap:() {
+                                  _updatePersistentNotes(context, primaryIndex, index);
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.only(bottom: 12.0, left: 4.0),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_note_outlined),
+                                      SizedBox(width: 10),
+                                      Expanded(child: Text('Tap to add persistent notes')),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          if (_exerciseHistory.containsKey(index)) ...[
+
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text("Most Recent History:"),
                             ),
-                          )
-                        : const Align(
-                            heightFactor: 3,
-                            alignment: Alignment.center,
-                            child:  Text("No History Found For This Exercise")
-                          )
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: HistorySessionView(
+                                color: widget.theme.colorScheme.surfaceContainerHighest,
+                                exerciseHistory: _exerciseHistory[index]!,
+                                theme: widget.theme,
+                              ),
+                            ),
+                            
+                                    
+                            TextButton(
+                                onPressed: () {
+                                  _showFullHistoryModal(
+                                    context
+                                        .read<Profile>()
+                                        .exercises[primaryIndex][index]
+                                        .exerciseID,
+                                    context
+                                        .read<Profile>()
+                                        .exercises[primaryIndex][index]
+                                        .exerciseTitle,
+                                  );
+                                },
+                                child: const Text("Show Full History")),
+                          ],
+                        ]
+                        ),
+                      ),
+                    if (!_exerciseHistory.containsKey(index)) ...[
+                      const Align(
+                        heightFactor: 3,
+                        alignment: Alignment.center,
+                        child:  Text("No History Found For This Exercise")
+                      )
+                    ]
                   ]
                 : [
                     const Padding(
@@ -526,6 +587,120 @@ class _WorkoutState extends State<Workout> {
         ),
       ),
     );
+  }
+
+  Future<dynamic> _updatePersistentNotes(BuildContext context, int primaryIndex, int index) {
+    return showDialog(
+                                      context: context, 
+                                      builder: (context) {
+                                        final persistentNotesTEC = TextEditingController(
+                                          text: context.read<Profile>().exercises[primaryIndex][index].notes
+                                        );
+
+                                        return AlertDialog(
+                                          title: Text(
+                                            "Enter notes for ${context.read<Profile>().exercises[primaryIndex][index].exerciseTitle} for this program",
+                                            style: TextStyle(
+                                              fontSize: 18
+                                            )
+                                          ),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              
+                                              TextField(
+                                                controller: persistentNotesTEC,
+                                                minLines: 2,
+                                                maxLines: 4,
+                                                maxLength: 200,
+                                                decoration: const InputDecoration(
+                                                  labelText: "Persistent Notes",
+                                                  border: OutlineInputBorder(),
+                                                  hintText: "Machine settings, form cues, reminders..."
+
+                                                ),
+                                                autofocus: true,
+
+                                                onSubmitted: (value) {
+                                                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, value);
+                                                },
+                                                
+                                              ),
+                                              
+                                            ],
+                                          ),
+                                          actions: [
+                                            SizedBox(
+                                              height: 45,
+                                              width: 72,
+                                              child: TextButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                style: ButtonStyle(
+                                              
+                                                  shape: WidgetStateProperty.all(
+                                                    RoundedRectangleBorder(
+                                                      side: BorderSide(
+                                                        width: 2,
+                                                        color: widget.theme.colorScheme.primary,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                  ),
+                                                  overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                                                    (states) {
+                                                      if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
+                                                      return null;
+                                                    },
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: widget.theme.colorScheme.primary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+
+                                            SizedBox(
+                                              width: 72,
+                                              height: 45,
+                                              child: TextButton(
+                                                onPressed: () {
+                                                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, persistentNotesTEC.text);
+                                                  
+                                                  Navigator.pop(context);
+                                                },
+                                              
+                                                style: ButtonStyle(
+                                                  shape: WidgetStateProperty.all(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(12)
+                                                    )
+                                                  ),
+                                              
+                                                  backgroundColor: WidgetStateProperty.all(
+                                                    widget.theme.colorScheme.primary,
+                                                  ), 
+                                              
+                                                  overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                                                    if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
+                                                    return null;
+                                                  }),
+                                                ),
+                                              
+                                                child: Text(
+                                                  "Save",
+                                                  style: TextStyle(
+                                                    color: widget.theme.colorScheme.onPrimary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
   }
 
 

@@ -608,6 +608,11 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateExerciseNotes(int primaryIndex, int index, String newNotes) {
+    exercises[primaryIndex][index].notes = newNotes;
+    notifyListeners();
+  }
+
 
   //inserts exercise onto a specific day in list
   void setsInsert({

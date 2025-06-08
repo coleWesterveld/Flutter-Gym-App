@@ -290,7 +290,7 @@ class Exercise {
   final int id;
   final int exerciseID;
   // these are not notes recorded during the workout, they are permanent notes/instructions
-  final String notes;
+  String notes;
   final int dayID;
   final String exerciseTitle;
   final int exerciseOrder;
@@ -302,7 +302,7 @@ class Exercise {
     required this.dayID, 
     required this.exerciseTitle, 
     required this.exerciseOrder,
-    required this.notes // = ''
+    this.notes = ''
   });
 
   Map<String, dynamic> toMap() {
