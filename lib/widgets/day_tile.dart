@@ -76,6 +76,8 @@ class _DayTileState extends State<DayTile> {
                   
           // Expandable to see exercises and sets for that day
           child: ExpansionTile(
+            initiallyExpanded: context.read<Profile>().expansionStates[widget.index],
+            
             controller: (widget.index == 0 && settings.isFirstTime) ? manager.exerciseDemoExpandController : null,
             
 
@@ -90,6 +92,7 @@ class _DayTileState extends State<DayTile> {
             iconColor: widget.theme.colorScheme.primary,
             collapsedIconColor: widget.theme.colorScheme.primary,
             onExpansionChanged: (val){
+              context.read<Profile>().expansionStates[widget.index] = val;
               if (!val){
                 WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
                 Provider.of<Profile>(context, listen: false).changeDone(false);

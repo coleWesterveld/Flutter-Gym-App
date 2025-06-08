@@ -1,3 +1,4 @@
+import 'package:firstapp/other_utilities/ensure_length.dart';
 import 'package:flutter/material.dart';
 //import 'data_saving.dart';
 import '../database/database_helper.dart';
@@ -38,7 +39,6 @@ class Profile extends ChangeNotifier {
     Colors.blue,
     Colors.cyan,
     Colors.teal,
-
     Colors.yellow,
   ];
 
@@ -52,6 +52,9 @@ class Profile extends ChangeNotifier {
 
   List<int> _editIndex = [-1, -1, -1];
   bool isInitialized = false;
+
+  List<bool> expansionStates = [];
+
   final Completer<void> _initializationCompleter = Completer<void>();
 
   set editIndex(List<int> newVal){
@@ -111,6 +114,7 @@ class Profile extends ChangeNotifier {
     this.sets = const <List<List<PlannedSet>>>[],
     required this.dbHelper,
     this.splitLength = 7,
+    this.expansionStates = const []
   }){
     _initializeProfileData();
   }
@@ -139,6 +143,12 @@ class Profile extends ChangeNotifier {
         _origin = settings!.programStartDate!;
       }
 
+      expansionStates = List.filled(
+        split.length,
+        false,
+        growable: true
+      );
+
       updateSplitLength();
       isInitialized = true;
       notifyListeners();
@@ -150,8 +160,6 @@ class Profile extends ChangeNotifier {
       _initializationCompleter.completeError(e);
     }
   }
-
-
 
   // This will be moved into its own provider likely...
   bool get done => _done;
@@ -170,6 +178,7 @@ class Profile extends ChangeNotifier {
   }
 
   void updateSplitLength() {
+    ensureLength(expansionStates, split.length, () => false);
     if (split.length > 7) {
       splitLength = split.length;
     } else {
@@ -270,6 +279,13 @@ class Profile extends ChangeNotifier {
     split.removeAt(oldIndex);
     split.insert(newIndex, moveDay);
 
+    final expState = expansionStates[oldIndex];
+    expansionStates.removeAt(oldIndex);
+    expansionStates.insert(newIndex, expState);
+
+
+
+
     final moveExercises = exercises[oldIndex];
     exercises.removeAt(oldIndex);
     exercises.insert(newIndex, moveExercises);
@@ -277,6 +293,7 @@ class Profile extends ChangeNotifier {
     final moveSets = sets[oldIndex];
     sets.removeAt(oldIndex);
     sets.insert(newIndex, moveSets);
+    
     
     updateDaysOrderInDatabase();
     notifyListeners();

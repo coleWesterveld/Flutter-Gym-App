@@ -1,3 +1,4 @@
+import 'package:firstapp/other_utilities/ensure_length.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //import 'data_saving.dart';
@@ -548,13 +549,13 @@ void _initializeStructuresForDay(int dayIdx) {
     final int numExercises = exercisesForDay.length;
 
     // 1) Outer-list: one sublist per exercise
-    _ensureLength(workoutRpeTEC,    numExercises, () => <List<TextEditingController>>[]);
-    _ensureLength(workoutWeightTEC, numExercises, () => <List<TextEditingController>>[]);
-    _ensureLength(workoutRepsTEC,   numExercises, () => <List<TextEditingController>>[]);
-    _ensureLength(workoutExpansionControllers, numExercises, () => ExpansionTileController());
-    _ensureLength(expansionStates, numExercises, () => false);
-    _ensureLength(isExerciseComplete, numExercises, () => false);
-    if (showHistory != null) _ensureLength(showHistory!, numExercises, () => false);
+    ensureLength(workoutRpeTEC,    numExercises, () => <List<TextEditingController>>[]);
+    ensureLength(workoutWeightTEC, numExercises, () => <List<TextEditingController>>[]);
+    ensureLength(workoutRepsTEC,   numExercises, () => <List<TextEditingController>>[]);
+    ensureLength(workoutExpansionControllers, numExercises, () => ExpansionTileController());
+    ensureLength(expansionStates, numExercises, () => false);
+    ensureLength(isExerciseComplete, numExercises, () => false);
+    if (showHistory != null) ensureLength(showHistory!, numExercises, () => false);
     //_ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
 
 
@@ -563,9 +564,9 @@ void _initializeStructuresForDay(int dayIdx) {
       final setsForExercise = plannedSetsForDay[i];
       final int numSetEntries = setsForExercise.length;
 
-      _ensureLength(workoutRpeTEC[i],    numSetEntries, () => <TextEditingController>[]);
-      _ensureLength(workoutWeightTEC[i], numSetEntries, () => <TextEditingController>[]);
-      _ensureLength(workoutRepsTEC[i],   numSetEntries, () => <TextEditingController>[]);
+      ensureLength(workoutRpeTEC[i],    numSetEntries, () => <TextEditingController>[]);
+      ensureLength(workoutWeightTEC[i], numSetEntries, () => <TextEditingController>[]);
+      ensureLength(workoutRepsTEC[i],   numSetEntries, () => <TextEditingController>[]);
     }
 
     // 3) Inner-list: one controller _per_ plannedSet.numSets
@@ -573,32 +574,15 @@ void _initializeStructuresForDay(int dayIdx) {
       for (int j = 0; j < plannedSetsForDay[i].length; j++) {
         final int slots = plannedSetsForDay[i][j].numSets;
 
-        _ensureLength(workoutRpeTEC[i][j],    slots, () => TextEditingController());
-        _ensureLength(workoutWeightTEC[i][j], slots, () => TextEditingController());
-        _ensureLength(workoutRepsTEC[i][j],   slots, () => TextEditingController());
+        ensureLength(workoutRpeTEC[i][j],    slots, () => TextEditingController());
+        ensureLength(workoutWeightTEC[i][j], slots, () => TextEditingController());
+        ensureLength(workoutRepsTEC[i][j],   slots, () => TextEditingController());
       }
     }
 
     // 4) Notes and expansion controllers—one per exercise
-    _ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
+    ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
   }
-
-  // Utility to grow/shrink a List<T>, disposing controllers if needed
-  void _ensureLength<T>(List<T> list, int targetLen, T Function() make) {
-    // grow
-    while (list.length < targetLen) {
-      list.add(make());
-    }
-    // shrink
-    while (list.length > targetLen) {
-      final removed = list.removeLast();
-      if (removed is TextEditingController)    removed.dispose();
-      //if (removed is ExpansionTileController)  removed.dispose();
-      // if it’s a List<…> you’ll eventually hit inner controllers which
-      // will be disposed by their own ensureLength calls
-    }
-  }
-
   // Call this when user explicitly starts a NEW workout or switches days
   Future<void> setActiveDayAndStartNew(int? index, {String? existingSessionId}) async {
     workoutStartTime = DateTime.now();
