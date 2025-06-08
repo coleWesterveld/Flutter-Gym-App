@@ -167,12 +167,18 @@ class _MainPage extends State<GymApp>{
             return const Center(child: CircularProgressIndicator());
           }
           
-          if (!settings.isFirstTime && context.watch<Profile>().isInitialized) {
+          if (
+            !context.read<UiStateProvider>().hasSetNotifs 
+            && !settings.isFirstTime 
+            && context.watch<Profile>().isInitialized
+            && context.read<SettingsModel>().notificationsEnabled
+          ) {
             final notiService = NotiService();
             notiService.scheduleWorkoutNotifications(
               profile: context.read<Profile>(),
               settings: context.read<SettingsModel>(),
             );
+            context.read<UiStateProvider>().hasSetNotifs = true;
           }
 
           Widget initialHome;
@@ -437,7 +443,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
         appBar: _buildAppBar(context),
         // floatingActionButton: TextButton(
         //   onPressed: () async {
-        //     notifications = await notiService.debugPrintScheduledNotifications();
+        //     NotiService().debugPrintScheduledNotifications();
         //   }, 
         //   child: const Text("see notifs")
         // ),

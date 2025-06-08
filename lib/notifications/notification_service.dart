@@ -108,14 +108,20 @@ class NotiService {
     final now = tz.TZDateTime.now(tz.local);
     final endDate = now.add(Duration(days: daysInAdvance));
 
-    for (final day in profile.split.where((d) => d.workoutTime != null)) {
+    for (final day in profile.split) {
       // Find the first occurrence after origin date
       var currentDate = _nextOccurrence(day, profile, originDate);
       
       // Only schedule dates between now and endDate
       while (currentDate.isBefore(endDate)) {
+        if (day.dayTitle == "Push"){
+          debugPrint("scheduling for: ${currentDate}");
+        }
         // Skip if this date is in the past
         if (currentDate.isBefore(now)) {
+          if (day.dayTitle == "Push"){
+            debugPrint("WARN for: ${currentDate}");
+          }
           currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
           continue;
         }
@@ -126,16 +132,19 @@ class NotiService {
           currentDate.year,
           currentDate.month,
           currentDate.day,
-          day.workoutTime!.hour,
-          day.workoutTime!.minute,
+          day.workoutTime?.hour ?? 8,
+          day.workoutTime?.minute ?? settings.timeReminder,
         ).subtract(Duration(minutes: settings.timeReminder));
 
         // Only schedule if the reminder time is still in the future
         if (notificationTime.isAfter(now)) {
+          if (day.dayTitle == "Push"){
+            debugPrint("SUCCESS for: ${currentDate}");
+          }
           await notificationsPlugin.zonedSchedule(
             _generateNotificationId(day, currentDate),
-            'Workout Reminder',
-            'Your ${day.dayTitle} starts soon!',
+            '${day.dayTitle} Workout Starts Soon',
+            day.gear.isEmpty ? 'Don\'t forget any gear you need!' : 'Don\'t forget: ${day.gear}',
             notificationTime,
             notificationDetails(),
             androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -169,9 +178,29 @@ class NotiService {
     }
   }
 
-
+  // jeez this was overflowing which then caused ID collisions messing up my notifications
+  // now its fixed 
   int _generateNotificationId(workout.Day day, DateTime date) {
-    return day.dayID + date.day + date.month * 100 + date.year * 10000;
+    // The maximum value for a notification ID is the max for a 32-bit signed integer (2,147,483,647).
+    // We construct a unique ID by combining year, day of year, and the workout's ID.
+    // This ensures that the ID is unique for every workout on every day.
+
+    // To prevent the final number from becoming too large, we can use an offset for the year.
+    // This is just to keep the number smaller; it does not affect the uniqueness.
+    // Using 2024 as the epoch makes the logic clear that it's based on a recent year.
+    const int yearEpoch = 2024;
+    final int year = date.year - yearEpoch;
+
+    // Day of year ranges from 1 to 366.
+    final int dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
+
+    // We combine these parts by multiplying them by factors of 10, ensuring no overlap.
+    // The multiplier of 1000 for dayOfYear reserves 3 digits for day.dayID (0-999).
+    // Example for dayID 999 on Dec 31, 2025: (1 * 1000000) + (365 * 1000) + 999 = 1,365,999
+    final int uniqueId = year * 1000000 + dayOfYear * 1000 + day.dayID;
+    
+    // This approach is safe for thousands of years and handles day.dayID up to 999.
+    return uniqueId;
   }
 
   // Cancel all notifications

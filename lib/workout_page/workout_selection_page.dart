@@ -45,7 +45,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
   void expandTile({int? index}) {
     
     if (!mounted) {
-       print("Error expanding tile: WorkoutSelectionPageState not mounted.");
+       debugPrint("Error expanding tile: WorkoutSelectionPageState not mounted.");
        return;
     }
 
@@ -102,13 +102,13 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     // that aren't automatically handled by the ExpansionTile itself.
                  } catch (e) {
                     // Catch potential errors during the actual expand call
-                    print("Error during controller.expand() for index $targetIndex inside callback: $e");
+                    debugPrint("Error during controller.expand() for index $targetIndex inside callback: $e");
                  }
             } else {
-               print("Tile already expanded post-frame: $targetIndex");
+              debugPrint("Tile already expanded post-frame: $targetIndex");
             }
         } else {
-           print("Error expanding tile post-frame: targetIndex $targetIndex out of bounds or state not mounted.");
+          debugPrint("Error expanding tile post-frame: targetIndex $targetIndex out of bounds or state not mounted.");
         }
     });
   }
@@ -352,69 +352,108 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     
 
                     leading: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Row( 
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            //width: 50,
-                            child: Text(
-                              "${index + 1}",
-                                                    
-                              style: TextStyle(
-                                height: 0.6,
-                                color: widget.theme.colorScheme.onSurface,
-                                fontSize: 35,
-                                fontWeight: FontWeight.w900,
-                              ),
-                              ),
-                          ),
-                      
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Container(
-                              width: 15,
-                              height: 15,
-                              decoration:  BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(context.watch<Profile>().split[index].dayColor),
-                              ),
-                            
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row( 
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          //width: 50,
+                          child: Text(
+                            "${index + 1}",
+                                                  
+                            style: TextStyle(
+                              height: 0.6,
+                              color: widget.theme.colorScheme.onSurface,
+                              fontSize: 35,
+                              fontWeight: FontWeight.w900,
                             ),
-                          ),
-                        ]
-                      ),
-                    ),
+                            ),
+                        ),
                     
-                    title: SizedBox(
-                      height: 40,
-                      
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration:  BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(context.watch<Profile>().split[index].dayColor),
+                            ),
+                          
+                          ),
+                        ),
+                      ]
+                    ),
+                  ),
+                  
+                  title: 
+                    SizedBox(
+                      //color: Colors.red,
+                      height: context.watch<Profile>().split[index].gear.isNotEmpty ? 43 : 40,
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 30,
-                              width: 100,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [                                  
-                        
-                                  SizedBox(
-                                    width:  MediaQuery.sizeOf(context).width - 148,
-                                    child: Text(
-                                      overflow: TextOverflow.ellipsis,
-                                      context.watch<Profile>().split[index].dayTitle,
-                                      style: TextStyle(
-                                        color: widget.theme.colorScheme.onSurface,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                          // I know I could get an equivalent effect with subtitle, but then trailing icon is uncentered
+                          // if i make ther trailing icon as the "trailing" then I lose the expansion indicator
+                          // so i am doing this
+                          if (context.watch<Profile>().split[index].gear.isNotEmpty)
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                
+                                children: [
+                                  Text(
+                                    textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    context.watch<Profile>().split[index].dayTitle,
+                                    
+                                    style: TextStyle(
+                                      color: widget.theme.colorScheme.onSurface,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                              
+                                  
+                                  Text(
+                                    textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    context.watch<Profile>().split[index].gear,
+                                    
+                                    style: TextStyle(
+                                      color: widget.theme.colorScheme.onSurface,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
+                          if (context.watch<Profile>().split[index].gear.isEmpty)
+                            Expanded(
+                              child: Text(
+                                textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                                context.watch<Profile>().split[index].dayTitle,
+                                
+                                style: TextStyle(
+                                  color: widget.theme.colorScheme.onSurface,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -723,59 +762,104 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                   //controller: context.watch<Profile>().controllers[index],
                   iconColor: widget.theme.colorScheme.onSurface,
                   collapsedIconColor: widget.theme.colorScheme.onSurface,
-              
-                  //top row always displays day title, and edit button
-                  //sized boxes and padding is just a bunch of formatting stuff
-                  //tbh it could probably be made more concise
-                  //TODO: simplify this
 
                   leading: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Row( 
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            //width: 50,
-                            child: Text(
-                              "${index + 1}",
-                                                    
-                              style: TextStyle(
-                                height: 0.6,
-                                color: widget.theme.colorScheme.onSurface,
-                                fontSize: 35,
-                                fontWeight: FontWeight.w900,
-                              ),
-                              ),
-                          ),
-                    
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Container(
-                              width: 15,
-                              height: 15,
-                              decoration:  BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(context.watch<Profile>().split[index].dayColor),
-                              ),
-                            
-                            ),
-                          ),
-                        ]
-                      ),
-                  ),
-                  title: SizedBox(
-                    height: 30,
-                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 30,
-                            width: 100,
-                            child: SizedBox(
-                              width:  MediaQuery.sizeOf(context).width - 138,
+                        SizedBox(
+                          //width: 50,
+                          child: Text(
+                            "${index + 1}",
+                                                  
+                            style: TextStyle(
+                              height: 0.6,
+                              color: widget.theme.colorScheme.onSurface,
+                              fontSize: 35,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            ),
+                        ),
+                    
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Container(
+                            width: 15,
+                            height: 15,
+                            decoration:  BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(context.watch<Profile>().split[index].dayColor),
+                            ),
+                          
+                          ),
+                        ),
+                      ]
+                    ),
+                  ),
+                  
+                  title: 
+                    SizedBox(
+                      //color: Colors.red,
+                      height: context.watch<Profile>().split[index].gear.isNotEmpty ? 43 : 40,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // I know I could get an equivalent effect with subtitle, but then trailing icon is uncentered
+                          // if i make ther trailing icon as the "trailing" then I lose the expansion indicator
+                          // so i am doing this
+                          if (context.watch<Profile>().split[index].gear.isNotEmpty)
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                
+                                children: [
+                                  Text(
+                                    textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    context.watch<Profile>().split[index].dayTitle,
+                                    
+                                    style: TextStyle(
+                                      color: widget.theme.colorScheme.onSurface,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                              
+                                  
+                                  Text(
+                                    textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    context.watch<Profile>().split[index].gear,
+                                    
+                                    style: TextStyle(
+                                      color: widget.theme.colorScheme.onSurface,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (context.watch<Profile>().split[index].gear.isEmpty)
+                            Expanded(
+
                               child: Text(
+                                textHeightBehavior: const TextHeightBehavior(
+                                      applyHeightToLastDescent: false,
+                                      applyHeightToFirstAscent: false,
+                                    ),
                                 overflow: TextOverflow.ellipsis,
                                 context.watch<Profile>().split[index].dayTitle,
+                                
                                 style: TextStyle(
                                   color: widget.theme.colorScheme.onSurface,
                                   fontSize: 18,
@@ -783,11 +867,10 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      ],
+
+                        ],
+                      ),
                     ),
-                  ),
               
                   //children of expansion tile - what gets shown when user expands that day
                   // shows exercises for that day

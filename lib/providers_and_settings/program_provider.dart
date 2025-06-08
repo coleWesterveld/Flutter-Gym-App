@@ -430,14 +430,14 @@ class Profile extends ChangeNotifier {
     required Day newDay,
     required int index,
     required BuildContext context,
+    bool scheduleNotifs = true
   }) async {
 
     dbHelper.updateDay(split[index].dayID, newDay.toMap());
     split[index] = newDay;
 
-    // If time changed, enable notifications
-    if (split[index].workoutTime != newDay.workoutTime){
-      // Reschedule notifications if enabled
+    // Reschedule notifications if enabled
+    if (scheduleNotifs){
       final settings = Provider.of<SettingsModel>(context, listen: false);
       if (settings.notificationsEnabled) {
         final notiService = NotiService();
@@ -447,6 +447,7 @@ class Profile extends ChangeNotifier {
         );
       }
     }
+    
 
     notifyListeners();
   }

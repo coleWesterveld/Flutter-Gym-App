@@ -23,6 +23,7 @@ class UiStateProvider extends ChangeNotifier {
   bool _openProgramDrawerRequested = false;
   bool _showAppBarBackButton = false;
   bool _isChoosingExercise = false;
+  bool _hasSetNotifs = false;
 
 
 
@@ -31,6 +32,8 @@ class UiStateProvider extends ChangeNotifier {
   bool get openProgramDrawerRequested => _openProgramDrawerRequested;
   bool get showAppBarBackButton => _showAppBarBackButton;
   bool get isChoosingExercise => _isChoosingExercise;
+  bool get hasSetNotifs => _hasSetNotifs;
+
 
   // The action to perform when the back button is pressed
   VoidCallback? _onAppBarBackButtonPress;
@@ -91,6 +94,11 @@ class UiStateProvider extends ChangeNotifier {
 
   set customAppBarTitle (String? customAppBarTitle){
     _customAppBarTitle = customAppBarTitle;
+    notifyListeners();
+  }
+
+  set hasSetNotifs (bool hasSetNotifs){
+    _hasSetNotifs = hasSetNotifs;
     notifyListeners();
   }
 

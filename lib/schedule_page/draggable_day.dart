@@ -3,6 +3,7 @@ import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
 import 'package:provider/provider.dart';
@@ -42,11 +43,15 @@ class DraggableDay extends StatelessWidget {
           // cuz thats the whole purpose of this page
           // at the same time, user needs to be able to scroll whout dragging stuff everywhere instantly 
 
-          delay: const Duration(milliseconds: 250),
+          delay: const Duration(milliseconds: 200),
           data: _days[_index]!,
 
-          hapticFeedbackOnStart: context.watch<SettingsModel>().hapticsEnabled,
-          
+          onDragStarted: (){
+            if (context.read<SettingsModel>().hapticsEnabled){
+              HapticFeedback.heavyImpact();
+            }
+          },
+
           // what the picked-up widget looks like
           feedback: Container(
             decoration: BoxDecoration(

@@ -74,7 +74,7 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
                 index: widget.index, 
                 newDay: context.read<Profile>().split[widget.index].copyWith(
                   newDayTitle: widget.titleTEC.text,
-                  newGear: widget.equipmentTEC.text, // Save equipment
+                  newGear: widget.equipmentTEC.text,
                 ),
                 context: context
               );

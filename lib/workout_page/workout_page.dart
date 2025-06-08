@@ -591,116 +591,116 @@ class _WorkoutState extends State<Workout> {
 
   Future<dynamic> _updatePersistentNotes(BuildContext context, int primaryIndex, int index) {
     return showDialog(
-                                      context: context, 
-                                      builder: (context) {
-                                        final persistentNotesTEC = TextEditingController(
-                                          text: context.read<Profile>().exercises[primaryIndex][index].notes
-                                        );
+      context: context, 
+      builder: (context) {
+        final persistentNotesTEC = TextEditingController(
+          text: context.read<Profile>().exercises[primaryIndex][index].notes
+        );
 
-                                        return AlertDialog(
-                                          title: Text(
-                                            "Enter notes for ${context.read<Profile>().exercises[primaryIndex][index].exerciseTitle} for this program",
-                                            style: TextStyle(
-                                              fontSize: 18
-                                            )
-                                          ),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              
-                                              TextField(
-                                                controller: persistentNotesTEC,
-                                                minLines: 2,
-                                                maxLines: 4,
-                                                maxLength: 200,
-                                                decoration: const InputDecoration(
-                                                  labelText: "Persistent Notes",
-                                                  border: OutlineInputBorder(),
-                                                  hintText: "Machine settings, form cues, reminders..."
+        return AlertDialog(
+          title: Text(
+            "Enter notes for ${context.read<Profile>().exercises[primaryIndex][index].exerciseTitle} for this program",
+            style: TextStyle(
+              fontSize: 18
+            )
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              
+              TextField(
+                controller: persistentNotesTEC,
+                minLines: 2,
+                maxLines: 4,
+                maxLength: 200,
+                decoration: const InputDecoration(
+                  labelText: "Persistent Notes",
+                  border: OutlineInputBorder(),
+                  hintText: "Machine settings, form cues, reminders..."
 
-                                                ),
-                                                autofocus: true,
+                ),
+                autofocus: true,
 
-                                                onSubmitted: (value) {
-                                                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, value);
-                                                },
-                                                
-                                              ),
-                                              
-                                            ],
-                                          ),
-                                          actions: [
-                                            SizedBox(
-                                              height: 45,
-                                              width: 72,
-                                              child: TextButton(
-                                                onPressed: () => Navigator.pop(context),
-                                                style: ButtonStyle(
-                                              
-                                                  shape: WidgetStateProperty.all(
-                                                    RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 2,
-                                                        color: widget.theme.colorScheme.primary,
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(12),
-                                                    ),
-                                                  ),
-                                                  overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                                                    (states) {
-                                                      if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
-                                                      return null;
-                                                    },
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Cancel",
-                                                  style: TextStyle(
-                                                    color: widget.theme.colorScheme.primary,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
+                onSubmitted: (value) {
+                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, value);
+                },
+                
+              ),
+              
+            ],
+          ),
+          actions: [
+            SizedBox(
+              height: 45,
+              width: 72,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: ButtonStyle(
+              
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      side: BorderSide(
+                        width: 2,
+                        color: widget.theme.colorScheme.primary,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
+                      return null;
+                    },
+                  ),
+                ),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(
+                    color: widget.theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
 
-                                            SizedBox(
-                                              width: 72,
-                                              height: 45,
-                                              child: TextButton(
-                                                onPressed: () {
-                                                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, persistentNotesTEC.text);
-                                                  
-                                                  Navigator.pop(context);
-                                                },
-                                              
-                                                style: ButtonStyle(
-                                                  shape: WidgetStateProperty.all(
-                                                    RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(12)
-                                                    )
-                                                  ),
-                                              
-                                                  backgroundColor: WidgetStateProperty.all(
-                                                    widget.theme.colorScheme.primary,
-                                                  ), 
-                                              
-                                                  overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                                                    if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
-                                                    return null;
-                                                  }),
-                                                ),
-                                              
-                                                child: Text(
-                                                  "Save",
-                                                  style: TextStyle(
-                                                    color: widget.theme.colorScheme.onPrimary,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
+            SizedBox(
+              width: 72,
+              height: 45,
+              child: TextButton(
+                onPressed: () {
+                  context.read<Profile>().updateExerciseNotes(primaryIndex, index, persistentNotesTEC.text);
+                  
+                  Navigator.pop(context);
+                },
+              
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)
+                    )
+                  ),
+              
+                  backgroundColor: WidgetStateProperty.all(
+                    widget.theme.colorScheme.primary,
+                  ), 
+              
+                  overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.pressed)) return widget.theme.colorScheme.primary;
+                    return null;
+                  }),
+                ),
+              
+                child: Text(
+                  "Save",
+                  style: TextStyle(
+                    color: widget.theme.colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
 

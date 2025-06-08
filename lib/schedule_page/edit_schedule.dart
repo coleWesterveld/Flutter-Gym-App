@@ -2,6 +2,8 @@
 // TODO: this shoudl come back just for now it was everywhere and annoying
 
 //import 'package:firstapp/schedule_page.dart';
+import 'package:firstapp/notifications/notification_service.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
 import '../providers_and_settings/program_provider.dart';
 import '../database/profile.dart';
@@ -14,7 +16,6 @@ import 'package:firstapp/schedule_page/draggable_day.dart';
 // this page whats left: 
 // TODO: currently, I think dragging is a lil cumbersome. find out what a good length is fro long press draggable, and maybe bigger drag handle?
 // TODO: make pretty - notably, when a day hovers another day, preview changes
-// TODO: make repeat every and start day functional
 // done button to repeat every 
 // better dropdown - match OS?
 // undo button on drag and drop, in case of accidental drag when trying to scroll
@@ -194,6 +195,14 @@ class _EditScheduleState extends State<EditSchedule> {
                                             setState(() {
                                               context.read<Profile>().done = false;
                                               context.read<Profile>().splitLength = int.parse(splitLenTEC.text);
+                                              final settings = Provider.of<SettingsModel>(context, listen: false);
+                                              if (settings.notificationsEnabled) {
+                                                final notiService = NotiService();
+                                                notiService.scheduleWorkoutNotifications(
+                                                  profile: context.read<Profile>(),
+                                                  settings: context.read<SettingsModel>(),
+                                                );
+                                              }
                                             
                                             });
                   
@@ -315,6 +324,15 @@ class _EditScheduleState extends State<EditSchedule> {
                                         startDay = newValue;
                                         context.read<Profile>().origin = getDayOfCurrentWeek(startDay + 1);
                                       });
+
+                                      final settings = Provider.of<SettingsModel>(context, listen: false);
+                                      if (settings.notificationsEnabled) {
+                                        final notiService = NotiService();
+                                        notiService.scheduleWorkoutNotifications(
+                                          profile: context.read<Profile>(),
+                                          settings: context.read<SettingsModel>(),
+                                        );
+                                      }
                                       }
                                     
                                     // Handle starting day change
@@ -427,10 +445,20 @@ class _EditScheduleState extends State<EditSchedule> {
                         context.read<Profile>().splitAssign(
                           newDay: _days[i]!, 
                           index: splitIndex,
-                          context: context
+                          context: context,
+                          scheduleNotifs: false,
                         );
                       }
                     }
+                  }
+
+                  final settings = Provider.of<SettingsModel>(context, listen: false);
+                  if (settings.notificationsEnabled) {
+                    final notiService = NotiService();
+                    notiService.scheduleWorkoutNotifications(
+                      profile: context.read<Profile>(),
+                      settings: context.read<SettingsModel>(),
+                    );
                   }
                 });
 
@@ -451,6 +479,7 @@ class _EditScheduleState extends State<EditSchedule> {
                       if (!_allWorkoutsAtSameTime){
                         // only update the specific day chosen
                         // Update through provider
+                        debugPrint("timechanged 1");
                         context.read<Profile>().splitAssign(
                           newDay: _days[index]!.copyWith(newTime: pickedTime),
                           index: context.read<Profile>().split.indexWhere((day) => day.dayID == _days[index]!.dayID),
@@ -471,6 +500,7 @@ class _EditScheduleState extends State<EditSchedule> {
                             int splitIndex = context.read<Profile>().split.indexWhere((day) => day.dayID == _days[i]!.dayID);
 
                             if (splitIndex != -1) {
+                              debugPrint("timechanged 2");
                               context.read<Profile>().splitAssign(
                                 newDay: _days[i]!, 
                                 index: splitIndex,

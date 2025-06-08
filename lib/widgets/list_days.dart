@@ -1,6 +1,7 @@
 // Displays a list of days, each with a list of exercises containing their sets, for a program/phase of a program
 
 import 'package:firstapp/app_tutorial/tutorial_manager.dart';
+import 'package:firstapp/notifications/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';                                  // Haptics
@@ -85,6 +86,15 @@ class _ListDaysState extends State<ListDays> {
                 newIndex: newIndex, 
                 programID: context.read<Profile>().currentProgram.programID
               );
+
+              final settings = Provider.of<SettingsModel>(context, listen: false);
+              if (settings.notificationsEnabled) {
+                final notiService = NotiService();
+                notiService.scheduleWorkoutNotifications(
+                  profile: context.read<Profile>(),
+                  settings: context.read<SettingsModel>(),
+                );
+              }
           },
           
           // Button at bottom to add a new day to split
@@ -100,7 +110,16 @@ class _ListDaysState extends State<ListDays> {
                 borderRadius: BorderRadius.circular(16),
                 onTap: () {
                   if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                    context.read<Profile>().splitAppend();                
+                  context.read<Profile>().splitAppend();
+                  
+                  final settings = Provider.of<SettingsModel>(context, listen: false);
+                  if (settings.notificationsEnabled) {
+                    final notiService = NotiService();
+                    notiService.scheduleWorkoutNotifications(
+                      profile: context.read<Profile>(),
+                      settings: context.read<SettingsModel>(),
+                    );
+                  }                
                 },
                 child: SizedBox(
                   width: double.infinity,
@@ -178,6 +197,15 @@ class _ListDaysState extends State<ListDays> {
                           ),
                         ),
                       );
+
+                      final settings = Provider.of<SettingsModel>(context, listen: false);
+                      if (settings.notificationsEnabled) {
+                        final notiService = NotiService();
+                        notiService.scheduleWorkoutNotifications(
+                          profile: context.read<Profile>(),
+                          settings: context.read<SettingsModel>(),
+                        );
+                      }
                     },
                   ),
                 ],
