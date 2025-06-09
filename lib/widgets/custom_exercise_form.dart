@@ -15,11 +15,13 @@ class CustomExerciseForm extends StatefulWidget {
     required this.height,
     required this.exit,
     required this.theme,
+    required this.onDone
   });
 
   final void Function() exit;
   final double height;
   final ThemeData theme;
+  final Function(Map<String, dynamic>) onDone;
 
   @override
   CustomExerciseFormState createState() => CustomExerciseFormState();
@@ -139,7 +141,7 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                       child: InkWell(
                         splashColor: widget.theme.colorScheme.secondary,
                         borderRadius: BorderRadius.circular(16),
-                        onTap: () {
+                        onTap: () async {
 
                           // Retrieve and trim text values
                           final exerciseText = _exerciseTEC.text.trim();
@@ -170,12 +172,14 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
                           final formattedExercise = capitalizeWords(exerciseText);
                           final formattedMuscles = musclesText.isNotEmpty ? capitalizeWords(musclesText) : '';
                             
-                            dbHelper.insertCustomExercise(
-                              exerciseTitle: formattedExercise, 
-                              musclesWorked: formattedMuscles
-                            );
+                          final id = await dbHelper.insertCustomExercise(
+                            exerciseTitle: formattedExercise, 
+                            musclesWorked: formattedMuscles
+                          );
 
-                            widget.exit();
+                          widget.onDone({'exercise_id': id});
+
+                          widget.exit();
        
                         },
                         child: Center(

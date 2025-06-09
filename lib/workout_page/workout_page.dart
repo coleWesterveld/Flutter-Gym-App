@@ -1,7 +1,9 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:firstapp/widgets/done_button.dart';
+import 'package:firstapp/widgets/exercise_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -107,13 +109,41 @@ class _WorkoutState extends State<Workout> {
     super.dispose();
   }
 
+  void _handleExerciseSelected(Map<String, dynamic> exercise){
+    context.read<Profile>().exerciseAppend(
+      index: context.read<ActiveWorkoutProvider>().activeDayIndex!,
+      exerciseId: exercise['exercise_id'],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final workoutProvider = context.read<ActiveWorkoutProvider>();
+    final uiState = context.read<UiStateProvider>();
 
     int? primaryIndex = workoutProvider.activeDayIndex;
 
-    return GestureDetector(
+    return uiState.isChoosingExercise
+    ? SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          children: [ExerciseSearchWidget(
+            theme: widget.theme,
+            onExerciseSelected: (exercise){
+              _handleExerciseSelected(exercise);
+            },
+          
+            onSearchModeChanged: (isSearching) {
+              setState(() {
+                uiState.isChoosingExercise = isSearching;          
+              });
+            },
+          ),]
+        ),
+      ),
+    )
+    : GestureDetector(
       onTap: () {
         WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
         Provider.of<Profile>(context, listen: false).changeDone(false);
@@ -154,7 +184,7 @@ class _WorkoutState extends State<Workout> {
             ? const Center(child: Text("Something Went Wrong."))
             : ListView.builder(
                 itemCount:
-                    context.watch<Profile>().exercises[primaryIndex].length,
+                    context.watch<Profile>().exercises[primaryIndex].length + 1,
                 itemBuilder: (context, index) => exerciseBuild(context, index),
               ),
       ),
@@ -165,8 +195,62 @@ class _WorkoutState extends State<Workout> {
     int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
     bool isNextSet = index == context.watch<ActiveWorkoutProvider>().nextSet[0];
 
+
+    
     if (primaryIndex == null){
       return const SizedBox.shrink();
+    }
+
+    if (index == context.read<Profile>().exercises[primaryIndex].length){
+      return Padding(
+        key: const ValueKey('exerciseAdder'),
+        padding: const EdgeInsets.all(8),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ButtonTheme(
+
+            child: TextButton.icon(
+              
+              onPressed: () async {
+                debugPrint("allo? ");
+                if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
+                context.read<UiStateProvider>().isChoosingExercise = true;
+                setState(() {});
+              },
+            
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)
+                  )
+                ),
+                
+
+                backgroundColor: WidgetStateProperty.all(
+                  widget.theme.colorScheme.primary,
+                ),
+              ),
+              
+              label: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add,
+                    color: widget.theme.colorScheme.onPrimary,
+                  ),
+                  Text(
+                    "Exercise  ",
+                    style: TextStyle(
+                      color: widget.theme.colorScheme.onPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return Padding(

@@ -207,7 +207,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     // Fetch the next page of sessions
     final nextPageSessions = await DatabaseHelper.instance.fetchSessionsPage(
-      exerciseId: _exercise!['exercise_id'], // Use exercise ID
+      exerciseId: _exercise!['exercise_id'],
       limit: _sessionsPerPage,
       offset: offset,
       useMetric: context.read<SettingsModel>().useMetric, // Pass unit preference
