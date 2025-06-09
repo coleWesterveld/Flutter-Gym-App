@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
-// returns string from dart datetime object in format:
-// "Monday, January 1st, 2024"
+
 
 String _getDayWithSuffix(int day) {
   if (day >= 11 && day <= 13) {
@@ -15,6 +14,8 @@ String _getDayWithSuffix(int day) {
   }
 }
 
+// returns string from dart datetime object in format:
+// "Monday, January 1st, 2024"
 String formatDate(DateTime date) {
   final dayOfWeek = DateFormat('EEEE').format(date);
   final month = DateFormat('MMMM').format(date);
@@ -24,4 +25,13 @@ String formatDate(DateTime date) {
 
 DateTime normalizeDay(DateTime dt) {
   return DateTime(dt.year, dt.month, dt.day);
+}
+
+// "Mon., Jan. 18"
+String formatDateShort(DateTime date) {
+  final dayAbbr = DateFormat('EEE').format(date);
+  final monthAbbr = DateFormat('MMM').format(date);
+  final dayNum = DateFormat('d').format(date);
+
+  return '$dayAbbr., $monthAbbr. $dayNum';
 }

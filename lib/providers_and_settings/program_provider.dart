@@ -485,6 +485,10 @@ class Profile extends ChangeNotifier {
     
     return dbHelper.getSetsForDay(day);
   }
+
+  Future<List<DateTime?>> getRecentWorkoutDates() async {
+    return await dbHelper.getRecentWorkoutDates(split);
+  }
       
 
   void exerciseAppend({required int index, required int exerciseId}) async {

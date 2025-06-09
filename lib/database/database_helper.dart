@@ -364,7 +364,7 @@ class DatabaseHelper {
           'rpe': rpe,
           'history_note': "Feeling ${feelings[i % feelings.length]} today.",
           'exercise_id': 70, // Hardcoded to reference "bench press - medium grip"
-          'day_title' : "Bench + Upper Accessories",
+          'day_title' : "Bench + Upper",
           'program_title' : "Push Pull Legs Split"
         });
       }
@@ -642,6 +642,41 @@ class DatabaseHelper {
     await updateSettingsPartial({
       'theme_mode': themeMode,
     });
+  }
+
+
+  // for analytics pageview -- gets dates of last performed workout for each workout
+  Future<List<DateTime?>> getRecentWorkoutDates(List<Day> split) async {
+    final db = await database;
+    List<DateTime?> dates = [];
+    final today = DateTime.now();
+    List<List<Map<String, Object?>>> rawDates = [];
+    // this could be a transaction but I think thats highhey overkill and silly for like 10 items
+    // TODO: match on DB ID, its a bit complicated cuz we want to be able to delete days and not have foreign key errors, instead of dayTitle
+    for (Day day in split) {
+      rawDates.add(await db.rawQuery('''
+        SELECT date
+        FROM set_log
+        WHERE day_title = ?
+        AND date BETWEEN ? AND ?
+        ORDER BY date DESC
+        LIMIT 1
+      ''', [day.dayTitle, today.subtract(const Duration(days: 7)).toIso8601String(), today.toIso8601String()]));
+    }
+
+    // debugPrint("raw: ${rawDates}");
+
+    // this should maintain order, which is important since dates[i] is expected to correspond to split[i]
+    for (List<Map<String, Object?>> rawDate in rawDates){
+      if (rawDate.isEmpty){
+        // null to indicate no workout in last 7 days
+        dates.add(null);
+      } else{
+        // since we had limit 1 we will only have 1 record
+        dates.add(DateTime.tryParse(rawDate[0]['date'] as String));
+      }
+    }
+    return dates;
   }
 
   ////////////////////////////////////////////////////////////

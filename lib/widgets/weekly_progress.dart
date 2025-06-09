@@ -1,4 +1,5 @@
 import 'package:firstapp/other_utilities/format_reps.dart';
+import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/other_utilities/unit_conversions.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +26,33 @@ class PageViewWithIndicator extends StatefulWidget {
 
 class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
   final PageController _pageController = PageController();
+  List<DateTime?>? recentWorkoutDates;
+  late Profile profile;
+
+  @override
+  void initState() { 
+
+    super.initState();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+      profile = Provider.of<Profile>(context, listen: false);
+      _loadDates();
+      profile.addListener(_loadDates);
+    });
+  }
+
+  @override
+  void dispose() {
+    profile.removeListener(_loadDates);
+    super.dispose();
+  }
+
+  void _loadDates() async {
+    recentWorkoutDates = await context.read<Profile>().getRecentWorkoutDates();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Assuming your Profile provider contains a split (list of Day) and a corresponding list of exercises per day.
     final profile = context.read<Profile>();
     final days = profile.split;
     final exercisesPerDay = profile.exercises;
@@ -46,6 +70,7 @@ class _PageViewWithIndicatorState extends State<PageViewWithIndicator> {
                 exercises: exercisesPerDay[index],
                 onSelected: widget.onSelected,
                 theme: widget.theme,
+                date: recentWorkoutDates?[index],
               );
             },
           ),
@@ -75,6 +100,7 @@ class DayProgress extends StatefulWidget {
   final List<Exercise> exercises;
   final Function(Exercise) onSelected;
   final ThemeData theme;
+  final DateTime? date;
 
   const DayProgress({
     super.key,
@@ -83,6 +109,7 @@ class DayProgress extends StatefulWidget {
     required this.exercises,
     required this.onSelected,
     required this.theme,
+    required this.date
   });
 
   @override
@@ -133,8 +160,10 @@ class _DayProgressState extends State<DayProgress> {
                       ),
                     ),
                   ),
-                  // TODO: Replace with actual date if needed
-                  const Text("Mon, 13/01"),
+                  if (widget.date != null)
+                    Text(formatDateShort(widget.date!))
+                  
+
                 ],
               ),
               const SizedBox(height: 8),

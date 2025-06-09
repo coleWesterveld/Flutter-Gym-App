@@ -24,6 +24,8 @@ import '../other_utilities/lightness.dart';
 import 'package:firstapp/other_utilities/events.dart';
 import 'package:showcaseview/showcaseview.dart';
 
+// TODO: not showing what the exercise that was done was??
+
 class SchedulePage extends StatefulWidget {
 
   const SchedulePage({
