@@ -110,7 +110,7 @@ class _ListDaysState extends State<ListDays> {
                 borderRadius: BorderRadius.circular(16),
                 onTap: () {
                   if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
-                  context.read<Profile>().splitAppend();
+                  context.read<Profile>().splitAppend(context);
                   
                   final settings = Provider.of<SettingsModel>(context, listen: false);
                   if (settings.notificationsEnabled) {
@@ -162,7 +162,7 @@ class _ListDaysState extends State<ListDays> {
                       final deletedSets = context.read<Profile>().sets[index];
         
                       // Delete the data
-                      context.read<Profile>().splitPop(index: index);   
+                      context.read<Profile>().splitPop(index: index, context: context);   
         
                       // Display snackbar with undo option 
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,6 +185,7 @@ class _ListDaysState extends State<ListDays> {
                                   day: deletedDay, 
                                   exerciseList: deletedExercises, 
                                   newSets: deletedSets,
+                                  context: context
                                 );
                               } catch(e){
                                 debugPrint('Undo failed: $e');

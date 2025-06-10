@@ -195,6 +195,9 @@ class _EditScheduleState extends State<EditSchedule> {
                                             setState(() {
                                               context.read<Profile>().done = false;
                                               context.read<Profile>().splitLength = int.parse(splitLenTEC.text);
+                                              context.read<SettingsModel>().updateSettings(
+                                                context.read<SettingsModel>().settings.copyWith(programDurationDays:int.parse(splitLenTEC.text))
+                                              );
                                               final settings = Provider.of<SettingsModel>(context, listen: false);
                                               if (settings.notificationsEnabled) {
                                                 final notiService = NotiService();

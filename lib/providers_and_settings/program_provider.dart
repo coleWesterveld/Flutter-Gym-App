@@ -149,7 +149,10 @@ class Profile extends ChangeNotifier {
         growable: true
       );
 
-      updateSplitLength();
+      if (settings != null){
+        splitLength = settings!.programDurationDays;
+      }
+
       isInitialized = true;
       notifyListeners();
       if (!_initializationCompleter.isCompleted) {
@@ -177,14 +180,19 @@ class Profile extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSplitLength() {
+  void updateSplitLength(BuildContext context) {
     ensureLength(expansionStates, split.length, () => false);
     if (split.length > 7) {
       splitLength = split.length;
+      context.read<SettingsModel>().updateSettings(
+      context.read<SettingsModel>().settings.copyWith(
+        programDurationDays: splitLength
+      )
+    );
     } else {
-      splitLength = 7;
+      splitLength = context.read<SettingsModel>().settings.programDurationDays;
     }
-    notifyListeners();
+    notifyListeners();    
   }
 
   Future<void> changeProgram(int programID) async {
@@ -218,7 +226,7 @@ class Profile extends ChangeNotifier {
 
   }
 
-  void splitAppend() async {
+  void splitAppend(BuildContext context) async {
 
     int id = await dbHelper.insertDay(programId: currentProgram.programID, dayTitle: "New Day", dayOrder: split.length);
 
@@ -236,14 +244,17 @@ class Profile extends ChangeNotifier {
     // add sets and exercises for the day
     exercises.add([]);
     sets.add([]);
+    if (context.mounted){
+      updateSplitLength(context);
+    }
     
-    updateSplitLength();
     notifyListeners();
   }
 
   void splitPop({
     required int index,
-  }) async {
+    required BuildContext context
+  }) {
     int id = split[index].dayID;
 
     split.removeAt(index);
@@ -256,8 +267,7 @@ class Profile extends ChangeNotifier {
     dbHelper.deleteDay(id);
     
     updateDaysOrderInDatabase();
-
-    updateSplitLength();
+    updateSplitLength(context);
     notifyListeners();
   }
 
@@ -459,6 +469,7 @@ class Profile extends ChangeNotifier {
     required Day day,
     required List<Exercise> exerciseList,
     required List<List<PlannedSet>> newSets,
+    required BuildContext context,
   }) async {
     // Create default TEC lists if not provided
 
@@ -473,7 +484,7 @@ class Profile extends ChangeNotifier {
       setsForExercises: newSets,
     );
 
-    updateSplitLength();
+    updateSplitLength(context);
     notifyListeners();
   }
 
