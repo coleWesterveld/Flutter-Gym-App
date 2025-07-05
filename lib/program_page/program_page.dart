@@ -98,21 +98,17 @@ class ProgramPageState extends State<ProgramPage> {
         Provider.of<Profile>(context, listen: false).changeDone(false);
       },
 
-      child: uiState.isChoosingExercise ? Stack(
-          children: [
-            ExerciseSearchWidget(
-              theme: theme,
-              onExerciseSelected: (exercise) {
-                _handleExerciseSelected(context, exercise, _activeIndex!, _exerciseIndex!);
-              },
-              onSearchModeChanged: (isSearching) {
-                setState(() {
-                  uiState.isChoosingExercise = isSearching;          
-                });
-              },
-            ),
-          ]
-        ): Column(
+      child: uiState.isChoosingExercise ? ExerciseSearchWidget(
+        theme: theme,
+        onExerciseSelected: (exercise) {
+          _handleExerciseSelected(context, exercise, _activeIndex!, _exerciseIndex!);
+        },
+        onSearchModeChanged: (isSearching) {
+          setState(() {
+            uiState.isChoosingExercise = isSearching;          
+          });
+        },
+      ): Column(
           children: [
             Expanded(
               child: ListDays(

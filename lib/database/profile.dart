@@ -356,7 +356,7 @@ class PlannedSet {
   final int exerciseID;
   final int numSets;
   final int setLower;
-  final int? setUpper;
+  final int setUpper;
   final double? rpe;
   final int setOrder;
   List<int?> loggedRecordID; // stores the ID in the database of records that have been logged
@@ -366,7 +366,7 @@ class PlannedSet {
     required this.exerciseID, 
     required this.numSets, 
     required this.setLower, 
-    this.setUpper,
+    required this.setUpper,
     required this.setOrder,
     this.rpe,
     List<int?>? loggedRecordID,

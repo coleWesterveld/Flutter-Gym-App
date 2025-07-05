@@ -129,13 +129,13 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> saveActiveWorkoutState() async {
-    debugPrint("hey this should run for sure");
+    //debugPrint("hey this should run for sure");
     if (sessionID == null || activeDayIndex == null) {
-      debugPrint("1.1 hey this should run for sure");
+      //debugPrint("1.1 hey this should run for sure");
       await clearActiveWorkoutState(); // Clear if no active session
       return;
     }
-    debugPrint("1.2 hey this should run for sure");
+    //debugPrint("1.2 hey this should run for sure");
 
 
     Map<String, String> currentTecValues = {};
@@ -151,12 +151,12 @@ class ActiveWorkoutProvider extends ChangeNotifier {
         }
       }
     }
-    debugPrint("1.3 hey this should run for sure");
+   //debugPrint("1.3 hey this should run for sure");
 
 
     //List<bool> currentExpansionStates = expansionStates.map((c) => c.isExpanded).toList();
 
-    debugPrint("1.4 hey this should run for sure");
+    //debugPrint("1.4 hey this should run for sure");
 
   List<List<List<int?>>>? currentLoggedRecordIDs;
   if (activeDayIndex != null &&
@@ -191,16 +191,16 @@ class ActiveWorkoutProvider extends ChangeNotifier {
       loggedRecordIDs: currentLoggedRecordIDs,
     );
 
-    debugPrint("2 hey this should run for sure");
+    //debugPrint("2 hey this should run for sure");
 
 
     final prefs = await SharedPreferences.getInstance();
-    debugPrint("3 hey this should run for sure");
+    //debugPrint("3 hey this should run for sure");
 
     try {
       final jsonString = jsonEncode(snapshot.toJson());
       await prefs.setString(_snapshotKey, jsonString);
-      debugPrint('Active workout state SAVED. Session: $sessionID. Key: $_snapshotKey');
+      //debugPrint('Active workout state SAVED. Session: $sessionID. Key: $_snapshotKey');
     } catch (e) {
       debugPrint('Error saving workout state: $e');
     }
@@ -213,7 +213,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     if (snapshotString != null) {
       try {
         final snapshot = ActiveWorkoutSnapshot.fromJson(jsonDecode(snapshotString));
-        debugPrint('Saved workout state loaded for session: ${snapshot.sessionID}');
+        //debugPrint('Saved workout state loaded for session: ${snapshot.sessionID}');
         return snapshot;
       } catch (e) {
         debugPrint('Error decoding snapshot: $e. Clearing invalid snapshot.');
@@ -247,7 +247,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     // It's also crucial that programProvider.exercises[dayIdx] and programProvider.sets[dayIdx] are populated.
     // This should be true if Profile.init() has completed and dayIdx is valid.
 
-    debugPrint("AWP: Preparing structures for restored day index: $dayIdx");
+    //debugPrint("AWP: Preparing structures for restored day index: $dayIdx");
 
     // Set the activeDayIndex within ActiveWorkoutProvider
     activeDayIndex = dayIdx;
@@ -263,7 +263,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   // Call this method AFTER Profile provider has loaded its data and set the active day
   // based on snapshot.activeDayIndex (and possibly snapshot.activeProgramID).
   Future<bool> restoreFromSnapshot(ActiveWorkoutSnapshot snapshot) async {
-    debugPrint("Attempting to restore from snapshot for session: ${snapshot.sessionID}");
+    //debugPrint("Attempting to restore from snapshot for session: ${snapshot.sessionID}");
     // 1. Basic State Restoration
     sessionID = snapshot.sessionID; // Crucial: set this first
     activeDayIndex = snapshot.activeDayIndex;
@@ -298,7 +298,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
       try {
         
         if (fieldType == 'notes' && indices.length == 1) {
-          debugPrint("adding $value to notes");
+          //debugPrint("adding $value to notes");
           int i = indices[0];
           if (i < workoutNotesTEC.length) workoutNotesTEC[i].text = value;
         } else if (indices.length == 3) {
@@ -307,16 +307,16 @@ class ActiveWorkoutProvider extends ChangeNotifier {
               j < workoutRpeTEC[i].length &&
               k < workoutRpeTEC[i][j].length) { // Check bounds carefully
             if (fieldType == 'rpe') {
-              debugPrint("adding $value to rpe");
+              //debugPrint("adding $value to rpe");
 
               workoutRpeTEC[i][j][k].text = value;
             } else if (fieldType == 'weight') {
-              debugPrint("adding $value to weight");
+              //debugPrint("adding $value to weight");
 
               workoutWeightTEC[i][j][k].text = value;
             }
             else if (fieldType == 'reps') {
-              debugPrint("adding $value to reps");
+              //debugPrint("adding $value to reps");
 
               workoutRepsTEC[i][j][k].text = value;
             }
@@ -358,7 +358,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
                 } else { debugPrint("num sets mismatch"); }
               }
             }
-            debugPrint("LoggedRecordIDs restored by direct modification.");
+            //debugPrint("LoggedRecordIDs restored by direct modification.");
           } else { debugPrint("num exercises mismatch"); }
         }
       } catch (e) {

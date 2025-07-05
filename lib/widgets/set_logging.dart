@@ -1,4 +1,5 @@
 import 'package:firstapp/other_utilities/decimal_input_formatter.dart';
+import 'package:firstapp/other_utilities/keyboard_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import '../providers_and_settings/settings_provider.dart';
 import 'package:firstapp/widgets/shake_widget.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'dart:async'; // For Timer
+import 'package:keyboard_actions/keyboard_actions.dart';
 
 
 class GymSetRow extends StatefulWidget {
@@ -335,6 +337,9 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     );
   }
 
+  // yeah atp this should maybe be made
+   
+
   Widget _buildTextFieldWithConfirmation(
     TextEditingController controller,
     FocusNode focusNode,
@@ -385,53 +390,57 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
           alignment: Alignment.center,
 
           children: [
-            TextFormField(
-              controller: controller,
-              focusNode: focusNode,
-              keyboardType: TextInputType.number,
-
-              style: TextStyle(
-                fontSize: 14,
-                color: (theme.textTheme.bodyLarge?.color ?? Colors.black).withOpacity(textOpacity),
+            KeyboardActions(
+              disableScroll: true,
+              config: buildKeyboardActionsConfig(context, theme, [focusNode]),
+              child: TextFormField(
+                controller: controller,
+                focusNode: focusNode,
+                keyboardType: TextInputType.number,
+              
+                style: TextStyle(
+                  fontSize: 14,
+                  color: (theme.textTheme.bodyLarge?.color ?? Colors.black).withOpacity(textOpacity),
+                ),
+              
+                inputFormatters: [
+                  // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
+                  TwoDecimalTextInputFormatter()
+                ],
+                decoration: InputDecoration(
+                  
+                  filled: true,
+                  fillColor: hasError ? Colors.red.withAlpha(64) : currentBgColor,
+                  contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
+                  constraints: BoxConstraints(
+                    maxWidth: width,
+                    maxHeight: 30,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.blue),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
+                  ),
+                  hintText: hint,
+                  errorStyle: const TextStyle(height: 0),
+                ),
+                onChanged: (value) => _clearErrors(),
               ),
-
-              inputFormatters: [
-                // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
-                TwoDecimalTextInputFormatter()
-              ],
-              decoration: InputDecoration(
-                
-                filled: true,
-                fillColor: hasError ? Colors.red.withAlpha(64) : currentBgColor,
-                contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
-                constraints: BoxConstraints(
-                  maxWidth: width,
-                  maxHeight: 30,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.blue),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 2),
-                ),
-                hintText: hint,
-                errorStyle: const TextStyle(height: 0),
-              ),
-              onChanged: (value) => _clearErrors(),
             ),
 
             // Checkmark overlay

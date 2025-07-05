@@ -269,7 +269,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     }
     
     return Scaffold(
-      extendBody: true, // Allows FAB to overlap MainScaffold's bottom nav
+      
+      extendBody: false, // Allows FAB to overlap MainScaffold's bottom nav
       backgroundColor: Colors.transparent, // Prevents double background
 
       floatingActionButton: (uiState.isDisplayingChart && showBackToTop)

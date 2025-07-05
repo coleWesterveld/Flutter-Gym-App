@@ -1,4 +1,5 @@
 import 'package:firstapp/other_utilities/format_weekday.dart';
+import 'package:firstapp/other_utilities/keyboard_config.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
@@ -16,9 +17,10 @@ import '../database/profile.dart';
 import 'package:intl/intl.dart';
 import '../providers_and_settings/settings_page.dart';
 import 'package:firstapp/widgets/history_session_view.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
+
 // all null checks are very importasnt cuz when popping there is an instant when this page is still rendering but active day is null
 // I couldnt find a good way around it so everything is just null checked to catch null cases and tries to be discrete. 
-
 
 // list todo: 
 // TACKLING: expanded index should expand once, initially, and when a user finishes an exercise, but should not interfere further with user interaction
@@ -45,6 +47,7 @@ class Workout extends StatefulWidget {
 
 class _WorkoutState extends State<Workout> {
   int expandedTileIndex = 0;
+  FocusNode _notesFocus = FocusNode();
   //bool _userHasInteracted = false; // Track if user has manually expanded/collapsed
   // Profile? _profile;
   // late final VoidCallback _profileListener;
@@ -52,9 +55,6 @@ class _WorkoutState extends State<Workout> {
 
 
   final Map<int, List<SetRecord>> _exerciseHistory = {};
-
-  // will be false until all sets in an exercise are logged.
-
 
   void _preloadHistory() async {
     final dbHelper = DatabaseHelper.instance;
@@ -105,6 +105,7 @@ class _WorkoutState extends State<Workout> {
   @override
   void dispose() {
     //_timer?.cancel();
+    _notesFocus.dispose();
     //_profile?.removeListener(_profileListener);
     super.dispose();
   }
@@ -167,7 +168,7 @@ class _WorkoutState extends State<Workout> {
                   theme: widget.theme
                 ),
               ),
-
+      
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings),
@@ -626,43 +627,50 @@ class _WorkoutState extends State<Workout> {
                           }
                         },
 
-                        child: TextFormField(
-                          keyboardType: TextInputType.multiline,
-                          minLines: 2,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Theme.of(context).scaffoldBackgroundColor,
-                            contentPadding:
-                                const EdgeInsets.only(bottom: 10, left: 8),
-                            // border: const OutlineInputBorder(
-                            //     borderRadius:
-                            //         BorderRadius.all(Radius.circular(8))),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.grey),
+                        child: KeyboardActions(
+                          disableScroll: true,
+                          config: buildKeyboardActionsConfig(context, widget.theme, [_notesFocus]),
+                          child: TextFormField(
+                            focusNode: _notesFocus,
+                          
+                            keyboardType: TextInputType.multiline,
+                            minLines: 2,
+                            maxLines: null,
+                          
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Theme.of(context).scaffoldBackgroundColor,
+                              contentPadding:
+                                  const EdgeInsets.only(bottom: 10, left: 8),
+                              // border: const OutlineInputBorder(
+                              //     borderRadius:
+                              //         BorderRadius.all(Radius.circular(8))),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.grey),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.blue),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.red, width: 2),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Colors.red, width: 2),
+                              ),  
+                              hintText: "Notes: ",
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.blue),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 2),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red, width: 2),
-                            ),  
-                            hintText: "Notes: ",
+                          
+                            controller: context.watch<ActiveWorkoutProvider>().workoutNotesTEC[index],
+                          
                           ),
-                        
-                          controller: context.watch<ActiveWorkoutProvider>().workoutNotesTEC[index],
-                        
                         ),
                       ),
                     ),

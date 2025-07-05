@@ -678,6 +678,7 @@ class Profile extends ChangeNotifier {
       numSets: 1,
       setLower: 0,
       setUpper: 0,
+      rpe: 7.0,
       setOrder: sets[index1][index2].length + 1,
       )
       );

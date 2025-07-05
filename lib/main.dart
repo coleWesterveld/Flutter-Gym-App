@@ -408,7 +408,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
       bool restored = await activeWorkoutP.restoreFromSnapshot(snapshot);
 
       if (restored && mounted) {
-        debugPrint("MainScaffold: Workout session resumed. UI should react.");
+        //debugPrint("MainScaffold: Workout session resumed. UI should react.");
         // NO explicit navigation here from MainScaffold.
         // The UI (e.g., WorkoutSelectionPage or the initial page in your NavigationBar)
         // should watch ActiveWorkoutProvider.sessionID. If it becomes non-null
@@ -439,6 +439,7 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
     return IgnorePointer(
       ignoring: manager.tutorialActive,
       child: Scaffold(
+        
         key: _scaffoldKey,
         appBar: _buildAppBar(context),
         // floatingActionButton: TextButton(
