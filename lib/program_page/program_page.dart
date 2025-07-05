@@ -95,7 +95,6 @@ class ProgramPageState extends State<ProgramPage> {
     return GestureDetector(
       onTap: (){
         WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-        Provider.of<Profile>(context, listen: false).changeDone(false);
       },
 
       child: uiState.isChoosingExercise ? ExerciseSearchWidget(

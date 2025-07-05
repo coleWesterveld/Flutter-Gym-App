@@ -188,31 +188,30 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
     }
     
     int todaysWorkout = toExpand();
-    return SizedBox(
-      //height: MediaQuery.of(context).size.height - (265),
-      child: ListView.builder(
-        // building the rest of the tiles, one for each day from split list stored in user
-        //dismissable and reorderable: each child for dismissable needs to have a unique key
-        itemCount: (todaysWorkout == -1)
-            ? context.watch<Profile>().split.length + 1
-            : context.watch<Profile>().split.length,
-      
-        itemBuilder: (context, index) {
-          if (todaysWorkout != -1) {
-            if (index == 0) {
-              return dayBuild(
-                  context, todaysWorkout, true);
-            } else if (index <= todaysWorkout) {
-              return dayBuild(
-                  context, index - 1, false);
-            } else {
-              return dayBuild(context, index, false);
-            }
+    return ListView.builder(
+      padding: EdgeInsets.only(bottom: 10),
+      // building the rest of the tiles, one for each day from split list stored in user
+      //dismissable and reorderable: each child for dismissable needs to have a unique key
+      itemCount: (todaysWorkout == -1)
+          ? context.watch<Profile>().split.length + 1
+          : context.watch<Profile>().split.length,
+        
+    
+      itemBuilder: (context, index) {
+        if (todaysWorkout != -1) {
+          if (index == 0) {
+            return dayBuild(
+                context, todaysWorkout, true);
+          } else if (index <= todaysWorkout) {
+            return dayBuild(
+                context, index - 1, false);
           } else {
-            return dayBuild(context, index - 1, false);
+            return dayBuild(context, index, false);
           }
-        },
-      ),
+        } else {
+          return dayBuild(context, index - 1, false);
+        }
+      },
     );
     
   }
@@ -247,7 +246,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
         color: theme.colorScheme.onSurface,
         fontSize: 16,
       ),
-
+      
       tooltipActions: [
         TooltipActionButton(
           type: TooltipDefaultActionType.skip,
@@ -259,7 +258,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
           textStyle: TextStyle(
             color: theme.colorScheme.onSurface
           )
-
+      
           
         ),
         TooltipActionButton(
@@ -301,7 +300,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                         offset: const Offset(2, 2),
                         blurRadius: 4.0,
                       ),
-
+      
                   // BoxShadow(
                   //   color: lighten(widget.theme.colorScheme.shadow, 20),
                   //   offset: const Offset(-2, -2),
@@ -350,7 +349,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                     //sized boxes and padding is just a bunch of formatting stuff
                     //tbh it could probably be made more concise
                     
-
+      
                     leading: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Row( 

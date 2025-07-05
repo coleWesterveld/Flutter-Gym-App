@@ -95,7 +95,6 @@ class _DayTileState extends State<DayTile> {
               context.read<Profile>().expansionStates[widget.index] = val;
               if (!val){
                 WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                Provider.of<Profile>(context, listen: false).changeDone(false);
               }
             },
   

@@ -97,9 +97,6 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     repsFocus.addListener(_onRepsFocusChange);
     rpeFocus.addListener(_onRpeFocusChange);
 
-    weightFocus.addListener(_updateDoneState);
-    repsFocus.addListener(_updateDoneState);
-    rpeFocus.addListener(_updateDoneState);
   }
 
 
@@ -113,10 +110,6 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     }
   }
 
-  void _updateDoneState() {
-    bool anyFieldFocused = weightFocus.hasFocus || repsFocus.hasFocus || rpeFocus.hasFocus;
-    context.read<Profile>().done = anyFieldFocused;
-  }
 
   void _validateInputs() {
     setState(() {
@@ -247,9 +240,6 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     weightFocus.removeListener(_onWeightFocusChange);
     repsFocus.removeListener(_onRepsFocusChange);
     rpeFocus.removeListener(_onRpeFocusChange);
-    weightFocus.removeListener(_updateDoneState);
-    repsFocus.removeListener(_updateDoneState);
-    rpeFocus.removeListener(_updateDoneState);
     weightFocus.dispose();
     repsFocus.dispose();
     rpeFocus.dispose();

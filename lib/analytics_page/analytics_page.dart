@@ -392,6 +392,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return Scrollbar(
       controller: scrollControl,
       child: SingleChildScrollView(
+        
         controller: scrollControl,
         
         child: Column(

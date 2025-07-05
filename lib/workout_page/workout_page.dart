@@ -3,7 +3,6 @@ import 'package:firstapp/other_utilities/keyboard_config.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
-import 'package:firstapp/widgets/done_button.dart';
 import 'package:firstapp/widgets/exercise_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -147,40 +146,36 @@ class _WorkoutState extends State<Workout> {
     : GestureDetector(
       onTap: () {
         WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-        Provider.of<Profile>(context, listen: false).changeDone(false);
       },
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
-        bottomSheet: context.watch<Profile>().done
-            ? DoneButtonBottom(context: context, theme: widget.theme)
-            : null,
-            appBar: AppBar(
-              title: Text(
-                // this only happens for short period during transition from popping
-                // so nobody should see the const value, it will hopefully blend in
-                (primaryIndex != null && workoutProvider.activeDay != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
-                style: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(80), // Increased height to accommodate the control bar
-                child: WorkoutControlBar(
-                  positionAtTop: true,
-                  theme: widget.theme
-                ),
-              ),
-      
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SettingsPage()),
-                    );
-                  },
-                ),
-              ]
+          appBar: AppBar(
+            title: Text(
+              // this only happens for short period during transition from popping
+              // so nobody should see the const value, it will hopefully blend in
+              (primaryIndex != null && workoutProvider.activeDay != null) ? "Day ${primaryIndex + 1} • ${context.read<ActiveWorkoutProvider>().activeDay!.dayTitle}" : "Workout",
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(80), // Increased height to accommodate the control bar
+              child: WorkoutControlBar(
+                positionAtTop: true,
+                theme: widget.theme
+              ),
+            ),
+    
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsPage()),
+                  );
+                },
+              ),
+            ]
+          ),
         body: primaryIndex == null
             ? const Center(child: Text("Something Went Wrong."))
             : ListView.builder(

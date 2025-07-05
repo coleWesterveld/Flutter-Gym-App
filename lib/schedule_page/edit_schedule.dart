@@ -99,7 +99,6 @@ class _EditScheduleState extends State<EditSchedule> {
 
       onTap: (){
             WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-            Provider.of<Profile>(context, listen: false).changeDone(false);
         },
 
       child: Scaffold(
@@ -193,7 +192,6 @@ class _EditScheduleState extends State<EditSchedule> {
                                           else{
                   
                                             setState(() {
-                                              context.read<Profile>().done = false;
                                               context.read<Profile>().splitLength = int.parse(splitLenTEC.text);
                                               context.read<SettingsModel>().updateSettings(
                                                 context.read<SettingsModel>().settings.copyWith(programDurationDays:int.parse(splitLenTEC.text))
@@ -232,10 +230,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                             baseOffset: 0,
                                             extentOffset: splitLenTEC.text.length,
                                           );
-                                          
-                                          setState(() {
-                                            context.read<Profile>().done = true;
-                                          });
+                                        
                                           
                                         }
                                     },

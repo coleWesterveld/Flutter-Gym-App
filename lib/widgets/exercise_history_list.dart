@@ -38,15 +38,10 @@ class ExerciseHistoryList extends StatelessWidget {
               );
             } else if (!hasMoreData) {
               // If not loading and there is no more data, show the "End of History" message
-              return const Padding(
-                 padding: EdgeInsets.symmetric(vertical: 20.0),
-                 child: Center(
-                   child: Text(
-                     "End of History",
-                     style: TextStyle(fontStyle: FontStyle.italic),
-                   ),
-                 ),
-               );
+              return const Text(
+                "End of History",
+                
+              );
             } else {
                // This case should ideally not be reached if state management is correct,
                // but as a fallback, maybe show nothing or the loading indicator if still expecting more.

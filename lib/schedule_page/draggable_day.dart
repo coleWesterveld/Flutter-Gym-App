@@ -1,6 +1,5 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
-import 'package:firstapp/widgets/done_button.dart';
 //import 'package:firstapp/schedule_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

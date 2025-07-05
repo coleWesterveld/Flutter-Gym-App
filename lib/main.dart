@@ -30,7 +30,6 @@ import 'package:firstapp/providers_and_settings/settings_page.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'widgets/calendar_bottom_sheet.dart';
 
-import 'package:firstapp/widgets/done_button.dart';
 
 // a lil bit of fun when the user finishes a workout
 // maybe in the future I can briung up a modal sheet with workout stats when a workout is done or
@@ -515,21 +514,26 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
             ],
           ),
         ),
-      
         //what opens for each page
-        body: //Stack(
-          //children: [
+        body: Consumer<ActiveWorkoutProvider>(
+          builder: (context, activeWorkout, child) {
+            return Container(
+              margin: EdgeInsets.only(
+                bottom: (uiState.currentPageIndex != 2 && activeWorkout.activeDay != null) ? 80 : 0
+              ),
             
-        <Widget>[
-      
-          WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
+              child: [
+                WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
+                const SchedulePage(),
+                ProgramPage(programkey: widget.programPageKey),
+                AnalyticsPage(theme: theme),
+              ][uiState.currentPageIndex],
+            
+              
+            );
+          }
+        ),
         
-          const SchedulePage(),
-        
-          ProgramPage(programkey: widget.programPageKey),
-        
-          AnalyticsPage(theme: theme),
-        ][uiState.currentPageIndex],
       
         // Positioned(
         //   bottom: 100,
@@ -715,27 +719,20 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
 
     if (uiState.isChoosingExercise || uiState.isDisplayingChart) return null;
 
-    if (context.read<Profile>().done){ 
-      return DoneButtonBottom(
-        context: context,
-        theme: theme,
-      );
-    }else{
-      return Consumer<ActiveWorkoutProvider>(
+    return Consumer<ActiveWorkoutProvider>(
 
-        builder: (context, activeWorkout, child) {
-          if (uiState.currentPageIndex == 2){
-            return CalendarBottomSheet(
-              today: DateTime.now(),
-              theme: theme
-            );
-          } else if (activeWorkout.activeDay != null){
-            return WorkoutControlBar(theme: theme);
-          } else{
-            return const SizedBox.shrink();
-          }
+      builder: (context, activeWorkout, child) {
+        if (uiState.currentPageIndex == 2){
+          return CalendarBottomSheet(
+            today: DateTime.now(),
+            theme: theme
+          );
+        } else if (activeWorkout.activeDay != null){
+          return WorkoutControlBar(theme: theme);
+        } else{
+          return const SizedBox.shrink();
         }
-      );
-    }  
+      }
+    );
   }
 }

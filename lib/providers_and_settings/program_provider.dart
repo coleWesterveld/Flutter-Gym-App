@@ -106,7 +106,6 @@ class Profile extends ChangeNotifier {
   UserSettings? settings = UserSettings();
 
   int splitLength;
-  bool _done = false;
 
   Profile({
     this.split = const <Day>[],
@@ -162,22 +161,6 @@ class Profile extends ChangeNotifier {
       debugPrint("Profile initialization failed: $e");
       _initializationCompleter.completeError(e);
     }
-  }
-
-  // This will be moved into its own provider likely...
-  bool get done => _done;
-
-  set done(bool value) {
-    if (_done != value) {
-      _done = value;
-      notifyListeners(); // Notify widgets that listen to Profile
-    }
-  }
-
-  // TODO: I think many of these methods could be simpler setters and getters?
-  void changeDone(bool val){
-    _done = val;
-    notifyListeners();
   }
 
   void updateSplitLength(BuildContext context) {

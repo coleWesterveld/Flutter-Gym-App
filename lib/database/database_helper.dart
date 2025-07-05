@@ -1240,7 +1240,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
               AND s2.rpe = set_log.rpe 
               AND s2.exercise_id = set_log.exercise_id
               AND s2.session_id = ?
-            ORDER BY datetime(date) DESC 
+            ORDER BY datetime(date) ASC 
             LIMIT 1
           ) as history_note,
           (
@@ -1251,13 +1251,13 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
               AND s3.rpe = set_log.rpe
               AND s3.exercise_id = set_log.exercise_id
               AND s3.session_id = ?
-            ORDER BY datetime(date) DESC
+            ORDER BY datetime(date) ASC
             LIMIT 1
           ) as record_id
         FROM set_log
         WHERE exercise_id = ? AND session_id = ?
         GROUP BY reps, weight, rpe
-        ORDER BY datetime(date) DESC
+        ORDER BY datetime(date) ASC
       ''', [sessionId, sessionId, exerciseId, sessionId]);
 
       result.add(sets.map((r) => SetRecord(
@@ -1330,7 +1330,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
               AND s2.rpe = set_log.rpe
               AND s2.exercise_id = set_log.exercise_id
               AND s2.session_id = ?
-            ORDER BY datetime(date) DESC
+            ORDER BY datetime(date) ASC
             LIMIT 1
           ) as history_note,
           (
@@ -1341,13 +1341,13 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
               AND s3.rpe = set_log.rpe
               AND s3.exercise_id = set_log.exercise_id
               AND s3.session_id = ?
-            ORDER BY datetime(date) DESC
+            ORDER BY datetime(date) ASC
             LIMIT 1
           ) as record_id -- ID of the most recent set in this consolidated group
         FROM set_log
         WHERE exercise_id = ? AND session_id = ?
         GROUP BY reps, weight, rpe
-        ORDER BY datetime(date) DESC -- Order sets within the session? Or by weight/reps? Let's keep date desc consistent with session order.
+        ORDER BY datetime(date) ASC -- Order sets within the session? Or by weight/reps? Let's keep date desc consistent with session order.
                                      -- Note: GROUP BY means the order might not be perfectly predictable without an outer order on reps/weight/rpe, but MAX(date) helps.
       ''', [sessionId, sessionId, exerciseId, sessionId]);
 
@@ -1398,7 +1398,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
             AND s2.weight = set_log.weight
             AND s2.rpe = set_log.rpe
             AND s2.session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Use updated CTE
-          ORDER BY date DESC
+          ORDER BY date ASC
           LIMIT 1
         ) as history_note,
         (
@@ -1412,14 +1412,14 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
             AND s4.weight = set_log.weight
             AND s4.rpe = set_log.rpe
             AND s4.session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Use updated CTE
-          ORDER BY date DESC
+          ORDER BY date ASC
           LIMIT 1
         ) as record_id
       FROM set_log
       WHERE exercise_id = ? -- Main filter for the specific exercise
         AND session_id IN (SELECT session_id FROM recent_sessions_with_exercise) -- Link to the found session
       GROUP BY reps, weight, rpe -- Group sets within that found session and exercise
-      ORDER BY date DESC;
+      ORDER BY date ASC;
     ''', [currentSessionID, exerciseId, exerciseId, exerciseId]);
 
     return results.map((r) => SetRecord(
@@ -1447,7 +1447,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
     final results = await db.rawQuery('''
       SELECT * FROM set_log 
       WHERE date BETWEEN ? AND ?
-      ORDER BY date DESC
+      ORDER BY date ASC
     ''', [DateTime(day.year, day.month, day.day).toIso8601String(), DateTime(day.year, day.month, day.day).add(const Duration(days: 1)).toIso8601String()]);
 
     // debugPrint("raw results: ${results}");

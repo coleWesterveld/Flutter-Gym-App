@@ -493,19 +493,12 @@ class _MyScheduleState extends State<SchedulePage> {
                 } else {
                   // For current/future days - show planned workout (your existing code)
                   if (value.isNotEmpty) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: theme.colorScheme.outline,
-                          width: 0.5
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                    return Padding(
+                      padding: const EdgeInsets.all(12.0).copyWith(top: 0),
                       child: Container(
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 5,
@@ -513,7 +506,11 @@ class _MyScheduleState extends State<SchedulePage> {
                               spreadRadius: 2,
                               color: theme.colorScheme.shadow.withAlpha((0.3*255).round())
                             )
-                          ]
+                          ],
+                          border: Border.all(
+                          color: theme.colorScheme.outline,
+                          width: 0.5
+                        ),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -588,7 +585,7 @@ class _MyScheduleState extends State<SchedulePage> {
     //DateTime origin = DateTime(2024, 1, 7);
     
     if (events.isNotEmpty){
-      return  Padding(
+      return Padding(
         padding: const EdgeInsets.all(6.0),
         child: Container(
           decoration: BoxDecoration(
