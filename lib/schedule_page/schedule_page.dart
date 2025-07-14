@@ -502,6 +502,19 @@ class _MyScheduleState extends State<SchedulePage> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: ListTile(
+                            onTap:() {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    //context.read<UiStateProvider>().customAppBarTitle = "Edit Schedule";
+                                    return EditSchedule(
+                                      theme: theme
+                                    );
+                                  }
+                                )
+                              );
+                            },
                             title: Text(
                               "Day ${value[0].index + 1} • ${value[0].title}",
                               style: const TextStyle(
