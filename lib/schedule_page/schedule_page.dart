@@ -12,6 +12,7 @@ import 'package:firstapp/app_tutorial/tutorial_manager.dart';
 import 'package:firstapp/database/database_helper.dart';
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/widgets/display_workout.dart';
 import 'package:firstapp/widgets/history_session_view.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -31,6 +32,7 @@ class SchedulePage extends StatefulWidget {
   const SchedulePage({
     Key? mykey,
   }) : super(key: mykey);
+
   @override
   _MyScheduleState createState() => _MyScheduleState();
 }
@@ -460,7 +462,7 @@ class _MyScheduleState extends State<SchedulePage> {
                           enabled: (snapshot.connectionState == ConnectionState.waiting || snapshot.data == null),
                           child: Padding(
                       padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
-                      child: HistorySessionView(
+                      child: DisplayWorkout(
                         color: theme.colorScheme.surface,
                         exerciseHistory: snapshot.data!, theme: theme),
                     ));
@@ -474,22 +476,7 @@ class _MyScheduleState extends State<SchedulePage> {
                       // }
                     },
                   );
-                  // // For past days - show workout history
-                  // if (_workoutHistory[normalizeDay(_selectedDay!)] != null){
-                  //   return Padding(
-                  //     padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
-                  //     child: HistorySessionView(
-                  //       color: theme.colorScheme.surface,
-                  //       exerciseHistory: _workoutHistory[normalizeDay(_selectedDay!)]!, theme: theme),
-                  //   );
 
-                  // } else {
-                  //   debugPrint("${_workoutHistory}");
-                  //   return Text("not found for ${_selectedDay}");
-                    
-                  // }
-                  
-                  
                 } else {
                   // For current/future days - show planned workout (your existing code)
                   if (value.isNotEmpty) {
@@ -524,6 +511,7 @@ class _MyScheduleState extends State<SchedulePage> {
                             ),
                             subtitle: Text(formatDate(_selectedDay!)),
                             trailing: Text(
+                              // TODO: tappable to add time?
                               value[0].time?.format(context) ?? "No Time Set",
                               style: const TextStyle(
                                 fontSize: 18,

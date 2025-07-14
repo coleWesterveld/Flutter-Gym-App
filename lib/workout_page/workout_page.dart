@@ -514,9 +514,10 @@ class _WorkoutState extends State<Workout> {
                                     
 
                                     if (isChecked) {
+                                      // List<double> values; = context.read<Profile>().sets[primaryIndex][index][setIndex].rpe!;
                                       context.read<ActiveWorkoutProvider>().incrementSet([index, setIndex, subSetIndex]);
                                       
-                                      // Handle exercise expansion/collapse
+                                      // Handle exeercise expansion/collapse
                                       if (context.read<ActiveWorkoutProvider>().nextSet[0] != index) {
                                         context.read<ActiveWorkoutProvider>().workoutExpansionControllers[
                                           context.read<ActiveWorkoutProvider>().nextSet[0]

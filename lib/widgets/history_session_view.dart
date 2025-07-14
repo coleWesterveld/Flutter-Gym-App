@@ -1,6 +1,7 @@
 // Given a list of setrecords from the same session, it will display them together
 // This is to view all sets of one exercise for a session
 // A list of these pair well with dbHelper.getPreviousSessionSets()
+// TODO: cluster sets. if we have 2 set logs that look identical, we should not put 2 rows saying 1 x <set info>, it should just be one row that says 2 x <set info>
 
 import 'package:firstapp/other_utilities/format_weekday.dart';
 import 'package:firstapp/other_utilities/get_rpe_colors.dart';
@@ -44,6 +45,7 @@ class HistorySessionView extends StatelessWidget {
           ),
         ]
       ),
+      // TODO: make this conditioanlly also show the exercise name
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(

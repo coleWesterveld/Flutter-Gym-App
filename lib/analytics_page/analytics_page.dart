@@ -212,10 +212,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       offset: offset,
       useMetric: context.read<SettingsModel>().useMetric, // Pass unit preference
     );
-
-    // ### FIX 2: Process fetched data and update state correctly ###
-    // Only update state AFTER the fetch is complete
-
     // Create a list to hold the new sessions to add
     final List<List<SetRecord>> sessionsToAdd = [];
     bool moreDataAvailable = false;
@@ -236,7 +232,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
        moreDataAvailable = false;
     }
 
-    // ### FIX 3: Update state exactly once after processing ###
     setState(() {
       _allLoadedSessions.addAll(sessionsToAdd); // Add the fetched sessions
       _currentPage++; // Increment page count regardless of whether data was found (it's the next page index)
@@ -244,9 +239,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       _isLoadingMore = false; // Set loading state to false
     });
   }
-
-
-  
 
   // Load existing goals from the database
   Future<void> _fetchGoals({useMetric = false}) async {
@@ -262,7 +254,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   Widget build(BuildContext context) {
     final uiState = context.watch<UiStateProvider>();
-
 
     if (!context.watch<Profile>().isInitialized) {
       return const Center(child: CircularProgressIndicator());

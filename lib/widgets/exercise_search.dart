@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'custom_exercise_form.dart';
 
+// TODO: the add custom exercise should maybe pop conditionally, default to true
+// the current functionality in the analytics page is stupid
+// also, try adding a new exercise in analytics -- it says no history for ""this execise" which I think is just my default value
+// I think this is an async await DB read/write logic error, so think of a good way to set everything up for good UX and then implement 
 class ExerciseSearchWidget extends StatefulWidget {
   const ExerciseSearchWidget({
     super.key,
@@ -139,6 +143,30 @@ class _ExerciseSearchWidgetState extends State<ExerciseSearchWidget> {
                         // Call the callback with the modified exercise
                         widget.onExerciseSelected?.call(modifiedExercise);
                         _clearSearch();
+                      },
+
+                       onLongPress: () {
+                        // TODO: make this actually work idk
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text("Delete Exercise"),
+                            content: Text("Are you sure you want to delete ${exercise['exercise_title']}?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text("Cancel"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  //_deleteExercise(exercise['id']); // Implement this method
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Delete", style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
                       },
                     );
                   },

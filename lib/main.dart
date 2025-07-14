@@ -1,4 +1,5 @@
 import 'package:firstapp/app_tutorial/app_tutorial_keys.dart';
+import 'package:firstapp/other_utilities/lightness.dart';
 import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'package:firstapp/providers_and_settings/snapshot_active_workout.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,8 @@ my goal is to make tappable things blue
 editable things orange 
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
+
+// TODO: since I reversed my list of exercises my hardcoded list is lowk out of wack -- fix it
 
 
 // thing to be aware: exercise class has id and Exercise id, do not confuse them! (this causes most of my bugs)
@@ -481,12 +484,14 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
               
               uiState.currentPageIndex = index;
             },
+            shadowColor: Colors.black,
             indicatorColor: theme.colorScheme.primary,
             indicatorShape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(12),
               ),
             ),
+
                 
             selectedIndex: uiState.currentPageIndex,
             //different pages that can be navigated to

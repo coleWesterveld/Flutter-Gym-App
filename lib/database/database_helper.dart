@@ -1028,19 +1028,19 @@ class DatabaseHelper {
     return exercises;
   }
 
+  // exercises are in reverse alphabetical order, and user added exercises are added at the end
+  // when we query we reverse order to maintain alphabetical for preadded but also put user added ones at the top
   Future<List<Map<String, dynamic>>> fetchExercisesWithIds() async {
     final db = await DatabaseHelper.instance.database;
 
     final result = await db.query(
       'exercises',
-      columns: ['id', 'exercise_title'], // Fetch only ID and title
+      columns: ['id', 'exercise_title'],
+      orderBy: 'id DESC',
     );
 
-    return result; // Already in List<Map<String, dynamic>> format
+    return result;
   }
-
-
-
 
   Future<int> insertCustomExercise({required String exerciseTitle, String  persistentNote = '', String musclesWorked = ''}) async {
       final db = await DatabaseHelper.instance.database;
@@ -1439,15 +1439,16 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   // egts all sets that were logged during a day  
   Future<List<SetRecord>> getSetsForDay(DateTime day, {useMetric = false}) async {
-    
-    // just used for checking UI skeleton
-    //await Future.delayed(Duration(seconds: 1));
+
     final db = await DatabaseHelper.instance.database;
-  //debugPrint("sessionID: $currentSessionID");
     final results = await db.rawQuery('''
-      SELECT * FROM set_log 
+      SELECT 
+        *,
+        COUNT(*) as num_sets
+      FROM set_log
       WHERE date BETWEEN ? AND ?
-      ORDER BY date ASC
+      GROUP BY exercise_id, reps, weight, rpe
+      ORDER BY date, exercise_id
     ''', [DateTime(day.year, day.month, day.day).toIso8601String(), DateTime(day.year, day.month, day.day).add(const Duration(days: 1)).toIso8601String()]);
 
     // debugPrint("raw results: ${results}");
@@ -1466,6 +1467,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT,
       programTitle: r['program_title'] as String,
     )).toList();
   }
+
 
   Future<int> updateSetRecord(
     int setRecordId, Map<String, dynamic> newValues) async {
