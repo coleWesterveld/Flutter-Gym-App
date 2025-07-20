@@ -794,7 +794,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text('Your \'Actual\' weight is your calculated approximate n rep max using the Epley formula:'),
-                                          Center(child: Text(" \n 1 Rep Max = Weight • (1 + reps / 30)")),
+                                          Center(child: Text(" \n 1 Rep Max = Weight • (1 + Reps / 30)")),
                                         ],
                                       ),
                                     ),

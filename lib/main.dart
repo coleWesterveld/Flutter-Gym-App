@@ -35,6 +35,7 @@ import 'widgets/calendar_bottom_sheet.dart';
 // a lil bit of fun when the user finishes a workout
 // maybe in the future I can briung up a modal sheet with workout stats when a workout is done or
 
+// TODO: fix error when user initiaites app walkthrough when viewing an exercises history 
 // TODO: add disposes for all focusnodes and TECs and other
 /* colour choices:
 my goal is to make tappable things blue

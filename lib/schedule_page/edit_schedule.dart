@@ -243,7 +243,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                                                             
                                       //controller: context.watch<Profile>().rpeTEC[index][exerciseIndex][setIndex],
                                       
-                                      keyboardType: TextInputType. numberWithOptions(decimal: true),
+                                      keyboardType: TextInputType.numberWithOptions(decimal: true),
                                                                           
                                       decoration:  InputDecoration(
                                         

@@ -680,11 +680,26 @@ void _initializeStructuresForDay(int dayIdx) {
     if (currentSubsetIndex < currentSet.numSets - 1) {
       // Move to next subset in same set
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex + 1];
+
+      // here we also want to prefill the next line with the same so its easy
+      
+      // if they are all empty, set the text in the TEC's to the previous rows text
+      if (
+        workoutRepsTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty &&
+        workoutRpeTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty &&
+        workoutWeightTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty 
+      ) {
+        workoutRepsTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutRepsTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
+        workoutRpeTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutRpeTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
+        workoutWeightTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutWeightTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
+      }
+      
     } 
     // Check if there are more sets in current exercise
     else if (currentSetIndex < programProvider.sets[activeDayIndex!][currentExerciseIndex].length - 1) {
       // Move to first subset of next set in same exercise
       nextSet = [currentExerciseIndex, currentSetIndex + 1, 0];
+      
     } 
     // Check if there are more exercises in workout
     else if (currentExerciseIndex < programProvider.exercises[activeDayIndex!].length - 1) {
@@ -693,7 +708,6 @@ void _initializeStructuresForDay(int dayIdx) {
     }
     // Else we're at the end of the workout
     else {
-      // Optionally handle workout completion here
       shakeFinish = true;
       // Keep nextSet pointing to last subset
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex];

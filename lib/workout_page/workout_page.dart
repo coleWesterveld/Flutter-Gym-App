@@ -450,7 +450,7 @@ class _WorkoutState extends State<Workout> {
                             itemBuilder: (context, subSetIndex){ 
                               return GymSetRow(
                                 repsLower: context.read<Profile>().sets[primaryIndex][index][setIndex].setLower,
-                                repsUpper: context.read<Profile>().sets[primaryIndex][index][setIndex].setUpper ?? 0,
+                                repsUpper: context.read<Profile>().sets[primaryIndex][index][setIndex].setUpper,
                                 expectedRPE: context.read<Profile>().sets[primaryIndex][index][setIndex].rpe?.toDouble() ?? 0.0,
                                 exerciseIndex: index,
                                 setIndex: setIndex,

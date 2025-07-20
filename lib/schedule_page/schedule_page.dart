@@ -462,6 +462,7 @@ class _MyScheduleState extends State<SchedulePage> {
                           enabled: (snapshot.connectionState == ConnectionState.waiting || snapshot.data == null),
                           child: Padding(
                       padding: const EdgeInsets.only(bottom: 14.0, left: 14.0, right: 14.0),
+                      // TODO: maybe make this tappable to see in fullscreen view?
                       child: DisplayWorkout(
                         color: theme.colorScheme.surface,
                         exerciseHistory: snapshot.data!, theme: theme),

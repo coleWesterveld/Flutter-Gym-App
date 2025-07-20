@@ -11,7 +11,7 @@ import 'package:firstapp/providers_and_settings/active_workout_provider.dart';
 import 'dart:async'; // For Timer
 import 'package:keyboard_actions/keyboard_actions.dart';
 
-
+// TODO: text field is selected at first by default
 class GymSetRow extends StatefulWidget {
   final int repsLower;
   final int repsUpper;
@@ -270,9 +270,32 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
-                _buildTextFieldWithConfirmation(widget.rpeController, rpeFocus, "", 35, _rpeError, "rpe"),
-                _buildTextFieldWithConfirmation(widget.weightController, weightFocus, "", 50, _weightError, "weight"),
-                _buildTextFieldWithConfirmation(widget.repsController, repsFocus, "", 40, _repsError, "reps"),
+                _buildTextFieldWithConfirmation(
+                  widget.rpeController, 
+                  rpeFocus, 
+                  "",
+                  35, 
+                  _rpeError, 
+                  "rpe"
+                ),
+
+                _buildTextFieldWithConfirmation(
+                  widget.weightController, 
+                  weightFocus, 
+                  "", 
+                  50, 
+                  _weightError, 
+                  "weight"
+                ),
+
+                _buildTextFieldWithConfirmation(
+                  widget.repsController, 
+                  repsFocus, 
+                  "", 
+                  40, 
+                  _repsError, 
+                  "reps"
+                ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: InkWell(
