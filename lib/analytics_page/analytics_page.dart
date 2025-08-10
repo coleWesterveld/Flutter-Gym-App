@@ -377,7 +377,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     // Show "No History Found" if list is empty AND we are NOT currently loading more data
     if (_allLoadedSessions.isEmpty && !_isLoadingMore) { // Removed _currentPage == 0 check here
-        return Center(child: Text('No History Found For: ${_exercise?['exercise_title'] ?? "This exercise"}'));
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(child: Text('No History Found For: ${_exercise?['exercise_title'] ?? "This exercise"}')),
+        );
     }
 
     return Scrollbar(
@@ -433,6 +436,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // List of Goal widgets, tappable to edit/delete
   List<Widget> _buildGoalList() {
+    debugPrint("${((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble()}");
     return _goals.map((goal) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       child: GestureDetector(
@@ -442,7 +446,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           children: [
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxWidth: (MediaQuery.sizeOf(context).width - 48)/2,
+                maxWidth: ((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble(),
               ),
 
               child: Text(
@@ -472,12 +476,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 borderRadius: BorderRadius.circular(16),
                 color: widget.theme.colorScheme.surfaceContainerHighest,
               ),
-              width: (MediaQuery.sizeOf(context).width - 48)/2,
+              width: ((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble(),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: GoalProgress(
                   goal: goal,
-                  size: (MediaQuery.sizeOf(context).width - 48)/2,
+                  size: ((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble(),
                   theme: widget.theme,
                 ),
               ),

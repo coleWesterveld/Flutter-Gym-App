@@ -294,6 +294,7 @@ class _MyScheduleState extends State<SchedulePage> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
                       child: TableCalendar(
+                        availableGestures: AvailableGestures.horizontalSwipe,
                         
                       
                       //TODO: add button in header to take user back to today

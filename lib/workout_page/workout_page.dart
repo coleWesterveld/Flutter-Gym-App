@@ -118,6 +118,7 @@ class _WorkoutState extends State<Workout> {
 
   @override
   Widget build(BuildContext context) {
+
     final workoutProvider = context.read<ActiveWorkoutProvider>();
     final uiState = context.read<UiStateProvider>();
 
@@ -191,7 +192,8 @@ class _WorkoutState extends State<Workout> {
     int? primaryIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
     bool isNextSet = index == context.watch<ActiveWorkoutProvider>().nextSet[0];
 
-
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool smallScreen = screenWidth < 405;
     
     if (primaryIndex == null){
       return const SizedBox.shrink();
@@ -421,20 +423,23 @@ class _WorkoutState extends State<Workout> {
                     ]
                   ]
                 : [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Row(
-                        children: [
-                          Text("Target"),
-                          SizedBox(width: 125),
-                          Text("RPE"),
-                          SizedBox(width: 20),
-                          Text("Weight"),
-                          SizedBox(width: 20),
-                          Text("Reps")
-                        ],
+                    if (!smallScreen)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Row(
+                          children: [
+                            Text("Target"),
+                            SizedBox(width: 125),
+                            Text("RPE"),
+                            SizedBox(width: 20),
+                            Text("Weight"),
+                            SizedBox(width: 20),
+                            Text("Reps")
+                          ],
+                        ),
                       ),
-                    ),
+
+                    
                     SizedBox(
                       child: ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),

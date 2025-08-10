@@ -290,25 +290,25 @@ class DatabaseHelper {
     // Insert initial exercises for each day
 
     // Push
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 0, 'exercise_id': 70, 'notes' : ''}); // Barbell Bench Press
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 1, 'exercise_id': 851, 'notes' : ''}); // Triceps Pushdown
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 2, 'exercise_id': 690, 'notes' : ''}); // Side Lateral Raise
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 3, 'exercise_id': 270, 'notes' : ''}); // Dumbbell Shoulder Press
-    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 4, 'exercise_id': 297, 'notes' : ''}); // Cable Chest Fly
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 0, 'exercise_id': 899-70, 'notes' : ''}); // Barbell Bench Press
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 1, 'exercise_id': 899-851, 'notes' : ''}); // Triceps Pushdown
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 2, 'exercise_id': 899-690, 'notes' : ''}); // Side Lateral Raise
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 3, 'exercise_id': 899-270, 'notes' : ''}); // Dumbbell Shoulder Press
+    batch.insert('exercise_instances', {'day_id': 1, 'exercise_order': 4, 'exercise_id': 899-297, 'notes' : ''}); // Cable Chest Fly
 
     // Pull
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 0, 'exercise_id': 586, 'notes' : ''}); // Pullups
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 1, 'exercise_id': 652, 'notes' : ''}); // Seated Cable Rows
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 2, 'exercise_id': 620, 'notes' : ''}); // Reverse Machine Flyes
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 3, 'exercise_id': 335, 'notes' : ''}); // Hammer Curls
-    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 4, 'exercise_id': 103, 'notes' : ''}); // Barbell Rows
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 0, 'exercise_id': 899-586, 'notes' : ''}); // Pullups
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 1, 'exercise_id': 899-652, 'notes' : ''}); // Seated Cable Rows
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 2, 'exercise_id': 899-620, 'notes' : ''}); // Reverse Machine Flyes
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 3, 'exercise_id': 899-335, 'notes' : ''}); // Hammer Curls
+    batch.insert('exercise_instances', {'day_id': 2, 'exercise_order': 4, 'exercise_id': 899-103, 'notes' : ''}); // Barbell Rows
 
     // Legs
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 0, 'exercise_id': 90, 'notes' : ''}); // Barbell Squat
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 1, 'exercise_id': 630, 'notes' : ''}); // Romanian Deadlift
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 2, 'exercise_id': 780, 'notes' : ''}); // Standing Calf Raises
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 3, 'exercise_id': 670, 'notes' : ''}); // Seated Leg Curl
-    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 4, 'exercise_id': 434, 'notes' : ''}); // Leg Extensions
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 0, 'exercise_id': 899-90, 'notes' : ''}); // Barbell Squat
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 1, 'exercise_id': 899-630, 'notes' : ''}); // Romanian Deadlift
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 2, 'exercise_id': 899-780, 'notes' : ''}); // Standing Calf Raises
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 3, 'exercise_id': 899-670, 'notes' : ''}); // Seated Leg Curl
+    batch.insert('exercise_instances', {'day_id': 3, 'exercise_order': 4, 'exercise_id': 899-434, 'notes' : ''}); // Leg Extensions
 
     // Sets for each exercise (3 sets, 5-8 reps, RPE 8)
     for (int i = 1; i <= 15; i++) {
@@ -363,7 +363,7 @@ class DatabaseHelper {
           'weight': weight, // Round to nearest whole number
           'rpe': rpe,
           'history_note': "Feeling ${feelings[i % feelings.length]} today.",
-          'exercise_id': 70, // Hardcoded to reference "bench press - medium grip"
+          'exercise_id': 899 - 70, // Hardcoded to reference "bench press - medium grip"
           'day_title' : "Bench + Upper",
           'program_title' : "Push Pull Legs Split"
         });

@@ -204,14 +204,14 @@ class SettingsPage extends StatelessWidget {
               thickness: 0.5,
             ),
               // Color Blind Mode -- Yet to Be implemented
-            ListTile(
-              title: const Text('Color Blind Mode'),
-              subtitle: const Text('Adds shapes to color-coded elements'),
-              trailing: Switch.adaptive(
-                value: settings.colorBlindMode,
-                onChanged: (_) => settings.toggleColorBlindMode(),
-              ),
-            ),
+            // ListTile(
+            //   title: const Text('Color Blind Mode'),
+            //   subtitle: const Text('Adds shapes to color-coded elements'),
+            //   trailing: Switch.adaptive(
+            //     value: settings.colorBlindMode,
+            //     onChanged: (_) => settings.toggleColorBlindMode(),
+            //   ),
+            // ),
 
             const Divider(
               thickness: 0.5,

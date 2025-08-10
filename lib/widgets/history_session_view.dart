@@ -77,8 +77,9 @@ class HistorySessionView extends StatelessWidget {
                     vertical: 4.0,
                     horizontal: 8,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Wrap(
+                    runAlignment: WrapAlignment.spaceBetween,
+                    //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text.rich(
                         TextSpan(

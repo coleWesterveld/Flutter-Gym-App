@@ -248,106 +248,228 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("${MediaQuery.sizeOf(context).width}");
     assert(context.read<ActiveWorkoutProvider>().sessionID != null, "SessionID is null");
     assert(context.read<ActiveWorkoutProvider>().activeDayIndex != null, "No active day index");
     assert(context.read<ActiveWorkoutProvider>().activeDay != null, "No active day");
-    return ShakeWidget(
-      shake: _moveItmoveIt,
-      onAnimationComplete: () => _moveItmoveIt = false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: _isChecked ? Colors.blue.withAlpha(128) : null,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  "${widget.repsLower}-${widget.repsUpper} reps @ ${widget.expectedRPE} RPE",
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-                _buildTextFieldWithConfirmation(
-                  widget.rpeController, 
-                  rpeFocus, 
-                  "",
-                  35, 
-                  _rpeError, 
-                  "rpe"
-                ),
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool smallScreen = screenWidth < 405;
+    // displays horizontally fine for large screens, stacks vertically for smaller screens to prevent overflow
+    if (!smallScreen){
+      return ShakeWidget(
+        shake: _moveItmoveIt,
+        onAnimationComplete: () => _moveItmoveIt = false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _isChecked ? Colors.blue.withAlpha(128) : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              // alignment: WrapAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                  
+                  _buildTextFieldWithConfirmation(
+                    widget.rpeController, 
+                    rpeFocus, 
+                    "",
+                    35, 
+                    _rpeError, 
+                    "rpe"
+                  ),
 
-                _buildTextFieldWithConfirmation(
-                  widget.weightController, 
-                  weightFocus, 
-                  "", 
-                  50, 
-                  _weightError, 
-                  "weight"
-                ),
+                  _buildTextFieldWithConfirmation(
+                    widget.weightController, 
+                    weightFocus, 
+                    "", 
+                    50, 
+                    _weightError, 
+                    "weight"
+                  ),
 
-                _buildTextFieldWithConfirmation(
-                  widget.repsController, 
-                  repsFocus, 
-                  "", 
-                  40, 
-                  _repsError, 
-                  "reps"
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: InkWell(
-                  onTap: () {
-                    if (context.read<SettingsModel>().hapticsEnabled) {
-                      HapticFeedback.heavyImpact();
-                    }
+                  _buildTextFieldWithConfirmation(
+                    widget.repsController, 
+                    repsFocus, 
+                    "", 
+                    40, 
+                    _repsError, 
+                    "reps"
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      if (context.read<SettingsModel>().hapticsEnabled) {
+                        HapticFeedback.heavyImpact();
+                      }
 
-                    // is not checked means now we are trying to save it
-                    // we dont need to validate inputs when unsaving
-                    if (!_isChecked){
-                      WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-                      _validateInputs();
-                      if (_weightError || _repsError || _rpeError) return;
-                    }
+                      // is not checked means now we are trying to save it
+                      // we dont need to validate inputs when unsaving
+                      if (!_isChecked){
+                        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                        _validateInputs();
+                        if (_weightError || _repsError || _rpeError) return;
+                      }
 
-                    _clearSavedConfirmation();
+                      _clearSavedConfirmation();
 
-                    setState(() {
-                      _isChecked = !_isChecked;
-                      widget.onChanged(_isChecked);
-                    });
+                      setState(() {
+                        _isChecked = !_isChecked;
+                        widget.onChanged(_isChecked);
+                      });
 
-                    
-                  },
-                  child: Container(
-                    width: 24.0,
-                    height: 24.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _isChecked ? Colors.blue : Colors.grey,
-                        width: 2,
+                      
+                    },
+                    child: Container(
+                      width: 24.0,
+                      height: 24.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: _isChecked ? Colors.blue : Colors.grey,
+                          width: 2,
+                        ),
                       ),
+                      child: _isChecked
+                          ? Center(
+                              child: Icon(
+                                Icons.check,
+                                size: 16.0,
+                                color: _isChecked ? Colors.blue : Colors.grey,
+                              ),
+                            )
+                          : null,
                     ),
-                    child: _isChecked
-                        ? Center(
-                            child: Icon(
-                              Icons.check,
-                              size: 16.0,
-                              color: _isChecked ? Colors.blue : Colors.grey,
-                            ),
-                          )
-                        : null,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    
+    } else {
+      final double quarterWidth = (screenWidth - 8) / 4 - 32;
+      final double halfWidth = (screenWidth - 8) / 2 - 32 - 24;
+      return ShakeWidget(
+        shake: _moveItmoveIt,
+        onAnimationComplete: () => _moveItmoveIt = false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _isChecked ? Colors.blue.withAlpha(128) : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: Text(
+                    "Target: ${widget.repsLower}-${widget.repsUpper} reps @ ${widget.expectedRPE} RPE",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                Row(
+                  // alignment: WrapAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      //   child: Text(
+                      //     "${widget.repsLower}-${widget.repsUpper} reps @ ${widget.expectedRPE} RPE",
+                      //     style: const TextStyle(fontSize: 16),
+                      //   ),
+                      // ),
+                      _buildTextFieldWithConfirmation(
+                        widget.rpeController, 
+                        rpeFocus, 
+                        "",
+                        quarterWidth, 
+                        _rpeError, 
+                        "rpe"
+                      ),
+                
+                      _buildTextFieldWithConfirmation(
+                        widget.weightController, 
+                        weightFocus, 
+                        "", 
+                        halfWidth, 
+                        _weightError, 
+                        "weight"
+                      ),
+                
+                      _buildTextFieldWithConfirmation(
+                        widget.repsController, 
+                        repsFocus, 
+                        "", 
+                        quarterWidth, 
+                        _repsError, 
+                        "reps"
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: InkWell(
+                        onTap: () {
+                          if (context.read<SettingsModel>().hapticsEnabled) {
+                            HapticFeedback.heavyImpact();
+                          }
+                
+                          // is not checked means now we are trying to save it
+                          // we dont need to validate inputs when unsaving
+                          if (!_isChecked){
+                            WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
+                            _validateInputs();
+                            if (_weightError || _repsError || _rpeError) return;
+                          }
+                
+                          _clearSavedConfirmation();
+                
+                          setState(() {
+                            _isChecked = !_isChecked;
+                            widget.onChanged(_isChecked);
+                          });
+                
+                          
+                        },
+                        child: Container(
+                          width: 24.0,
+                          height: 24.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: _isChecked ? Colors.blue : Colors.grey,
+                              width: 2,
+                            ),
+                          ),
+                          child: _isChecked
+                              ? Center(
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16.0,
+                                    color: _isChecked ? Colors.blue : Colors.grey,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Divider(
+                    thickness: 0.5,
+                    height: 5,
+                    color: Theme.of(context).colorScheme.outline,
+                                ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   // yeah atp this should maybe be made
@@ -360,9 +482,8 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     double width,
     bool hasError,
     String fieldIdentifier, // To know which field this is
-
+    {bool isShrunk = false,} // if the screen is small we set this true and the label gets displayed on top
   ) {
-
     final bool amIAnimating = _animatingFieldIdentifier == fieldIdentifier;
     final double animValue = _saveAnimationController.value; // 0.0 to 1.0
     final theme = Theme.of(context);
@@ -370,6 +491,11 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
     Color currentBgColor = hasError ? theme.colorScheme.errorContainer : theme.scaffoldBackgroundColor;
     double textOpacity = 1.0;
     double checkmarkOpacity = 0.0;
+    Map<String, String> textFromID = {
+      "rpe" : "RPE",
+      "weight" : "Weight",
+      "reps" : "Reps"
+    };
 
     if (amIAnimating) {
       // Animation phases:
@@ -399,74 +525,79 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
         width: width,
         // height: 30,
 
-        child: Stack(
-          alignment: Alignment.center,
-
+        child: Column(
           children: [
-            KeyboardActions(
-              disableScroll: true,
-              config: buildKeyboardActionsConfig(context, theme, [focusNode]),
-              child: TextFormField(
-                controller: controller,
-                focusNode: focusNode,
-                keyboardType: TextInputType.number,
-              
-                style: TextStyle(
-                  fontSize: 14,
-                  color: (theme.textTheme.bodyLarge?.color ?? Colors.black).withOpacity(textOpacity),
-                ),
-              
-                inputFormatters: [
-                  // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
-                  TwoDecimalTextInputFormatter()
-                ],
-                decoration: InputDecoration(
+            Text("${textFromID[fieldIdentifier]}"),
+            Stack(
+              alignment: Alignment.center,
+            
+              children: [
+                KeyboardActions(
+                  disableScroll: true,
+                  config: buildKeyboardActionsConfig(context, theme, [focusNode]),
+                  child: TextFormField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    keyboardType: TextInputType.number,
                   
-                  filled: true,
-                  fillColor: hasError ? Colors.red.withAlpha(64) : currentBgColor,
-                  contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
-                  constraints: BoxConstraints(
-                    maxWidth: width,
-                    maxHeight: 30,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: (theme.textTheme.bodyLarge?.color ?? Colors.black).withOpacity(textOpacity),
+                    ),
+                  
+                    inputFormatters: [
+                      // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
+                      TwoDecimalTextInputFormatter()
+                    ],
+                    decoration: InputDecoration(
+                      
+                      filled: true,
+                      fillColor: hasError ? Colors.red.withAlpha(64) : currentBgColor,
+                      contentPadding: const EdgeInsets.only(bottom: 10, left: 8),
+                      constraints: BoxConstraints(
+                        maxWidth: width,
+                        maxHeight: 30,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.blue),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      hintText: hint,
+                      errorStyle: const TextStyle(height: 0),
+                    ),
+                    onChanged: (value) => _clearErrors(),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.blue),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.red, width: 2),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.red, width: 2),
-                  ),
-                  hintText: hint,
-                  errorStyle: const TextStyle(height: 0),
                 ),
-                onChanged: (value) => _clearErrors(),
-              ),
-            ),
-
-            // Checkmark overlay
-          if (checkmarkOpacity > 0) // Only build if visible or fading
-            IgnorePointer( // Checkmark should not be interactive
-              child: Opacity(
-                opacity: checkmarkOpacity,
-                child: Icon(
-                  Icons.check_circle,
-                  color: Colors.white.withOpacity(0.9), // White checkmark, slightly transparent for blending
-                  size: 18,
+            
+                // Checkmark overlay
+              if (checkmarkOpacity > 0) // Only build if visible or fading
+                IgnorePointer( // Checkmark should not be interactive
+                  child: Opacity(
+                    opacity: checkmarkOpacity,
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.white.withOpacity(0.9), // White checkmark, slightly transparent for blending
+                      size: 18,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
