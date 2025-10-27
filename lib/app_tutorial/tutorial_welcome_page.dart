@@ -84,17 +84,21 @@ class _TutorialWelcomePageState extends State<TutorialWelcomePage> with SingleTi
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.fitness_center, size: 80),
+                  Image.asset(
+                    "assets/tracket_transparent.png",
+                    height: 128,
+                  ),
                   const SizedBox(height: 20),
                   const Text(
-                    'Welcome to Your Fitness Tracker!',
+                    'Welcome to Tracket!',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 15),
                   const Text(
-                    'Let\'s get you set up and show you around.',
+                    'Let\'s get you set up \nand show you around.',
                     textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 40),
                   ElevatedButton.icon(
@@ -102,7 +106,7 @@ class _TutorialWelcomePageState extends State<TutorialWelcomePage> with SingleTi
                     icon: const Icon(Icons.arrow_forward),
                     label: const Text('Next'),
                     onPressed: () {
-                      Navigator.pushReplacement( // Replace so user can't go back
+                      Navigator.push( // Replace so user can't go back
                         context,
                         MaterialPageRoute(builder: (context) => TutorialSettingsPage(
                           mainScaffoldKey: widget.mainScaffoldKey,

@@ -58,6 +58,7 @@ dependencies:
   showcaseview: ^4.0.1
   confetti: ^0.8.0
   skeletonizer: ^2.0.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,8 @@ flutter:
     - assets/gray.png
     - assets/darkbg.png
     - assets/exercises.txt
+    - assets/tracket_logo.png
+    - assets/tracket_transparent.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -118,7 +121,13 @@ flutter:
 
 flutter_native_splash:
   color: "#121212"  # Dark background color
-  image: android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+  image: assets/tracket_transparent.png
   # dark_mode:  # Optional dark mode configuration
   #   color: "#121212"  # Same dark color
   #   image: assets/images/your_logo.png  # Could use a different logo for dark mode
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/tracket_logo.png
+  min_sdk_android: 21
