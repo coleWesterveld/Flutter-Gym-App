@@ -37,9 +37,15 @@ class _ListDaysState extends State<ListDays> {
     final theme = Theme.of(context);
     final manager = context.watch<TutorialManager>();
 
+    // Choose a different key when the tutorial is active to avoid duplicating
+    // the same GlobalKey across tutorial and non-tutorial trees.
+    final showcaseKey = manager.tutorialActive
+        ? AppTutorialKeys.addDayToProgramTutorial
+        : AppTutorialKeys.addDayToProgram;
+
     return Showcase(
       disableDefaultTargetGestures: true,
-      key: AppTutorialKeys.addDayToProgram,
+      key: showcaseKey,
       description: "Manage the days of a program. Swipe left on a day to delete it.",
 
       tooltipBackgroundColor: theme.colorScheme.surfaceContainerHighest,

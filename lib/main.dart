@@ -58,6 +58,11 @@ void main() async {
 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  // assert(() {
+  //   debugPrintGlobalKeyedWidgetLifecycle = true;
+  //   return true;
+  // }());
+
 
   runApp(const GymApp());
 
@@ -96,9 +101,13 @@ class _MainPage extends State<GymApp>{
   // }
 
   final dbHelper = DatabaseHelper.instance;
-  final GlobalKey<MainScaffoldState> mainScaffoldKey = GlobalKey<MainScaffoldState>();
-  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = GlobalKey<WorkoutSelectionPageState>(); // Key for Workout Page State
-  final GlobalKey<ProgramPageState> programPageKey = GlobalKey<ProgramPageState>(); // Key for Workout Page State
+  final GlobalKey<MainScaffoldState> mainScaffoldKey = LabeledGlobalKey<MainScaffoldState>('mainScaffoldKey');
+  final GlobalKey<MainScaffoldState> tutorialMainScaffoldKey = LabeledGlobalKey<MainScaffoldState>('tutorialMainScaffoldKey');
+  final GlobalKey<WorkoutSelectionPageState> workoutPageKey = LabeledGlobalKey<WorkoutSelectionPageState>('workoutPageKey');
+  final GlobalKey<ProgramPageState> programPageKey = LabeledGlobalKey<ProgramPageState>('programPageKey');
+  // Distinct keys for tutorial flow to avoid duplication during route transitions
+  final GlobalKey<WorkoutSelectionPageState> tutorialWorkoutPageKey = LabeledGlobalKey<WorkoutSelectionPageState>('tutorialWorkoutPageKey');
+  final GlobalKey<ProgramPageState> tutorialProgramPageKey = LabeledGlobalKey<ProgramPageState>('tutorialProgramPageKey');
 
   @override
   Widget build(BuildContext context) {
@@ -121,11 +130,7 @@ class _MainPage extends State<GymApp>{
         ),
 
         ChangeNotifierProvider(
-          create: (_) => TutorialManager(
-            mainScaffoldKey: mainScaffoldKey,
-            workoutPageKey: workoutPageKey,
-            programPageKey: programPageKey,
-          ),
+          create: (_) => TutorialManager(),
         ),
 
         ChangeNotifierProxyProvider<Profile, ActiveWorkoutProvider>(
@@ -187,9 +192,9 @@ class _MainPage extends State<GymApp>{
           Widget initialHome;
           if (settings.isFirstTime) {
             initialHome = TutorialWelcomePage(
-              mainScaffoldKey: mainScaffoldKey,
-              workoutPageKey: workoutPageKey,
-              programPageKey: programPageKey,
+              mainScaffoldKey: tutorialMainScaffoldKey,
+              workoutPageKey: tutorialWorkoutPageKey,
+              programPageKey: tutorialProgramPageKey,
             );
           } else {
             // If not first time, wrap MainScaffold in ShowCaseWidget
@@ -357,6 +362,13 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
       // This context is now guaranteed to be below MultiProvider from _MainPage
       if (mounted) {
         final settings = Provider.of<SettingsModel>(context, listen: false);
+        // Inject keys into TutorialManager for current subtree
+        final tutorialManager = Provider.of<TutorialManager>(context, listen: false);
+        tutorialManager.setKeys(
+          mainScaffoldKey: null, // not needed currently
+          workoutPageKey: widget.workoutPageKey,
+          programPageKey: widget.programPageKey,
+        );
         if (settings.isFirstTime) {
           Provider.of<TutorialManager>(context, listen: false)
               .startTutorialSequence(widget.showcaseContext); // Use the passed context
@@ -527,15 +539,15 @@ class MainScaffoldState extends State<MainScaffold>  with WidgetsBindingObserver
               margin: EdgeInsets.only(
                 bottom: (uiState.currentPageIndex != 2 && activeWorkout.activeDay != null) ? 80 : 0
               ),
-            
-              child: [
-                WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
-                const SchedulePage(),
-                ProgramPage(programkey: widget.programPageKey),
-                AnalyticsPage(theme: theme),
-              ][uiState.currentPageIndex],
-            
-              
+              child: IndexedStack(
+                index: uiState.currentPageIndex,
+                children: [
+                  WorkoutSelectionPage(theme: theme, key: widget.workoutPageKey),
+                  const SchedulePage(),
+                  ProgramPage(programkey: widget.programPageKey),
+                  AnalyticsPage(theme: theme),
+                ],
+              ),
             );
           }
         ),

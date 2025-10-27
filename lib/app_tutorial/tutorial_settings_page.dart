@@ -257,20 +257,18 @@ class TutorialSettingsPage extends StatelessWidget {
                         child: ElevatedButton(
                         key: AppTutorialKeys.tutorialStartButton,
                         onPressed: () {
-                          // Navigate to the main app, PASSING A FLAG to start the tutorial
-                          Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          // Pass 'startTutorial: true' as an argument
-                          settings: const RouteSettings(arguments: {'startTutorial': true}),
-                          builder: (context) => MainScaffoldWrapper(
-                            mainScaffoldKey: mainScaffoldKey,
-                            workoutPageKey: workoutPageKey,
-                            programPageKey: programPageKey,
-                          ),
-                              
-                        ),
-                                        );
+                          // Navigate into tutorial as the ONLY route to avoid duplicate trees
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              settings: const RouteSettings(arguments: {'startTutorial': true}),
+                              builder: (context) => MainScaffoldWrapper(
+                                mainScaffoldKey: mainScaffoldKey,
+                                workoutPageKey: workoutPageKey,
+                                programPageKey: programPageKey,
+                              ),
+                            ),
+                            (route) => false,
+                          );
                               
                                         // REMOVED: Do NOT try to start the tutorial from this context
                                         // WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -336,16 +334,17 @@ class MainScaffoldWrapper extends StatelessWidget {
       ),
       //enableAutoPlayLock: true,
       
-       onFinish: () {
-          try {
-            // This onFinish will be called when the entire ShowCase sequence is done
-            Provider.of<SettingsModel>(context, listen: false)
-                .completeTutorial();
-            print("1Tutorial Finished and Marked as Complete!");
-          } catch (e) {
-            print("Error accessing SettingsModel onFinish: $e");
-          }
-        },
+      onFinish: () {
+         try {
+           Provider.of<SettingsModel>(context, listen: false).completeTutorial();
+           // Ensure only the main app tree remains
+           WidgetsBinding.instance.addPostFrameCallback((_) {
+             Navigator.of(context).popUntil((route) => route.isFirst);
+           });
+         } catch (e) {
+           print("Error finalizing tutorial: $e");
+         }
+       },
     );
   }
 }

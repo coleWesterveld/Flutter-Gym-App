@@ -11,28 +11,34 @@ import 'package:firstapp/providers_and_settings/settings_provider.dart';
 
 
 class TutorialManager extends ChangeNotifier {
-  final GlobalKey<MainScaffoldState> mainScaffoldKey;
-  final GlobalKey<WorkoutSelectionPageState> workoutPageKey; // Key to access workout page state
-  final GlobalKey<ProgramPageState> programPageKey; // Key to access workout page state
+  GlobalKey<MainScaffoldState>? mainScaffoldKey;
+  GlobalKey<WorkoutSelectionPageState>? workoutPageKey; // Key to access workout page state
+  GlobalKey<ProgramPageState>? programPageKey; // Key to access workout page state
 
 
-  TutorialManager({
-    required this.mainScaffoldKey, 
-    required this.workoutPageKey,
-    required this.programPageKey,
-  });
+  TutorialManager();
+
+  void setKeys({
+    GlobalKey<MainScaffoldState>? mainScaffoldKey,
+    required GlobalKey<WorkoutSelectionPageState> workoutPageKey,
+    required GlobalKey<ProgramPageState> programPageKey,
+  }) {
+    this.mainScaffoldKey = mainScaffoldKey;
+    this.workoutPageKey = workoutPageKey;
+    this.programPageKey = programPageKey;
+  }
 
   // Define the sequence of keys
   final List<GlobalKey> _tutorialSequence = [
     AppTutorialKeys.settingsButton,
     AppTutorialKeys.editPrograms,
-    AppTutorialKeys.addDayToProgram,
+    // Use tutorial-specific key to avoid collisions with app tree
+    AppTutorialKeys.addDayToProgramTutorial,
     AppTutorialKeys.addExerciseToProgram,
     AppTutorialKeys.editScheduleButton,
     AppTutorialKeys.startWorkout,
     AppTutorialKeys.recentWorkouts,
     AppTutorialKeys.addGoals
-    // Add other keys in the desired order
   ];
 
   final exerciseDemoExpandController = ExpansionTileController();
@@ -220,7 +226,7 @@ class TutorialManager extends ChangeNotifier {
         // Wait a frame to ensure workoutPageKey state might be ready after nav
          await Future.delayed(Duration.zero);
          WidgetsBinding.instance.addPostFrameCallback((_) {
-            workoutPageKey.currentState?.expandTile();
+            workoutPageKey?.currentState?.expandTile();
          });
         // Wait for expansion animation
         await Future.delayed(const Duration(milliseconds: 400));
