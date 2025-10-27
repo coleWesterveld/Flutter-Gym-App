@@ -72,10 +72,10 @@ class ProgramsDrawer extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final program = programs[index];
                       return ListTile(
-                        leading: Icon(
-                          Icons.fitness_center, 
-                          color: theme.colorScheme.onSurface,
-                        ),
+                        // leading: Icon(
+                        //   Icons.fitness_center, 
+                        //   color: theme.colorScheme.onSurface,
+                        // ),
                   
                         title: Row(
                           children: [

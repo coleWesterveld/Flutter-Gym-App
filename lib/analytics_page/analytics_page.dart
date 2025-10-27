@@ -436,7 +436,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // List of Goal widgets, tappable to edit/delete
   List<Widget> _buildGoalList() {
-    debugPrint("${((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble()}");
+    //debugPrint("${((MediaQuery.sizeOf(context).width - 48)~/2 - 1).floorToDouble()}");
     return _goals.map((goal) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       child: GestureDetector(
