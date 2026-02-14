@@ -236,6 +236,7 @@ class _EditScheduleState extends State<EditSchedule> {
                                     },
                         
                                     child: TextFormField(
+                                      selectAllOnFocus: true,
                                       textAlign: TextAlign.center,
                                       textAlignVertical: TextAlignVertical.center,
                                       

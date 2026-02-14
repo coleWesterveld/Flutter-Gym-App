@@ -137,6 +137,14 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
       _initialWeightOnFocus = widget.weightController.text;
       if (_animatingFieldIdentifier == 'weight') _saveAnimationController.stop(); // Stop animation if re-focused
       setState(() => _animatingFieldIdentifier = null );
+      
+      // Auto-select all text when focused for easy overwriting
+      if (widget.weightController.text.isNotEmpty) {
+        widget.weightController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: widget.weightController.text.length,
+        );
+      }
     } else {
       if (widget.recordID != null && widget.weightController.text != _initialWeightOnFocus) {
         _handleFieldUpdate('weight');
@@ -149,6 +157,14 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
       _initialRpeOnFocus = widget.rpeController.text;
       if (_animatingFieldIdentifier == 'rpe') _saveAnimationController.stop();
       setState(() => _animatingFieldIdentifier = null );
+      
+      // Auto-select all text when focused for easy overwriting
+      if (widget.rpeController.text.isNotEmpty) {
+        widget.rpeController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: widget.rpeController.text.length,
+        );
+      }
     } else {
       if (widget.recordID != null && widget.rpeController.text != _initialRpeOnFocus) {
         _handleFieldUpdate('rpe');
@@ -161,6 +177,14 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
       _initialRepsOnFocus = widget.repsController.text;
       if (_animatingFieldIdentifier == 'reps') _saveAnimationController.stop();
       setState(() => _animatingFieldIdentifier = null );
+      
+      // Auto-select all text when focused for easy overwriting
+      if (widget.repsController.text.isNotEmpty) {
+        widget.repsController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: widget.repsController.text.length,
+        );
+      }
     } else {
       if (widget.recordID != null && widget.repsController.text != _initialRepsOnFocus) {
         _handleFieldUpdate('reps');
@@ -248,7 +272,7 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("${MediaQuery.sizeOf(context).width}");
+    // debugPrint("${MediaQuery.sizeOf(context).width}");
     assert(context.read<ActiveWorkoutProvider>().sessionID != null, "SessionID is null");
     assert(context.read<ActiveWorkoutProvider>().activeDayIndex != null, "No active day index");
     assert(context.read<ActiveWorkoutProvider>().activeDay != null, "No active day");
@@ -536,6 +560,7 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
                   disableScroll: true,
                   config: buildKeyboardActionsConfig(context, theme, [focusNode]),
                   child: TextFormField(
+                    selectAllOnFocus: true,
                     controller: controller,
                     focusNode: focusNode,
                     keyboardType: TextInputType.number,

@@ -34,6 +34,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   List<List<List<TextEditingController>>> workoutWeightTEC;
   List<List<List<TextEditingController>>> workoutRepsTEC;
   List<TextEditingController> workoutNotesTEC;
+  List<FocusNode> workoutNotesFocusNodes; // One focus node per exercise
   List<ExpansionTileController> workoutExpansionControllers;
 
   // this helps track the expansion states, SPECIFICALLY when for the device disconnects and the expansion tiles linked with the controllers will have been disposed
@@ -84,6 +85,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
 
   ActiveWorkoutProvider({
     this.workoutNotesTEC = const <TextEditingController>[],
+    this.workoutNotesFocusNodes = const <FocusNode>[],
     this.workoutRepsTEC = const <List<List<TextEditingController>>>[],
     this.workoutRpeTEC = const <List<List<TextEditingController>>>[],
     this.workoutWeightTEC = const <List<List<TextEditingController>>>[],
@@ -119,11 +121,13 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     for (var list2D in workoutWeightTEC) { for (var list1D in list2D) { for (var tec in list1D) { tec.dispose(); } } }
     for (var list2D in workoutRepsTEC) { for (var list1D in list2D) { for (var tec in list1D) { tec.dispose(); } } }
     for (var tec in workoutNotesTEC) { tec.dispose(); }
+    for (var focusNode in workoutNotesFocusNodes) { focusNode.dispose(); }
     // ExpansionTileControllers might not need explicit dispose unless they hold resources
     workoutRpeTEC = [];
     workoutWeightTEC = [];
     workoutRepsTEC = [];
     workoutNotesTEC = [];
+    workoutNotesFocusNodes = [];
     workoutExpansionControllers = []; // Resetting lists
     expansionStates = [];
   }
@@ -440,6 +444,17 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   void startTimers() {
     timer?.cancel(); // Ensure no multiple timers
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      // Check if workout has exceeded 12 hours and auto-finish if so
+      if (workoutStartTime != null && !isPaused) {
+        final duration = DateTime.now().difference(workoutStartTime!);
+        if (duration.inHours >= 12) {
+          debugPrint("Workout exceeded 12 hours (${duration.inHours}h ${duration.inMinutes.remainder(60)}m), auto-finishing and saving");
+          timer?.cancel();
+          setActiveDayAndStartNew(null); // This saves everything and clears the workout
+          return; // Exit the timer callback
+        }
+      }
+
       if (!isPaused) { // isPaused should be correctly set from snapshot
         notifyListeners();
       } else{
@@ -527,6 +542,13 @@ void _initializeStructuresForDay(int dayIdx) {
     growable: true,
   );
 
+  // For Notes Focus Nodes (one per exercise)
+  workoutNotesFocusNodes = List.generate(
+    programProvider.exercises[dayIdx].length,
+    (_) => FocusNode(),
+    growable: true,
+  );
+
   // For Expansion Tile Controllers (one per exercise)
   workoutExpansionControllers = List.generate(
     programProvider.exercises[dayIdx].length,
@@ -582,6 +604,7 @@ void _initializeStructuresForDay(int dayIdx) {
 
     // 4) Notes and expansion controllers—one per exercise
     ensureLength(workoutNotesTEC, numExercises, () => TextEditingController());
+    ensureLength(workoutNotesFocusNodes, numExercises, () => FocusNode());
   }
   // Call this when user explicitly starts a NEW workout or switches days
   Future<void> setActiveDayAndStartNew(int? index, {String? existingSessionId}) async {
@@ -681,17 +704,34 @@ void _initializeStructuresForDay(int dayIdx) {
       // Move to next subset in same set
       nextSet = [currentExerciseIndex, currentSetIndex, currentSubsetIndex + 1];
 
-      // here we also want to prefill the next line with the same so its easy
-      
-      // if they are all empty, set the text in the TEC's to the previous rows text
+      // Prefill the next line with the same values for easy editing
+      // If all fields are empty, copy from previous row
       if (
         workoutRepsTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty &&
         workoutRpeTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty &&
         workoutWeightTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text.isEmpty 
       ) {
-        workoutRepsTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutRepsTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
-        workoutRpeTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutRpeTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
-        workoutWeightTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex + 1].text = workoutWeightTEC[currentExerciseIndex][currentSetIndex][ currentSubsetIndex].text;
+        workoutRepsTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text = 
+            workoutRepsTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex].text;
+        workoutRpeTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text = 
+            workoutRpeTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex].text;
+        workoutWeightTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1].text = 
+            workoutWeightTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex].text;
+        
+        // Select all text so user can easily overwrite by typing
+        final repsController = workoutRepsTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1];
+        final rpeController = workoutRpeTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1];
+        final weightController = workoutWeightTEC[currentExerciseIndex][currentSetIndex][currentSubsetIndex + 1];
+        
+        if (repsController.text.isNotEmpty) {
+          repsController.selection = TextSelection(baseOffset: 0, extentOffset: repsController.text.length);
+        }
+        if (rpeController.text.isNotEmpty) {
+          rpeController.selection = TextSelection(baseOffset: 0, extentOffset: rpeController.text.length);
+        }
+        if (weightController.text.isNotEmpty) {
+          weightController.selection = TextSelection(baseOffset: 0, extentOffset: weightController.text.length);
+        }
       }
       
     } 

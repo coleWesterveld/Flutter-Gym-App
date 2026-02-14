@@ -106,6 +106,7 @@ class SettingsPage extends StatelessWidget {
             ListTile(
               title: const Text('Enable Haptic Feedback'),
               trailing: Switch.adaptive(
+                activeTrackColor: Theme.of(context).colorScheme.primary,
                 value: settings.hapticsEnabled,
                 onChanged: (_) => settings.toggleHaptics(),
               ),
@@ -118,6 +119,7 @@ class SettingsPage extends StatelessWidget {
               title: const Text('Enable Notifications'),
               subtitle: const Text("Get notified of upcoming workout and to bring equipment such as a belt or straps"),
               trailing: Switch.adaptive(
+                activeTrackColor: Theme.of(context).colorScheme.primary,
                 value: settings.notificationsEnabled,
                 onChanged: (isEnabled) {
                   settings.toggleNotifications(context);

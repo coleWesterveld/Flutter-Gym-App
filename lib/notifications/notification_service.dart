@@ -7,7 +7,8 @@
 // Pt 2. https://www.youtube.com/watch?v=i98p9dJ4lhI
 
 
-// TODO: make sure it runs on day reordering - it crashed for me when I toggled notifs, reordered days
+// FIXED: notification time calculation now uses correct workout minute (was using timeReminder)
+// FIXED: day calculation now matches calendar logic using daysBetween method
 // TODO: test on both android and IOS, there may be some other stuff I gotta do 
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -104,24 +105,25 @@ class NotiService {
     await cancelAllNotifications();
 
     final originDate = convertToTZDateTime(profile.origin);
-    debugPrint("origin: ${profile.origin}");
+    debugPrint("📅 Scheduling notifications:");
+    debugPrint("  Origin date: ${profile.origin}");
+    debugPrint("  Program length: ${profile.splitLength} days");
+    debugPrint("  Days in split: ${profile.split.length}");
+    debugPrint("  Reminder offset: ${settings.timeReminder} minutes");
+    
     final now = tz.TZDateTime.now(tz.local);
     final endDate = now.add(Duration(days: daysInAdvance));
 
+    int totalScheduled = 0;
     for (final day in profile.split) {
       // Find the first occurrence after origin date
       var currentDate = _nextOccurrence(day, profile, originDate);
       
+      int dayCount = 0;
       // Only schedule dates between now and endDate
       while (currentDate.isBefore(endDate)) {
-        if (day.dayTitle == "Push"){
-          debugPrint("scheduling for: ${currentDate}");
-        }
         // Skip if this date is in the past
         if (currentDate.isBefore(now)) {
-          if (day.dayTitle == "Push"){
-            debugPrint("WARN for: ${currentDate}");
-          }
           currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
           continue;
         }
@@ -133,16 +135,17 @@ class NotiService {
           currentDate.month,
           currentDate.day,
           day.workoutTime?.hour ?? 8,
-          day.workoutTime?.minute ?? settings.timeReminder,
+          day.workoutTime?.minute ?? 0,
         ).subtract(Duration(minutes: settings.timeReminder));
 
         // Only schedule if the reminder time is still in the future
         if (notificationTime.isAfter(now)) {
-          if (day.dayTitle == "Push"){
-            debugPrint("SUCCESS for: ${currentDate}");
-          }
+          final notifId = _generateNotificationId(day, currentDate);
+          
+          debugPrint("  ✅ Scheduling: ${day.dayTitle} on ${currentDate.toString().split(' ')[0]} at ${notificationTime.toString().split(' ')[1].substring(0, 5)} (ID: $notifId)");
+          
           await notificationsPlugin.zonedSchedule(
-            _generateNotificationId(day, currentDate),
+            notifId,
             '${day.dayTitle} Workout Starts Soon',
             day.gear.isEmpty ? 'Don\'t forget any gear you need!' : 'Don\'t forget: ${day.gear}',
             notificationTime,
@@ -155,12 +158,18 @@ class NotiService {
               'programDay': day.dayOrder,
             }),
           );
+          totalScheduled++;
+          dayCount++;
+        } else {
+          debugPrint("  ⏭️  Skipping (in past): ${day.dayTitle} on ${currentDate.toString().split(' ')[0]}");
         }
 
         // Move to next occurrence in the program cycle
         currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
       }
+      debugPrint("  📊 ${day.dayTitle}: $dayCount notifications scheduled");
     }
+    debugPrint("✅ Total notifications scheduled: $totalScheduled");
   }
 
   tz.TZDateTime _nextOccurrence(workout.Day day, Profile profile, tz.TZDateTime fromDate) {
@@ -168,7 +177,8 @@ class NotiService {
     var date = fromDate;
     
     while (true) {
-      final daysSinceOrigin = date.difference(convertToTZDateTime(profile.origin)).inDays;
+      // Use the same calculation as getWorkoutForDay and daysBetween for consistency
+      final daysSinceOrigin = _daysBetween(convertToTZDateTime(profile.origin), date);
       final dayInProgram = daysSinceOrigin % programLength;
       
       if (dayInProgram == day.dayOrder) { // Keep dayOrder as-is (matches getEventsForDay)
@@ -176,6 +186,14 @@ class NotiService {
       }
       date = date.add(const Duration(days: 1));
     }
+  }
+
+  // Helper method to calculate days between dates (matches daysBetween utility)
+  int _daysBetween(tz.TZDateTime from, tz.TZDateTime to) {
+    // Normalize to midnight for consistent day calculations
+    final fromNormalized = tz.TZDateTime(tz.local, from.year, from.month, from.day);
+    final toNormalized = tz.TZDateTime(tz.local, to.year, to.month, to.day);
+    return (toNormalized.difference(fromNormalized).inHours / 24).round();
   }
 
   // jeez this was overflowing which then caused ID collisions messing up my notifications

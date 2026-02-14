@@ -46,12 +46,7 @@ class Workout extends StatefulWidget {
 
 class _WorkoutState extends State<Workout> {
   int expandedTileIndex = 0;
-  FocusNode _notesFocus = FocusNode();
-  //bool _userHasInteracted = false; // Track if user has manually expanded/collapsed
-  // Profile? _profile;
-  // late final VoidCallback _profileListener;
-
-
+  // Notes focus nodes are now managed by ActiveWorkoutProvider (one per exercise)
 
   final Map<int, List<SetRecord>> _exerciseHistory = {};
 
@@ -103,17 +98,20 @@ class _WorkoutState extends State<Workout> {
 
   @override
   void dispose() {
-    //_timer?.cancel();
-    _notesFocus.dispose();
-    //_profile?.removeListener(_profileListener);
+    // Notes focus nodes are now disposed in ActiveWorkoutProvider
     super.dispose();
   }
 
   void _handleExerciseSelected(Map<String, dynamic> exercise){
+    final activeDayIndex = context.read<ActiveWorkoutProvider>().activeDayIndex;
+    
     context.read<Profile>().exerciseAppend(
-      index: context.read<ActiveWorkoutProvider>().activeDayIndex!,
+      index: activeDayIndex!,
       exerciseId: exercise['exercise_id'],
     );
+    
+    // Sync controllers to include the new exercise
+    context.read<ActiveWorkoutProvider>().syncControllersForDay(activeDayIndex);
   }
 
   @override
@@ -596,6 +594,10 @@ class _WorkoutState extends State<Workout> {
                                     index1: primaryIndex,
                                     index2: index,
                                   );
+                              
+                              // Sync controllers to include the new set
+                              context.read<ActiveWorkoutProvider>().syncControllersForDay(primaryIndex);
+                              
                               context.read<ActiveWorkoutProvider>().isExerciseComplete[index] = false;
                               setState(() {});
                             },
@@ -618,11 +620,14 @@ class _WorkoutState extends State<Workout> {
                       child: Focus(
                         onFocusChange: (hasFocus) {
                           if (!hasFocus)  {
-                            // Save when focus is lost
-                            final notes = context.read<ActiveWorkoutProvider>().workoutNotesTEC[index].text;
+                            // Save when focus is lost - capture index at time of callback
+                            final currentIndex = index;
+                            final currentPrimaryIndex = primaryIndex;
+                            
+                            final notes = context.read<ActiveWorkoutProvider>().workoutNotesTEC[currentIndex].text;
                             _updateSetNotesInDB(
                               context.read<ActiveWorkoutProvider>().sessionID!,
-                              context.read<Profile>().exercises[primaryIndex][index].exerciseID,
+                              context.read<Profile>().exercises[currentPrimaryIndex][currentIndex].exerciseID,
                               notes
                             );
                           }
@@ -630,9 +635,13 @@ class _WorkoutState extends State<Workout> {
 
                         child: KeyboardActions(
                           disableScroll: true,
-                          config: buildKeyboardActionsConfig(context, widget.theme, [_notesFocus]),
+                          config: buildKeyboardActionsConfig(
+                            context, 
+                            widget.theme, 
+                            [context.read<ActiveWorkoutProvider>().workoutNotesFocusNodes[index]]
+                          ),
                           child: TextFormField(
-                            focusNode: _notesFocus,
+                            focusNode: context.read<ActiveWorkoutProvider>().workoutNotesFocusNodes[index],
                           
                             keyboardType: TextInputType.multiline,
                             minLines: 2,

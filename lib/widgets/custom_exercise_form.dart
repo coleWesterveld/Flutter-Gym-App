@@ -69,6 +69,7 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
               ShakeWidget(
                 shake: _shakeExercise,
                 child: TextFormField(
+                  selectAllOnFocus: true,
                   controller: _exerciseTEC,
                   autofocus: true,
                   decoration: InputDecoration(
@@ -107,6 +108,7 @@ class CustomExerciseFormState extends State<CustomExerciseForm> {
 
               // Optional Muscles Worked field
               TextFormField(
+                selectAllOnFocus: true,
                 onChanged: (value) {
                   if (value.trim().isNotEmpty && _exerciseError != null) {
                     setState(() {

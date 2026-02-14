@@ -98,6 +98,7 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
+                // selectAllOnFocus: true,
                 maxLength: 50,
                 onFieldSubmitted: (value) {
                   if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
@@ -121,6 +122,8 @@ class _PopUpDayEditorState extends State<PopUpDayEditor> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
+
+                selectAllOnFocus: true,
                 onFieldSubmitted: (value) {
                   if (context.read<SettingsModel>().hapticsEnabled) HapticFeedback.heavyImpact();
                   Navigator.of(context).pop();

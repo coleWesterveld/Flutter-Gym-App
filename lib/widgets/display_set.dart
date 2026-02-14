@@ -257,6 +257,7 @@ class SetTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Focus(
       child: TextFormField(
+        selectAllOnFocus: true,
         textInputAction: TextInputAction.next,
         controller: controller,
         focusNode: focusNode,
