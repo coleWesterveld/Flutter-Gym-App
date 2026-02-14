@@ -43,7 +43,6 @@ editable things orange
 simplify the design, get rid of unnessecary colours so that attention is drawn to whats important
 */
 
-// TODO: since I reversed my list of exercises my hardcoded list is lowk out of wack -- fix it
 
 
 // thing to be aware: exercise class has id and Exercise id, do not confuse them! (this causes most of my bugs)

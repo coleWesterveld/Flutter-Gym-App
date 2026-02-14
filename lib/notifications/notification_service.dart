@@ -105,21 +105,21 @@ class NotiService {
     await cancelAllNotifications();
 
     final originDate = convertToTZDateTime(profile.origin);
-    debugPrint("📅 Scheduling notifications:");
-    debugPrint("  Origin date: ${profile.origin}");
-    debugPrint("  Program length: ${profile.splitLength} days");
-    debugPrint("  Days in split: ${profile.split.length}");
-    debugPrint("  Reminder offset: ${settings.timeReminder} minutes");
+    // debugPrint("📅 Scheduling notifications:");
+    // debugPrint("  Origin date: ${profile.origin}");
+    // debugPrint("  Program length: ${profile.splitLength} days");
+    // debugPrint("  Days in split: ${profile.split.length}");
+    // debugPrint("  Reminder offset: ${settings.timeReminder} minutes");
     
     final now = tz.TZDateTime.now(tz.local);
     final endDate = now.add(Duration(days: daysInAdvance));
 
-    int totalScheduled = 0;
+    //int totalScheduled = 0;
     for (final day in profile.split) {
       // Find the first occurrence after origin date
       var currentDate = _nextOccurrence(day, profile, originDate);
       
-      int dayCount = 0;
+      //int dayCount = 0;
       // Only schedule dates between now and endDate
       while (currentDate.isBefore(endDate)) {
         // Skip if this date is in the past
@@ -142,7 +142,7 @@ class NotiService {
         if (notificationTime.isAfter(now)) {
           final notifId = _generateNotificationId(day, currentDate);
           
-          debugPrint("  ✅ Scheduling: ${day.dayTitle} on ${currentDate.toString().split(' ')[0]} at ${notificationTime.toString().split(' ')[1].substring(0, 5)} (ID: $notifId)");
+          //debugPrint("  ✅ Scheduling: ${day.dayTitle} on ${currentDate.toString().split(' ')[0]} at ${notificationTime.toString().split(' ')[1].substring(0, 5)} (ID: $notifId)");
           
           await notificationsPlugin.zonedSchedule(
             notifId,
@@ -158,18 +158,18 @@ class NotiService {
               'programDay': day.dayOrder,
             }),
           );
-          totalScheduled++;
-          dayCount++;
+          //totalScheduled++;
+          //dayCount++;
         } else {
-          debugPrint("  ⏭️  Skipping (in past): ${day.dayTitle} on ${currentDate.toString().split(' ')[0]}");
+          //debugPrint("  ⏭️  Skipping (in past): ${day.dayTitle} on ${currentDate.toString().split(' ')[0]}");
         }
 
         // Move to next occurrence in the program cycle
         currentDate = _nextOccurrence(day, profile, currentDate.add(const Duration(days: 1)));
       }
-      debugPrint("  📊 ${day.dayTitle}: $dayCount notifications scheduled");
+      //debugPrint("  📊 ${day.dayTitle}: $dayCount notifications scheduled");
     }
-    debugPrint("✅ Total notifications scheduled: $totalScheduled");
+    //debugPrint("✅ Total notifications scheduled: $totalScheduled");
   }
 
   tz.TZDateTime _nextOccurrence(workout.Day day, Profile profile, tz.TZDateTime fromDate) {

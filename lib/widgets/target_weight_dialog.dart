@@ -4,48 +4,20 @@
 // allow users to manually enter a current weight if they dont like auto calculated
 // maybe toggle between auto and not
 
-/* 
-TODO: put this in all numeric text fields:
-TextField(
-  controller: _weightController,
-  keyboardType: TextInputType.number,
-  // Ensure only numbers can be entered
-  inputFormatters: [                        // THIS CODE *******
-    FilteringTextInputFormatter.digitsOnly,
-  ],
-  decoration: InputDecoration(
-    labelText: "Target Weight",
-    suffixText: "lbs",
-    border: const OutlineInputBorder(),
-      // Show error border/text if submitted when empty
-      errorText: _submittedWhenEmpty && _weightController.text.isEmpty
-          ? "Weight cannot be empty"
-          : null,
-  ),
-  autofocus: true,
-  onChanged: (text) {
-      // Reset shake state as soon as user starts typing
-      if (_submittedWhenEmpty && text.isNotEmpty) {
-        setState(() {
-          _submittedWhenEmpty = false;
-        });
-      }
-  },
-),
-*/
-
+import 'package:firstapp/other_utilities/decimal_input_formatter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firstapp/widgets/shake_widget.dart';
 
 class TargetWeightDialog extends StatefulWidget {
   final String exerciseName;
   final ThemeData theme;
+  final bool useMetric;
 
   const TargetWeightDialog({
     super.key,
     required this.exerciseName,
     required this.theme,
+    this.useMetric = false,
   });
 
   @override
@@ -64,6 +36,8 @@ class TargetWeightDialogState extends State<TargetWeightDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final unit = widget.useMetric ? 'kg' : 'lbs';
+
     return AlertDialog(
       title: Text("Set Target for ${widget.exerciseName}"),
       content: Column(
@@ -73,14 +47,14 @@ class TargetWeightDialogState extends State<TargetWeightDialog> {
             shake: _submittedWhenEmpty,
             child: TextField(
               controller: _weightController,
-              keyboardType: TextInputType.number,
-              // Ensure only numbers can be entered
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              // Allow decimal numbers with up to one decimal place
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
+                OneDecimalTextInputFormatter(),
               ],
               decoration: InputDecoration(
                 labelText: "Target Weight",
-                suffixText: "lbs",
+                suffixText: unit,
                 border: const OutlineInputBorder(),
                  // Show error border/text if submitted when empty
                  errorText: _submittedWhenEmpty && _weightController.text.isEmpty

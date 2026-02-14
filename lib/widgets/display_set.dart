@@ -10,6 +10,7 @@ also, the text fields are not well labelled, its hard to tell what youre inputti
 done button is not working as intended
 */
 
+import 'package:firstapp/other_utilities/decimal_input_formatter.dart';
 import 'package:firstapp/other_utilities/keyboard_config.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
@@ -166,7 +167,8 @@ class _DisplaySetState extends State<DisplaySet> {
                           controller: _rpeController, 
                           focusNode: _focusNodes[3],
                           hint: 'RPE', 
-                          maxWidth: 50
+                          maxWidth: 50,
+                          isRPE: true, // Mark this as RPE field for 0-10 validation
                         ),
                       ],
                     ),
@@ -245,13 +247,15 @@ class SetTextField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.maxWidth,
-    required this.focusNode
+    required this.focusNode,
+    this.isRPE = false, // Flag to identify RPE field
   });
 
   final TextEditingController controller;
   final String hint;
   final double maxWidth;
   final FocusNode focusNode;
+  final bool isRPE;
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +265,11 @@ class SetTextField extends StatelessWidget {
         textInputAction: TextInputAction.next,
         controller: controller,
         focusNode: focusNode,
-        keyboardType: TextInputType.number,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          // Use RPE formatter for RPE field (0-10 range), otherwise one decimal formatter
+          isRPE ? RPEInputFormatter() : OneDecimalTextInputFormatter()
+        ],
         decoration: InputDecoration(
           filled: true,
           contentPadding: const EdgeInsets.only(bottom: 10, left: 8),

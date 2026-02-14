@@ -563,7 +563,7 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
                     selectAllOnFocus: true,
                     controller: controller,
                     focusNode: focusNode,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   
                     style: TextStyle(
                       fontSize: 14,
@@ -571,8 +571,11 @@ class GymSetRowState extends State<GymSetRow> with SingleTickerProviderStateMixi
                     ),
                   
                     inputFormatters: [
-                      // TODO: RPE is allowed 1 decimal, everything else can have 2. textbox sizes could be bigger so scroll is not needed, but also needs to be reactive
-                      TwoDecimalTextInputFormatter()
+                      // Use RPE-specific formatter for RPE field (0-10 range)
+                      // Use generic one-decimal formatter for weight and reps
+                      fieldIdentifier == "rpe" 
+                        ? RPEInputFormatter()
+                        : OneDecimalTextInputFormatter()
                     ],
                     decoration: InputDecoration(
                       

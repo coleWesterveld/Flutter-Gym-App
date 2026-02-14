@@ -634,7 +634,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                 child: Padding(
                                                   padding: const EdgeInsets.all(6.0),
                                                   child: SizedBox(
-                                                    width: MediaQuery.sizeOf(context).width - 172,
+                                                    width: MediaQuery.sizeOf(context).width - 222,
                                                     child: Text(
                                                       overflow: TextOverflow.visible,
                                                       //softWrap: true,
@@ -650,7 +650,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                               ),
                                               SizedBox(
                                               height: context.watch<Profile>().sets[index][exerciseIndex].length * 20 + 16,
-                                              width: 100,
+                                              width: 150,
                                               child: Padding(
                                                 padding: const EdgeInsets.all(8.0),
                                                 child: ListView(
@@ -658,7 +658,7 @@ class WorkoutSelectionPageState extends State<WorkoutSelectionPage>
                                                   children: [
                                                     for(int i = 0; i < context.watch<Profile>().sets[index][exerciseIndex].length; i++) 
                                                       Padding(
-                                                        padding: const EdgeInsets.only(right: 24.0),
+                                                        padding: const EdgeInsets.only(right: 8.0),
                                                         child: Center(
                                                           child: Text(
                                                             "${context.watch<Profile>().sets[index][exerciseIndex][i].numSets} x (${context.watch<Profile>().sets[index][exerciseIndex][i].setLower}-${context.watch<Profile>().sets[index][exerciseIndex][i].setUpper})",

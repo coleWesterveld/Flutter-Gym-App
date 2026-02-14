@@ -69,6 +69,7 @@ import 'package:firstapp/widgets/goal_progress.dart';
 import 'package:firstapp/other_utilities/timespan.dart';
 import 'package:firstapp/providers_and_settings/ui_state_provider.dart';
 import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/other_utilities/unit_conversions.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({
@@ -111,6 +112,28 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     _fetchGoals();
     
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Check if there's a pending exercise to display from workout page
+    final uiState = context.read<UiStateProvider>();
+    if (uiState.pendingExerciseForChart != null) {
+      final exercise = uiState.pendingExerciseForChart!;
+      
+      // Clear the pending exercise immediately to avoid re-triggering
+      uiState.pendingExerciseForChart = null;
+      
+      // Load the exercise history
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _loadExerciseHistory(exercise);
+        }
+      });
+    }
+  }
+
   void _scrollListener() {
     // determine whether or not to show the "back to top" button
     final bool shouldShow = scrollControl.offset > 100;
@@ -311,13 +334,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   void _exerciseForGoalSelected(Map<String, dynamic> exercise) async {
     final dbHelper = DatabaseHelper.instance;
     final exerciseName = exercise['exercise_title'];
+    final useMetric = context.read<SettingsModel>().useMetric;
 
     final weight = await showDialog<double>(
       context: context,
       builder: (context) => TargetWeightDialog(
         exerciseName: exerciseName,
         theme: widget.theme,
-
+        useMetric: useMetric,
       ),
     );
 
@@ -326,11 +350,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // First calculate current 1RM for this exercise
       final currentOneRm = await _calculateCurrentOneRm(exercise['exercise_id']);
 
+      // Weight is entered in the user's preferred unit, but we store in lbs
+      final weightInLbs = useMetric ? kgToLb(kilograms: weight) : weight;
+
       // Create and save the goal with accurate progress
       final newGoal = Goal(
         exerciseId: exercise['exercise_id'] as int ,
         exerciseTitle: exerciseName,
-        targetWeight: weight,
+        targetWeight: weightInLbs,
         currentOneRm: currentOneRm,
       );
 
@@ -502,6 +529,22 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              leading: const Icon(Icons.show_chart),
+              title: const Text('See Progress'),
+              onTap: () {
+                Navigator.pop(context);
+                final uiState = context.read<UiStateProvider>();
+                setState(() {
+                  _exercise = {
+                    'exercise_id': goal.exerciseId,
+                    'exercise_title': goal.exerciseTitle,
+                  };
+                  uiState.isDisplayingChart = true;
+                });
+                _handleExerciseSelected(_exercise!);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.edit),
               title: const Text('Edit Target'),
               onTap: () {
@@ -536,7 +579,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Dialog for editing goal target
   Future<void> _editGoalWeight(Goal goal) async {
     final dbHelper = DatabaseHelper.instance;
-    final weightController = TextEditingController(text: goal.targetWeight.toString());
+    final useMetric = context.read<SettingsModel>().useMetric;
+    
+    // Display weight in user's preferred unit
+    final displayWeight = useMetric ? lbToKg(pounds: goal.targetWeight) : goal.targetWeight;
+    final weightController = TextEditingController(text: displayWeight.toString());
+    final unit = useMetric ? 'kg' : 'lbs';
 
     final newWeight = await showDialog<double>(
       context: context,
@@ -544,11 +592,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         title: Text('Edit Target for ${goal.exerciseTitle}'),
         content: TextField(
           controller: weightController,
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
 
-          decoration: const InputDecoration(
-            labelText: 'Target Weight (lbs)',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'Target Weight ($unit)',
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
@@ -569,8 +617,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
 
     if (newWeight != null) {
+      // Convert to lbs for storage if user entered in kg
+      final weightInLbs = useMetric ? kgToLb(kilograms: newWeight) : newWeight;
       
-      final updatedGoal = goal.copyWith(targetWeight: newWeight);
+      final updatedGoal = goal.copyWith(targetWeight: weightInLbs);
       await dbHelper.updateGoal(updatedGoal);
       if (mounted){
         await _fetchGoals(useMetric: context.read<SettingsModel>().useMetric);

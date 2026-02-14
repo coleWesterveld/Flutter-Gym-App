@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:firstapp/database/profile.dart';
 import 'package:firstapp/widgets/circular_progress.dart';
+import 'package:firstapp/providers_and_settings/settings_provider.dart';
+import 'package:firstapp/other_utilities/unit_conversions.dart';
+import 'package:provider/provider.dart';
 
 
 class GoalProgress extends StatelessWidget {
@@ -18,6 +21,11 @@ class GoalProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final useMetric = context.watch<SettingsModel>().useMetric;
+    final currentWeight = useMetric ? lbToKg(pounds: goal.currentOneRm!) : goal.currentOneRm!;
+    final targetWeight = useMetric ? lbToKg(pounds: goal.targetWeight) : goal.targetWeight;
+    final unit = useMetric ? 'kg' : 'lbs';
+
     return SizedBox(
       height: size,
       width: size,
@@ -49,7 +57,7 @@ class GoalProgress extends StatelessWidget {
                 const SizedBox(height: 5),
                 
                 Text(
-                  '${goal.currentOneRm!.round()} lbs',
+                  '${currentWeight.round()} $unit',
                   textHeightBehavior: const TextHeightBehavior(
                     applyHeightToFirstAscent: false,
                     applyHeightToLastDescent: false,
@@ -74,7 +82,7 @@ class GoalProgress extends StatelessWidget {
                     applyHeightToLastDescent: false,
                   ),
                                 
-                  '${goal.targetWeight.round()} lbs',
+                  '${targetWeight.round()} $unit',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

@@ -26,7 +26,6 @@ import 'package:keyboard_actions/keyboard_actions.dart';
 // the text should remain in the fields even upon closing/expanding a tile
 // the logged sets should be indicated even upon expanding/collapsing
 // the timer could work better I think - need to ingtegrate with set logging
-// fix notes - for now, they only work if you create a note after logging the sets
 // Use datatable for target, rpe, weight, reps
 
 // I think it may be more clear to change all imports to this package version
@@ -386,10 +385,24 @@ class _WorkoutState extends State<Workout> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: HistorySessionView(
-                                color: widget.theme.colorScheme.surfaceContainerHighest,
-                                exerciseHistory: _exerciseHistory[index]!,
-                                theme: widget.theme,
+                              child: InkWell(
+                                onTap: () {
+                                  _showFullHistoryModal(
+                                    context
+                                        .read<Profile>()
+                                        .exercises[primaryIndex][index]
+                                        .exerciseID,
+                                    context
+                                        .read<Profile>()
+                                        .exercises[primaryIndex][index]
+                                        .exerciseTitle,
+                                  );
+                                },
+                                child: HistorySessionView(
+                                  color: widget.theme.colorScheme.surfaceContainerHighest,
+                                  exerciseHistory: _exerciseHistory[index]!,
+                                  theme: widget.theme,
+                                ),
                               ),
                             ),
                             

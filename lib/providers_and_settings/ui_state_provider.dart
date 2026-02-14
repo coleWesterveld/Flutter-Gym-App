@@ -24,6 +24,7 @@ class UiStateProvider extends ChangeNotifier {
   bool _showAppBarBackButton = false;
   bool _isChoosingExercise = false;
   bool _hasSetNotifs = false;
+  Map<String, dynamic>? _pendingExerciseForChart;
 
 
 
@@ -33,6 +34,7 @@ class UiStateProvider extends ChangeNotifier {
   bool get showAppBarBackButton => _showAppBarBackButton;
   bool get isChoosingExercise => _isChoosingExercise;
   bool get hasSetNotifs => _hasSetNotifs;
+  Map<String, dynamic>? get pendingExerciseForChart => _pendingExerciseForChart;
 
 
   // The action to perform when the back button is pressed
@@ -127,6 +129,11 @@ class UiStateProvider extends ChangeNotifier {
 
   set expandProgramIndex (int? newIndex){
     _expandProgramIndex = newIndex;
+    notifyListeners();
+  }
+
+  set pendingExerciseForChart(Map<String, dynamic>? exercise) {
+    _pendingExerciseForChart = exercise;
     notifyListeners();
   }
 }
