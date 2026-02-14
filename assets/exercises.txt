@@ -6,16 +6,18 @@ T-Bar Row, Middle Back
 Sumo Deadlift, Hamstrings
 Straight-Arm Pulldown, Lats
 Stiff-Legged Deadlift, Hamstrings
+Standing Calf Raise, Calf
 Spider Curl, Biceps
 Smith Machine Bench Press, Chest
-Seated Dumbbell Lateral Raise, Shoulders
+Seated Leg Curl, Hamstrings
 Seated Calf Raise, Calves
 Seated Cable Row, Middle Back
 Russian Twist, Abdominals
 Romanian Deadlift, Hamstrings
 Reverse Barbell Wrist Curl, Forearms
 Reverse Barbell Curl, Forearms
-Pull-Up, Lats
+Rear Delt Flys, Shoulders
+Pullups, Lats
 Preacher Curl, Biceps
 Pec Deck Fly, Chest
 Overhead Triceps Extension, Triceps
@@ -48,10 +50,12 @@ EZ-Bar Curl, Biceps
 Dumbbell Upright Row, Traps
 Dumbbell Side Bend, Abdominals
 Dumbbell Shrug, Traps
+Dumbbell Shoulder Press, Shoulders
 Dumbbell Pullover, Lats
 Dumbbell Overhead Press, Shoulders
 Dumbbell One-Arm Row, Middle Back
 Dumbbell Lunge, Quadriceps
+Dumbbell Lateral Raise, Shoulders
 Dumbbell Kickback, Triceps
 Dumbbell Flyes, Chest
 Dumbbell Biceps Curl, Biceps
